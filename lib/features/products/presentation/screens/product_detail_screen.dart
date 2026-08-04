@@ -1,0 +1,405 @@
+import 'package:carousel_slider/carousel_slider.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:my_gallery/features/auth/domain/auth_cubit.dart';
+import 'package:my_gallery/features/products/data/models/product_models.dart';
+import 'package:my_gallery/features/products/domain/product_detail_cubit.dart';
+import 'package:my_gallery/shared/widgets/empty_state.dart';
+import 'package:my_gallery/shared/widgets/network_image.dart';
+
+class ProductDetailScreen extends StatefulWidget {
+  final int productId;
+  const ProductDetailScreen({super.key, required this.productId});
+
+  @override
+  State<ProductDetailScreen> createState() => _ProductDetailScreenState();
+}
+
+class _ProductDetailScreenState extends State<ProductDetailScreen> {
+  int _currentImageIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    context.read<ProductDetailCubit>().load(widget.productId);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocConsumer<ProductDetailCubit, ProductDetailState>(
+      listener: (context, state) {
+        switch (state) {
+          case ProductDetailActionSuccess(:final message):
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(message)),
+            );
+          case ProductDetailError(:final message):
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(message),
+                backgroundColor: Theme.of(context).colorScheme.error,
+              ),
+            );
+          default:
+            break;
+        }
+      },
+      builder: (context, state) {
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text('تفاصيل المنتج'),
+            actions: [
+              if (state is ProductDetailLoaded)
+                IconButton(
+                  icon: const Icon(Icons.edit_outlined),
+                  onPressed: () => context.push(
+                    '/products/${widget.productId}/edit',
+                    extra: state.product,
+                  ),
+                ),
+            ],
+          ),
+          body: switch (state) {
+            ProductDetailLoading() => const Center(child: CircularProgressIndicator()),
+            ProductDetailLoaded(:final product) => _buildContent(context, product),
+            ProductDetailActionSuccess(:final product) => _buildContent(context, product),
+            ProductDetailError(:final message) => ErrorState(
+                message: message,
+                onRetry: () => context.read<ProductDetailCubit>().load(widget.productId),
+              ),
+            _ => const SizedBox.shrink(),
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildContent(BuildContext context, ProductDetail product) {
+    final theme = Theme.of(context);
+    final authState = context.watch<AuthCubit>().state;
+    final isOwner = authState is AuthAuthenticated &&
+        authState.user.role == 'Owner';
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildImageCarousel(product),
+          const SizedBox(height: 16),
+          _buildQuickActions(context, product, isOwner),
+          const SizedBox(height: 20),
+          Text(product.name, style: theme.textTheme.headlineMedium)
+              .animate().fadeIn(duration: 300.ms),
+          const SizedBox(height: 8),
+          _buildPriceRow(context, product),
+          if (product.shortDescription != null) ...[
+            const SizedBox(height: 12),
+            Text(product.shortDescription!, style: theme.textTheme.bodyMedium),
+          ],
+          const Divider(height: 32),
+          _buildDetailGrid(context, product),
+          if (product.description != null && product.description!.isNotEmpty) ...[
+            const Divider(height: 32),
+            Text('الوصف', style: theme.textTheme.titleMedium),
+            const SizedBox(height: 8),
+            Text(product.description!, style: theme.textTheme.bodyMedium),
+          ],
+          if (isOwner) ...[
+            const Divider(height: 32),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () => _confirmDelete(context, product),
+                icon: const Icon(Icons.delete_outline, color: Colors.red),
+                label: const Text('حذف المنتج',
+                    style: TextStyle(color: Colors.red)),
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: Colors.red),
+                ),
+              ),
+            ),
+          ],
+          const SizedBox(height: 24),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildImageCarousel(ProductDetail product) {
+    if (product.images.isEmpty) {
+      return Hero(
+        tag: 'product-image-${product.id}',
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: AppNetworkImage(imagePath: null, height: 240, width: double.infinity),
+        ),
+      );
+    }
+    return Column(
+      children: [
+        CarouselSlider(
+          options: CarouselOptions(
+            height: 260,
+            viewportFraction: 1,
+            onPageChanged: (i, _) => setState(() => _currentImageIndex = i),
+          ),
+          items: product.images.map((img) {
+            final isCover = img.isCover;
+            return Stack(
+              fit: StackFit.expand,
+              children: [
+                Hero(
+                  tag: isCover ? 'product-image-${product.id}' : 'img-${img.id}',
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: AppNetworkImage(
+                      imagePath: img.url,
+                      height: 260,
+                      width: double.infinity,
+                    ),
+                  ),
+                ),
+                if (isCover)
+                  Positioned(
+                    top: 8,
+                    left: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFD4A02A),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Text('غلاف',
+                          style: TextStyle(color: Colors.white, fontSize: 11)),
+                    ),
+                  ),
+              ],
+            );
+          }).toList(),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(product.images.length, (i) {
+            return AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              margin: const EdgeInsets.symmetric(horizontal: 3),
+              width: _currentImageIndex == i ? 16 : 6,
+              height: 6,
+              decoration: BoxDecoration(
+                color: _currentImageIndex == i
+                    ? Theme.of(context).colorScheme.primary
+                    : Colors.grey[300],
+                borderRadius: BorderRadius.circular(4),
+              ),
+            );
+          }),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildQuickActions(
+      BuildContext context, ProductDetail product, bool isOwner) {
+    final cubit = context.read<ProductDetailCubit>();
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        FilledButton.tonal(
+          onPressed: () => cubit.toggleActive(),
+          child: Text(product.isActive ? 'إلغاء التفعيل' : 'تفعيل'),
+        ),
+        FilledButton.tonal(
+          onPressed: () => _showEditStock(context, product),
+          child: const Text('المخزون'),
+        ),
+        FilledButton.tonal(
+          onPressed: () => _showEditPrice(context, product),
+          child: const Text('السعر'),
+        ),
+        FilledButton.tonal(
+          onPressed: () => _showEditDiscount(context, product),
+          child: const Text('الخصم'),
+        ),
+        FilledButton.tonal(
+          onPressed: () => cubit.duplicate(),
+          child: const Text('نسخ'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPriceRow(BuildContext context, ProductDetail product) {
+    final theme = Theme.of(context);
+    final hasDiscount = product.discountPrice != null;
+    return Row(
+      children: [
+        Text(
+          '${(hasDiscount ? product.discountPrice! : product.price).toStringAsFixed(0)} س.ل',
+          style: theme.textTheme.headlineMedium?.copyWith(
+            color: theme.colorScheme.primary,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        if (hasDiscount) ...[
+          const SizedBox(width: 8),
+          Text(
+            '${product.price.toStringAsFixed(0)} س.ل',
+            style: theme.textTheme.bodyMedium?.copyWith(
+              decoration: TextDecoration.lineThrough,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildDetailGrid(BuildContext context, ProductDetail product) {
+    final theme = Theme.of(context);
+    final items = [
+      ('المخزون', '${product.stockQuantity}'),
+      ('الحالة', product.isActive ? 'نشط' : 'غير نشط'),
+      if (product.sku != null) ('رمز SKU', product.sku!),
+      if (product.barcode != null) ('الباركود', product.barcode!),
+      ('مميز', product.isFeatured ? 'نعم' : 'لا'),
+      ('جديد', product.isNew ? 'نعم' : 'لا'),
+      ('متاح', product.isAvailable ? 'نعم' : 'لا'),
+    ];
+    return Wrap(
+      spacing: 12,
+      runSpacing: 12,
+      children: items.map((item) {
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFBF7F4),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0xFF3C2A34).withValues(alpha: 0.08)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(item.$1, style: theme.textTheme.bodySmall),
+              const SizedBox(height: 2),
+              Text(item.$2, style: theme.textTheme.titleMedium),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  void _showEditStock(BuildContext context, ProductDetail product) {
+    final ctrl = TextEditingController(text: product.stockQuantity.toString());
+    _showEditSheet(
+      context,
+      title: 'تعديل المخزون',
+      controller: ctrl,
+      keyboardType: TextInputType.number,
+      label: 'الكمية',
+      onSave: () {
+        final val = int.tryParse(ctrl.text);
+        if (val != null) context.read<ProductDetailCubit>().updateStock(val);
+      },
+    );
+  }
+
+  void _showEditPrice(BuildContext context, ProductDetail product) {
+    final ctrl = TextEditingController(text: product.price.toStringAsFixed(0));
+    _showEditSheet(
+      context,
+      title: 'تعديل السعر',
+      controller: ctrl,
+      keyboardType: TextInputType.number,
+      label: 'السعر (س.ل)',
+      onSave: () {
+        final val = double.tryParse(ctrl.text);
+        if (val != null) context.read<ProductDetailCubit>().updatePrice(val);
+      },
+    );
+  }
+
+  void _showEditDiscount(BuildContext context, ProductDetail product) {
+    final ctrl = TextEditingController(
+        text: product.discountPrice?.toStringAsFixed(0) ?? '');
+    _showEditSheet(
+      context,
+      title: 'تعديل الخصم',
+      controller: ctrl,
+      keyboardType: TextInputType.number,
+      label: 'سعر الخصم (س.ل) — اتركه فارغاً لإلغائه',
+      onSave: () {
+        final val = ctrl.text.isEmpty ? null : double.tryParse(ctrl.text);
+        context.read<ProductDetailCubit>().updateDiscount(val);
+      },
+    );
+  }
+
+  void _showEditSheet(
+    BuildContext context, {
+    required String title,
+    required TextEditingController controller,
+    required TextInputType keyboardType,
+    required String label,
+    required VoidCallback onSave,
+  }) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => Padding(
+        padding: EdgeInsets.fromLTRB(
+            20, 20, 20, 20 + MediaQuery.of(context).viewInsets.bottom),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title, style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(height: 16),
+            TextField(
+              controller: controller,
+              keyboardType: keyboardType,
+              autofocus: true,
+              decoration: InputDecoration(labelText: label),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                onSave();
+                Navigator.pop(context);
+              },
+              child: const Text('حفظ'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _confirmDelete(BuildContext context, ProductDetail product) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('حذف المنتج'),
+        content: Text('هل تريد حذف "${product.name}" نهائياً؟'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('إلغاء')),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await context.read<ProductDetailCubit>().delete();
+              if (context.mounted) context.pop();
+            },
+            child: const Text('حذف', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+}

@@ -1,0 +1,70 @@
+name: my_gallery
+description: "MyGallery Admin App - إدارة المعرض"
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.12.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # UI
+  cupertino_icons: ^1.0.8
+  google_fonts: ^6.2.1
+  flutter_animate: ^4.5.0
+  shimmer: ^3.0.0
+  cached_network_image: ^3.4.1
+  carousel_slider: ^5.0.0
+  flutter_screenutil: ^5.9.3
+
+  # State management
+  flutter_bloc: ^9.0.0
+  bloc: ^9.0.0
+
+  # Routing
+  go_router: ^17.1.0
+
+  # Networking
+  dio: ^5.7.0
+  retrofit: ^4.9.2
+  pretty_dio_logger: ^1.4.0
+
+  # Storage
+  flutter_secure_storage: ^9.2.2
+  shared_preferences: ^2.3.3
+
+  # Serialization
+  freezed_annotation: ^3.0.0
+  json_annotation: ^4.9.0
+
+  # Utilities
+  intl: ^0.20.2
+  image_picker: ^1.1.2
+  fluttertoast: ^8.2.10
+  get_it: ^9.2.1
+  url_launcher: ^6.3.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  json_serializable: ^6.9.5
+  freezed: ^3.0.6
+  retrofit_generator: ^10.2.5
+  build_runner: ^2.4.15
+
+flutter:
+  generate: true
+  uses-material-design: true
+  assets:
+    - assets/images/
+
+  fonts:
+    - family: Cairo-Bold
+      fonts:
+        - asset: assets/fonts/cairo/Cairo-Regular.ttf
+        - asset: assets/fonts/cairo/Cairo-Bold.ttf

@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(head *)",
+      "Bash(flutter pub *)",
+      "Bash(Get-ChildItem -Path \"E:\\\\flutter\\\\my_gallery\" -Force)",
+      "Bash(Select-Object Name, FullName)",
+      "Bash(dart run *)",
+      "Bash(flutter analyze *)",
+      "Bash(dart pub *)",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); [print\\(p['name'],p['version']\\) for p in d.get\\('packages',[]\\) if p['name'] in ['freezed','freezed_annotation']]\")",
+      "Bash(flutter build *)",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); [print\\(p['name'],p.get\\('version','?'\\)\\) for p in d['packages'] if p['name'] in ['freezed','freezed_annotation']]\")",
+      "Bash(dart *)",
+      "Bash(rm -f \"E:/flutter/my_gallery/lib/core/network/api_response.freezed.dart\")",
+      "Bash(rm -f \"E:/flutter/my_gallery/lib/core/network/api_response.g.dart\")",
+      "Bash(rm -f \"E:/flutter/my_gallery/lib/features/auth/data/models/auth_models.freezed.dart\")",
+      "Bash(rm -f \"E:/flutter/my_gallery/lib/features/auth/data/models/auth_models.g.dart\")",
+      "Bash(rm -f \"E:/flutter/my_gallery/lib/features/auth/domain/auth_cubit.freezed.dart\")",
+      "Bash(New-Item -ItemType Directory -Force -Path \"E:\\\\flutter\\\\my_gallery\\\\lib\\\\features\\\\products\\\\data\\\\models\")",
+      "Bash(Out-Null)",
+      "Bash(New-Item -ItemType Directory -Force -Path \"E:\\\\flutter\\\\my_gallery\\\\lib\\\\features\\\\products\\\\data\")",
+      "Bash(New-Item -ItemType Directory -Force -Path \"E:\\\\flutter\\\\my_gallery\\\\lib\\\\features\\\\products\\\\domain\")",
+      "Bash(New-Item -ItemType Directory -Force -Path \"E:\\\\flutter\\\\my_gallery\\\\lib\\\\features\\\\products\\\\presentation\\\\widgets\")",
+      "Bash(New-Item -ItemType Directory -Force -Path \"E:\\\\flutter\\\\my_gallery\\\\lib\\\\features\\\\products\\\\presentation\\\\screens\")",
+      "Bash(Write-Host \"Directories created\")",
+      "Bash(flutter --version)",
+      "WebFetch(domain:my-galary-api.runasp.net)",
+      "Bash(curl -s --max-time 15 \"https://my-galary-api.runasp.net/swagger/v1/swagger.json\")",
+      "PowerShell(try { $r = Invoke-WebRequest -Uri \"https://my-galary-api.runasp.net/swagger/v1/swagger.json\" -TimeoutSec 20 -UseBasicParsing; $r.Content | Out-String } catch { \"ERROR: $_\" })"
+    ]
+  }
+}
