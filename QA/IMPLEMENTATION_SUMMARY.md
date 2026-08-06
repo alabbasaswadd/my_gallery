@@ -3,6 +3,15 @@
 Implementation of the QA backlog (`QA/QA_REPORT.md`, `MISSING_FEATURES.md`, etc.).
 All work is on **local branch `feature/qa-implementation`** in both repos. **Nothing pushed / merged / PR'd.**
 
+> **Addendum — Occasions feature (new).** A complete Occasions management system was
+> added on top of the QA fixes: global `Occasion` CRUD API (Slug/Icon + migration),
+> product↔occasion assignment, storefront browsing, home strip, product-form multi-select,
+> and product-detail chips. Backend `dotnet build` clean; Flutter side needs codegen +
+> analyze. Full detail: **`QA/OCCASIONS_FEATURE_REPORT.md`**. This also closes
+> MISSING_FEATURES **A6** (product occasions) and **B6** (occasion API) on the backend,
+> and adds the occasion product filter (A8-by-occasion). The frontend push is **held** —
+> see **`QA/PUSH_BLOCKERS.md`**.
+
 - Backend repo: `D:\MyGallery project` — branch `feature/qa-implementation` (4 commits).
 - Frontend repo: `D:\المعرض\my_gallery` — branch `feature/qa-implementation` (5 commits).
 
