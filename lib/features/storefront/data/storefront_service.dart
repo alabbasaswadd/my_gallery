@@ -3,6 +3,7 @@ import 'package:my_gallery/core/config/app_config.dart';
 import 'package:my_gallery/core/network/api_client.dart';
 import 'package:my_gallery/core/network/api_exception.dart';
 import 'package:my_gallery/core/network/api_response.dart';
+import 'package:my_gallery/features/occasions/data/models/occasion_models.dart';
 import 'package:my_gallery/features/storefront/data/models/storefront_models.dart';
 
 class StorefrontService {
@@ -18,6 +19,7 @@ class StorefrontService {
   Future<ApiResponse<List<StorefrontProduct>>> getProducts({
     String? search,
     int? categoryId,
+    int? occasionId,
     double? minPrice,
     double? maxPrice,
     String sort = 'Newest',
@@ -32,6 +34,7 @@ class StorefrontService {
       };
       if (search?.isNotEmpty == true) params['Search'] = search;
       if (categoryId != null) params['CategoryId'] = categoryId;
+      if (occasionId != null) params['OccasionId'] = occasionId;
       if (minPrice != null) params['MinPrice'] = minPrice;
       if (maxPrice != null) params['MaxPrice'] = maxPrice;
 
@@ -72,6 +75,18 @@ class StorefrontService {
       _assertOk(resp);
       return (resp.data['data'] as List? ?? [])
           .map((e) => StorefrontCategory.fromJson(e as Map<String, dynamic>))
+          .toList();
+    } on DioException catch (e) {
+      throw exceptionFromDio(e);
+    }
+  }
+
+  Future<List<OccasionListItem>> getOccasions() async {
+    try {
+      final resp = await _dio.get('$_base/occasions');
+      _assertOk(resp);
+      return (resp.data['data'] as List? ?? [])
+          .map((e) => OccasionListItem.fromJson(e as Map<String, dynamic>))
           .toList();
     } on DioException catch (e) {
       throw exceptionFromDio(e);

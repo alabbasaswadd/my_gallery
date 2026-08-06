@@ -12,6 +12,10 @@ import 'package:my_gallery/features/categories/domain/categories_cubit.dart';
 import 'package:my_gallery/features/categories/domain/category_form_cubit.dart';
 import 'package:my_gallery/features/categories/presentation/screens/category_form_screen.dart';
 import 'package:my_gallery/features/home/presentation/screens/home_screen.dart';
+import 'package:my_gallery/features/occasions/domain/occasion_form_cubit.dart';
+import 'package:my_gallery/features/occasions/domain/occasions_cubit.dart';
+import 'package:my_gallery/features/occasions/presentation/screens/occasion_form_screen.dart';
+import 'package:my_gallery/features/occasions/presentation/screens/occasions_screen.dart';
 import 'package:my_gallery/features/orders/domain/order_detail_cubit.dart';
 import 'package:my_gallery/features/orders/domain/orders_list_cubit.dart';
 import 'package:my_gallery/features/orders/presentation/screens/order_detail_screen.dart';
@@ -27,6 +31,7 @@ import 'package:my_gallery/features/storefront/domain/checkout_cubit.dart';
 import 'package:my_gallery/features/storefront/domain/storefront_cubit.dart';
 import 'package:my_gallery/features/storefront/presentation/screens/checkout_screen.dart';
 import 'package:my_gallery/features/storefront/presentation/screens/order_success_screen.dart';
+import 'package:my_gallery/features/storefront/presentation/screens/occasion_products_screen.dart';
 import 'package:my_gallery/features/storefront/presentation/screens/storefront_product_detail_screen.dart';
 import 'package:my_gallery/features/settings/domain/site_customization_cubit.dart';
 import 'package:my_gallery/features/settings/domain/social_links_cubit.dart';
@@ -65,6 +70,7 @@ final router = GoRouter(
         providers: [
           BlocProvider(create: (_) => sl<ProductFormCubit>()),
           BlocProvider(create: (_) => sl<CategoriesCubit>()),
+          BlocProvider(create: (_) => sl<OccasionsCubit>()),
         ],
         child: const ProductFormScreen(),
       ),
@@ -110,6 +116,34 @@ final router = GoRouter(
         return BlocProvider(
           create: (_) => sl<CategoryFormCubit>(),
           child: CategoryFormScreen(editId: id),
+        );
+      },
+    ),
+
+    // ------------------------------------
+    // Occasions (staff)
+    // ------------------------------------
+    GoRoute(
+      path: '/occasions',
+      builder: (context, state) => BlocProvider(
+        create: (_) => sl<OccasionsCubit>(),
+        child: const OccasionsScreen(),
+      ),
+    ),
+    GoRoute(
+      path: '/occasions/create',
+      builder: (context, state) => BlocProvider(
+        create: (_) => sl<OccasionFormCubit>(),
+        child: const OccasionFormScreen(),
+      ),
+    ),
+    GoRoute(
+      path: '/occasions/:id/edit',
+      builder: (context, state) {
+        final id = int.parse(state.pathParameters['id']!);
+        return BlocProvider(
+          create: (_) => sl<OccasionFormCubit>(),
+          child: OccasionFormScreen(editId: id),
         );
       },
     ),
@@ -165,6 +199,20 @@ final router = GoRouter(
       builder: (context, state) {
         final result = state.extra as PlaceOrderResult;
         return OrderSuccessScreen(result: result);
+      },
+    ),
+    GoRoute(
+      path: '/storefront/occasions/:id',
+      builder: (context, state) {
+        final id = int.parse(state.pathParameters['id']!);
+        final name = state.extra as String?;
+        return MultiBlocProvider(
+          providers: [
+            RepositoryProvider.value(value: sl<StorefrontService>()),
+            BlocProvider.value(value: sl<CartCubit>()),
+          ],
+          child: OccasionProductsScreen(occasionId: id, occasionName: name),
+        );
       },
     ),
     GoRoute(

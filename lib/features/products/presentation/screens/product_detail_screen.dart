@@ -8,6 +8,8 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:my_gallery/core/constants/colors.dart';
 import 'package:my_gallery/features/auth/domain/auth_cubit.dart';
+import 'package:my_gallery/features/occasions/data/models/occasion_models.dart';
+import 'package:my_gallery/features/occasions/data/occasions_service.dart';
 import 'package:my_gallery/features/products/data/models/product_models.dart';
 import 'package:my_gallery/features/products/domain/product_detail_cubit.dart';
 import 'package:my_gallery/shared/widgets/empty_state.dart';
@@ -110,6 +112,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             Text('الوصف', style: theme.textTheme.titleMedium),
             const SizedBox(height: 8),
             Text(product.description!, style: theme.textTheme.bodyMedium),
+          ],
+          if (product.occasionIds.isNotEmpty) ...[
+            const Divider(height: 32),
+            _SuitableFor(occasionIds: product.occasionIds),
           ],
           if (isOwner) ...[
             const Divider(height: 32),
@@ -486,6 +492,66 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// "مناسب لـ" — resolves the product's occasion ids to names and shows them as chips.
+class _SuitableFor extends StatefulWidget {
+  final List<int> occasionIds;
+  const _SuitableFor({required this.occasionIds});
+
+  @override
+  State<_SuitableFor> createState() => _SuitableForState();
+}
+
+class _SuitableForState extends State<_SuitableFor> {
+  List<OccasionListItem> _matched = const [];
+  bool _loaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    try {
+      final all = await OccasionsService().getOccasions();
+      final ids = widget.occasionIds.toSet();
+      if (mounted) {
+        setState(() {
+          _matched = all.where((o) => ids.contains(o.id)).toList();
+          _loaded = true;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => _loaded = true);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_loaded || _matched.isEmpty) return const SizedBox.shrink();
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('مناسب لـ', style: theme.textTheme.titleMedium),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final o in _matched)
+              Chip(
+                label: Text(o.name),
+                avatar: Icon(Icons.celebration_outlined,
+                    size: 16, color: theme.colorScheme.primary),
+              ),
+          ],
+        ),
+      ],
     );
   }
 }
