@@ -45,7 +45,17 @@ Categories (staff): `GET/POST /categories`, `GET/PUT/DELETE /categories/{id}`, a
 
 Orders (staff): `GET /orders`, `GET /orders/{id}`, status transitions.
 
-Settings (staff): `GET /settings`, `PUT /settings` (Owner/Manager) — brand name, logo, hero slides, social links, website.
+Settings (staff): `GET /settings` (any staff, full identity incl. colors/radius/font), `PUT /settings`
+(Owner/Manager — **full replace**: send every field or the server resets it), `POST /settings/images`
+(Owner/Manager, multipart `file` → `{ url, fileName, size, contentType }`; jpeg/png/webp/gif ≤ 5 MB),
+`PATCH /settings/social`. On the wire `borderRadius` is a **CSS string** (`"16px"`, parsed to `double` via
+`radiusFromJson`) and colors are `#RRGGBB` strings.
+
+The in-app **Site Customization** screen (`/settings/appearance`, Owner/Manager) edits the full identity —
+brand name, logo, favicon, website, 6 colors, corner radius, font, hero slides, social — via
+`SiteCustomizationCubit` (factory). Logo/favicon/hero images upload through `POST /settings/images`, then
+the whole object is saved via `PUT /settings`; on success the cubit calls `SettingsCubit.applyUpdated(...)`
+so the app restyles live.
 
 Storefront (public): `GET /storefront/{shopId}/settings|products|products/{id}|categories`, `POST /storefront/{shopId}/orders`.
 
@@ -57,9 +67,14 @@ Storefront (public): `GET /storefront/{shopId}/settings|products|products/{id}|c
   button (profile screen + home AppBar icon) reads `.website` and hides when empty. No literal gallery name
   or URL is ever hardcoded — `kDefaultSettings` is the only allowed fallback.
 - `SettingsCubit` (singleton) caches settings in `shared_preferences`; loaded in `main.dart` before `runApp`.
-- `AppTheme.build(brightness)` in `lib/theme.dart` builds light & dark `ThemeData` from hardcoded constants
-  (`_primary`, `_secondary`, `_accent`, `_lightBackground`, etc.) — the palette is internal, not server-driven.
-  - Color strategy: `ColorScheme.fromSeed(seedColor: _primary, brightness: brightness)` generates all M3
+- `AppTheme.build(brightness, ThemePalette)` in `lib/theme.dart` builds light & dark `ThemeData` from a
+  `ThemePalette` (6 role colors + `radius` + `fontFamily`). The live palette is chosen by
+  `activePalette(settings, source)`: `ThemeSource.identity` → `ThemePalette.fromSettings(settings)` (the
+  shop's server-driven colors), `ThemeSource.appDefault` → the built-in `kDefaultPalette` (attractive,
+  brand-neutral). `ThemeCubit` persists a `ThemeSettings{ mode, source }` in shared_preferences; `main.dart`
+  rebuilds on both `SettingsCubit` and `ThemeCubit` and passes the resolved palette into `AppTheme.build`.
+  Font is `GoogleFonts.getFont(fontFamily)` (Tajawal/Cairo, `supportedFonts`; unknown → Tajawal).
+  - Color strategy: `ColorScheme.fromSeed(seedColor: palette.primary, brightness: brightness)` generates all M3
     tonal tokens. Use the computed tokens (`outlineVariant`, `onSurfaceVariant`, `surfaceContainerHighest`, …)
     for borders/secondary text/surfaces. Never use raw `Color(…)` or named `Colors.*` in screens — always
     derive from the active colorScheme or `AppColors` semantic constants.
@@ -67,8 +82,9 @@ Storefront (public): `GET /storefront/{shopId}/settings|products|products/{id}|c
 - `lib/core/constants/colors.dart` (`AppColors`) holds fixed semantic colors that don't change with
   light/dark mode: order/product status colors, WhatsApp brand green, image scrim. Use these only when the
   color has a fixed semantic meaning that is independent of the theme (e.g. WhatsApp green, active badge).
-- `ThemeCubit` (singleton) holds `ThemeMode` (system/light/dark), persisted to shared_preferences via
-  `ThemeCubit.setMode(mode)`. Users toggle via the animated sun/moon `ThemeToggleButton` widget
+- `ThemeCubit` (singleton) holds `ThemeSettings{ mode, source }` — `mode` (system/light/dark) via
+  `setMode`/`toggle`, and `source` (`identity`|`appDefault`) via `setThemeSource` — both persisted to
+  shared_preferences. Users toggle mode via the animated sun/moon `ThemeToggleButton` widget
   (`lib/shared/widgets/theme_toggle_button.dart`) present in every tab's AppBar. Default is `ThemeMode.system`.
 - **Single AppBar rule**: `HomeScreen` is a bare Scaffold (no AppBar) that hosts the `BottomNavigationBar`
   and `IndexedStack`. Each tab screen owns its own `Scaffold` + `AppBar`, preventing double-bar rendering.

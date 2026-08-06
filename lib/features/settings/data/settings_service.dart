@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 import 'package:my_gallery/core/network/api_client.dart';
 import 'package:my_gallery/core/network/api_exception.dart';
+import 'package:my_gallery/features/products/data/image_rules.dart';
 import 'package:my_gallery/features/settings/data/models/settings_models.dart';
 
 class SettingsService {
@@ -13,6 +16,83 @@ class SettingsService {
       final resp = await _dio.get('/storefront/$shopId/settings');
       return StorefrontSettings.fromJson(
           resp.data['data'] as Map<String, dynamic>);
+    } on DioException catch (e) {
+      throw exceptionFromDio(e);
+    }
+  }
+
+  /// Authenticated fetch for editing (shop comes from the token). Returns the
+  /// full identity, including colors/radius/font, for the customization editor.
+  Future<StorefrontSettings> getEditableSettings() async {
+    try {
+      final resp = await _dio.get('/settings');
+      _assertOk(resp);
+      return StorefrontSettings.fromJson(
+          resp.data['data'] as Map<String, dynamic>);
+    } on DioException catch (e) {
+      throw exceptionFromDio(e);
+    }
+  }
+
+  /// Uploads one image (logo / favicon / hero) and returns the stored web path
+  /// (e.g. `/uploads/ab12….png`) to save into settings. Validates client-side
+  /// first (jpeg/png/webp/gif, ≤ 5 MB) to mirror the server.
+  Future<String> uploadImage(File file) async {
+    await assertValidImages([file]);
+    try {
+      final form = FormData()
+        ..files.add(MapEntry(
+          'file',
+          await MultipartFile.fromFile(
+            file.path,
+            filename: file.uri.pathSegments.last,
+          ),
+        ));
+      final resp = await _dio.post(
+        '/settings/images',
+        data: form,
+        options: Options(contentType: 'multipart/form-data'),
+      );
+      _assertOk(resp);
+      return resp.data['data']['url'] as String;
+    } on DioException catch (e) {
+      throw exceptionFromDio(e);
+    }
+  }
+
+  /// Full replace of the shop settings. Builds the exact JSON the API expects:
+  /// hex color strings, a CSS `borderRadius` string ("16px"), nested social.
+  Future<void> updateSettings(StorefrontSettings s) async {
+    try {
+      final resp = await _dio.put('/settings', data: {
+        'brandName': s.brandName,
+        'logo': s.logo ?? '',
+        'favicon': s.favicon ?? '',
+        'website': s.website,
+        'primaryColor': s.primaryColor,
+        'secondaryColor': s.secondaryColor,
+        'accentColor': s.accentColor,
+        'backgroundColor': s.backgroundColor,
+        'surfaceColor': s.surfaceColor,
+        'textColor': s.textColor,
+        'borderRadius': '${s.borderRadius.round()}px',
+        'fontFamily': s.fontFamily,
+        'social': {
+          'instagram': s.social.instagram,
+          'facebook': s.social.facebook,
+          'whatsApp': s.social.whatsApp,
+        },
+        'heroSlides': s.heroSlides
+            .map((h) => {
+                  'imageUrl': h.imageUrl,
+                  'title': h.title ?? '',
+                  'subtitle': h.subtitle ?? '',
+                  'ctaText': h.ctaText ?? '',
+                  'ctaHref': h.ctaHref ?? '',
+                })
+            .toList(),
+      });
+      _assertOk(resp);
     } on DioException catch (e) {
       throw exceptionFromDio(e);
     }

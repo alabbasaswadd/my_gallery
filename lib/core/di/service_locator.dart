@@ -15,6 +15,7 @@ import 'package:my_gallery/features/products/domain/product_form_cubit.dart';
 import 'package:my_gallery/features/products/domain/products_list_cubit.dart';
 import 'package:my_gallery/features/settings/data/settings_service.dart';
 import 'package:my_gallery/features/settings/domain/settings_cubit.dart';
+import 'package:my_gallery/features/settings/domain/site_customization_cubit.dart';
 import 'package:my_gallery/features/settings/domain/social_links_cubit.dart';
 import 'package:my_gallery/features/settings/domain/theme_cubit.dart';
 import 'package:my_gallery/features/storefront/data/storefront_service.dart';
@@ -49,5 +50,7 @@ Future<void> setupServiceLocator() async {
   sl.registerFactory(() => OrdersListCubit(sl<OrdersService>()));
   sl.registerFactory(() => OrderDetailCubit(sl<OrdersService>()));
   sl.registerFactory(() => SocialLinksCubit(sl<SettingsService>(),
+      settingsCubit: sl<SettingsCubit>()));
+  sl.registerFactory(() => SiteCustomizationCubit(sl<SettingsService>(),
       settingsCubit: sl<SettingsCubit>()));
 }

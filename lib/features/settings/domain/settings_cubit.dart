@@ -69,6 +69,13 @@ class SettingsCubit extends Cubit<SettingsState> {
     _saveCache(updated);
   }
 
+  /// Replaces the app-wide settings after a full save from the customization
+  /// editor, so the whole app restyles immediately and the cache is refreshed.
+  void applyUpdated(StorefrontSettings settings) {
+    emit(SettingsState.loaded(settings));
+    _saveCache(settings);
+  }
+
   Future<void> _saveCache(StorefrontSettings settings) async {
     try {
       final prefs = await SharedPreferences.getInstance();

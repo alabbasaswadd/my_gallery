@@ -28,7 +28,9 @@ import 'package:my_gallery/features/storefront/domain/storefront_cubit.dart';
 import 'package:my_gallery/features/storefront/presentation/screens/checkout_screen.dart';
 import 'package:my_gallery/features/storefront/presentation/screens/order_success_screen.dart';
 import 'package:my_gallery/features/storefront/presentation/screens/storefront_product_detail_screen.dart';
+import 'package:my_gallery/features/settings/domain/site_customization_cubit.dart';
 import 'package:my_gallery/features/settings/domain/social_links_cubit.dart';
+import 'package:my_gallery/features/settings/presentation/screens/site_customization_screen.dart';
 import 'package:my_gallery/features/settings/presentation/screens/social_links_screen.dart';
 import 'package:my_gallery/features/storefront/presentation/screens/storefront_screen.dart';
 
@@ -114,6 +116,13 @@ final router = GoRouter(
       builder: (context, state) => BlocProvider(
         create: (_) => sl<SocialLinksCubit>(),
         child: const SocialLinksScreen(),
+      ),
+    ),
+    GoRoute(
+      path: '/settings/appearance',
+      builder: (context, state) => BlocProvider(
+        create: (_) => sl<SiteCustomizationCubit>(),
+        child: const SiteCustomizationScreen(),
       ),
     ),
 

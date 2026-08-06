@@ -56,13 +56,23 @@ class ProfileScreen extends StatelessWidget {
                   const SizedBox(height: 16),
                   Card(
                     child: ListTile(
+                      leading: Icon(Icons.palette_outlined, color: cs.primary),
+                      title: const Text('تخصيص المظهر والهوية'),
+                      subtitle: const Text('الشعار، الألوان، الخط، السلايدر'),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => context.push('/settings/appearance'),
+                    ),
+                  ).animate().fadeIn(delay: 340.ms, duration: 250.ms),
+                  const SizedBox(height: 16),
+                  Card(
+                    child: ListTile(
                       leading: Icon(Icons.share_outlined, color: cs.primary),
                       title: const Text('روابط التواصل الاجتماعي'),
                       subtitle: const Text('إنستغرام، فيسبوك، واتساب'),
                       trailing: const Icon(Icons.chevron_right),
                       onTap: () => context.push('/settings/social'),
                     ),
-                  ).animate().fadeIn(delay: 350.ms, duration: 250.ms),
+                  ).animate().fadeIn(delay: 380.ms, duration: 250.ms),
                 ],
                 const SizedBox(height: 32),
                 OutlinedButton.icon(
