@@ -1,6 +1,6 @@
 # my_gallery
 
-A new Flutter project.
+A dynamic, white-label Flutter admin + storefront for an Arabic e-commerce gallery.
 
 ## Getting Started
 
