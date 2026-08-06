@@ -25,10 +25,12 @@ backend shop settings — nothing about a specific gallery is hardcoded.
 ## Backend contract (`/api/v1`, envelope `{success,message,data,errors,traceId,pagination}`)
 
 Auth (access-token only — **no refresh tokens**):
+
 - `POST /auth/login` → `{ accessToken, expiresAt, user{ id, fullName, email, role, shopId, shopName, permissions[] } }`
 - `POST /auth/logout` (bearer, no body) · `GET /auth/me`
 
 Products (staff, shop from token):
+
 - `GET /products` (search/filter/sort/paged) · `GET /products/{id}` · `POST /products` · `PUT /products/{id}` · `DELETE /products/{id}`
 - `PATCH /products/{id}/activate|deactivate|stock|price|discount` · `POST /products/{id}/duplicate`
 - `POST /products/{id}/images` (multipart `files`) · **`PUT /products/{id}/images/{imageId}`** (multipart `file`, replace)
@@ -66,14 +68,17 @@ Feature-first under `lib/features/<name>/{data,domain,presentation}`:
 - `presentation/screens|widgets`.
 
 DI (`core/di/service_locator.dart`, get_it):
+
 - **Lazy singletons**: Services + `CartCubit` + `SettingsCubit` + `ThemeCubit`.
 - **Factories**: all other Cubits (fresh instance per widget tree).
 
 Routing (`routes.dart`, GoRouter):
+
 - `refreshListenable: SessionNotifier.instance` — 401 mid-session auto-redirects to login.
 - `redirect` guard on `SecureStorage.hasValidSession()`; static routes before parameterized ones.
 
 Network (`core/network/api_client.dart`):
+
 - One shared Dio; interceptor attaches Bearer token.
 - On 401: clears session, calls `SessionNotifier.instance.invalidate()`, raises `unauthorized`.
 - All errors flow through `ApiException.fromDio()` into `ApiException{ kind, message, statusCode, traceId, errors[] }`.
@@ -81,6 +86,7 @@ Network (`core/network/api_client.dart`):
 - `exceptionFromDio(DioException)` is the single unwrap point used in all services.
 
 Storage:
+
 - `flutter_secure_storage` → access token + expiry only (no refresh tokens).
 - `shared_preferences` → cart, cached settings JSON, theme mode.
 
