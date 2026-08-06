@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:my_gallery/features/categories/data/models/category_models.dart';
 import 'package:my_gallery/features/products/data/models/product_models.dart';
 
 class ProductsFilterSheet extends StatefulWidget {
   final ProductFilter currentFilter;
+  final List<CategoryListItem> categories;
   final ValueChanged<ProductFilter> onApply;
 
   const ProductsFilterSheet({
     super.key,
     required this.currentFilter,
+    this.categories = const [],
     required this.onApply,
   });
 
@@ -18,6 +21,7 @@ class ProductsFilterSheet extends StatefulWidget {
 class _ProductsFilterSheetState extends State<ProductsFilterSheet> {
   late String _sort;
   bool? _isActive;
+  int? _categoryId;
   late TextEditingController _minPrice;
   late TextEditingController _maxPrice;
 
@@ -34,6 +38,7 @@ class _ProductsFilterSheetState extends State<ProductsFilterSheet> {
     super.initState();
     _sort = widget.currentFilter.sort;
     _isActive = widget.currentFilter.isActive;
+    _categoryId = widget.currentFilter.categoryId;
     _minPrice = TextEditingController(
       text: widget.currentFilter.minPrice?.toStringAsFixed(0) ?? '',
     );
@@ -50,12 +55,17 @@ class _ProductsFilterSheetState extends State<ProductsFilterSheet> {
   }
 
   void _apply() {
-    widget.onApply(widget.currentFilter.copyWith(
-      sort: _sort,
-      isActive: _isActive,
+    // Build a fresh filter (not copyWith) so cleared fields (null category /
+    // empty price) actually reset — freezed copyWith cannot set a field to null.
+    widget.onApply(ProductFilter(
+      search: widget.currentFilter.search,
+      categoryId: _categoryId,
       minPrice: double.tryParse(_minPrice.text),
       maxPrice: double.tryParse(_maxPrice.text),
+      isActive: _isActive,
+      sort: _sort,
       page: 1,
+      pageSize: widget.currentFilter.pageSize,
     ));
     Navigator.pop(context);
   }
@@ -122,6 +132,28 @@ class _ProductsFilterSheetState extends State<ProductsFilterSheet> {
               ),
             ],
           ),
+          if (widget.categories.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            Text('الفئة', style: theme.textTheme.titleMedium),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                ChoiceChip(
+                  label: const Text('الكل'),
+                  selected: _categoryId == null,
+                  onSelected: (_) => setState(() => _categoryId = null),
+                ),
+                for (final c in widget.categories)
+                  ChoiceChip(
+                    label: Text(c.name),
+                    selected: _categoryId == c.id,
+                    onSelected: (_) => setState(() => _categoryId = c.id),
+                  ),
+              ],
+            ),
+          ],
           const SizedBox(height: 16),
           Text('نطاق السعر (س.ل)', style: theme.textTheme.titleMedium),
           const SizedBox(height: 8),

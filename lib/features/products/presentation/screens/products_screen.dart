@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:my_gallery/features/auth/domain/auth_cubit.dart';
+import 'package:my_gallery/features/categories/data/models/category_models.dart';
+import 'package:my_gallery/features/categories/domain/categories_cubit.dart';
 import 'package:my_gallery/features/products/data/models/product_models.dart';
 import 'package:my_gallery/features/products/domain/products_list_cubit.dart';
 import 'package:my_gallery/features/products/presentation/widgets/product_card.dart';
@@ -50,11 +52,16 @@ class _ProductsScreenState extends State<ProductsScreen> {
   }
 
   void _showFilter(BuildContext context, ProductFilter current) {
+    final catState = context.read<CategoriesCubit>().state;
+    final categories = catState is CategoriesLoaded
+        ? catState.categories
+        : const <CategoryListItem>[];
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       builder: (_) => ProductsFilterSheet(
         currentFilter: current,
+        categories: categories,
         onApply: (f) => context.read<ProductsListCubit>().applyFilter(f),
       ),
     );
