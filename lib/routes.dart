@@ -5,7 +5,6 @@ import 'package:my_gallery/core/storage/secure_storage.dart';
 import 'package:my_gallery/features/auth/data/auth_service.dart';
 import 'package:my_gallery/features/auth/domain/auth_cubit.dart';
 import 'package:my_gallery/features/auth/presentation/screens/login_screen.dart';
-import 'package:my_gallery/features/auth/presentation/screens/splash_screen.dart';
 import 'package:my_gallery/features/cart/domain/cart_cubit.dart';
 import 'package:my_gallery/features/cart/presentation/screens/cart_screen.dart';
 import 'package:my_gallery/features/categories/data/models/category_models.dart';
@@ -37,22 +36,14 @@ final router = GoRouter(
   redirect: (context, state) async {
     final location = state.matchedLocation;
     final hasSession = await SecureStorage.hasValidSession();
-    // Public routes: splash, login, storefront
-    final isPublic =
-        location == '/home' ||
-        location == '/' ||
-        location.startsWith('/storefront');
-    if (!hasSession && !isPublic) return '/home';
+    final isPublic = location == '/' || location.startsWith('/storefront');
+    if (!hasSession && !isPublic) return '/';
+    if (hasSession && location == '/') return '/home';
     return null;
   },
   routes: [
     GoRoute(
       path: '/',
-      builder: (context, state) =>
-          BlocProvider.value(value: _authCubit, child: const SplashScreen()),
-    ),
-    GoRoute(
-      path: '/login',
       builder: (context, state) =>
           BlocProvider.value(value: _authCubit, child: const LoginScreen()),
     ),

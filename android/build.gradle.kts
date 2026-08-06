@@ -3,6 +3,13 @@ allprojects {
         google()
         mavenCentral()
     }
+    configurations.all {
+        resolutionStrategy.eachDependency {
+            if (requested.group == "androidx.profileinstaller" && requested.name == "profileinstaller") {
+                useVersion("1.4.1")
+            }
+        }
+    }
 }
 
 val newBuildDir: Directory =

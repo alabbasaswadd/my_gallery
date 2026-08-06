@@ -18,6 +18,14 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _obscure = true;
 
   @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      if (mounted) context.read<AuthCubit>().checkSession();
+    });
+  }
+
+  @override
   void dispose() {
     _emailCtrl.dispose();
     _passCtrl.dispose();
@@ -48,6 +56,12 @@ class _LoginScreenState extends State<LoginScreen> {
         }
       },
       builder: (context, state) {
+        if (state is AuthInitial || state is AuthChecking) {
+          return const Scaffold(
+            backgroundColor: Color(0xFFFBF7F4),
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
         final isLoading = state is AuthLoading;
         return Scaffold(
           body: SafeArea(

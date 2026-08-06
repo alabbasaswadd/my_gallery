@@ -27,7 +27,7 @@ class ProductCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildImage(context),
+            Expanded(child: _buildImage(context)),
             Padding(
               padding: const EdgeInsets.all(12),
               child: Column(
@@ -64,6 +64,7 @@ class ProductCard extends StatelessWidget {
 
   Widget _buildImage(BuildContext context) {
     return Stack(
+      fit: StackFit.expand,
       children: [
         Hero(
           tag: 'product-image-${product.id}',
@@ -71,7 +72,6 @@ class ProductCard extends StatelessWidget {
             borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
             child: AppNetworkImage(
               imagePath: product.imageUrl,
-              height: 160,
               width: double.infinity,
             ),
           ),
