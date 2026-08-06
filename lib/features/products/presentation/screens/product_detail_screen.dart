@@ -1,8 +1,11 @@
+import 'dart:io';
+
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:my_gallery/features/auth/domain/auth_cubit.dart';
 import 'package:my_gallery/features/products/data/models/product_models.dart';
 import 'package:my_gallery/features/products/domain/product_detail_cubit.dart';
@@ -128,6 +131,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     );
   }
 
+  Future<void> _replaceImage(BuildContext context, int imageId) async {
+    final picked =
+        await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 90);
+    if (picked == null || !mounted) return;
+    await context.read<ProductDetailCubit>().replaceImage(imageId, File(picked.path));
+  }
+
   Widget _buildImageCarousel(ProductDetail product) {
     if (product.images.isEmpty) {
       return Hero(
@@ -169,13 +179,31 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFD4A02A),
+                        color: Theme.of(context).colorScheme.tertiary,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Text('غلاف',
                           style: TextStyle(color: Colors.white, fontSize: 11)),
                     ),
                   ),
+                // Replace image button
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: Material(
+                    color: Colors.black45,
+                    borderRadius: BorderRadius.circular(20),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(20),
+                      onTap: () => _replaceImage(context, img.id),
+                      child: const Padding(
+                        padding: EdgeInsets.all(6),
+                        child: Icon(Icons.edit_outlined,
+                            color: Colors.white, size: 18),
+                      ),
+                    ),
+                  ),
+                ),
               ],
             );
           }).toList(),

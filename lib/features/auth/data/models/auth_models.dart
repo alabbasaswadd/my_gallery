@@ -7,7 +7,6 @@ part 'auth_models.g.dart';
 sealed class AuthResult with _$AuthResult {
   const factory AuthResult({
     required String accessToken,
-    required String refreshToken,
     required String expiresAt,
     required AuthUser user,
   }) = _AuthResult;

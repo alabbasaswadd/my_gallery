@@ -125,12 +125,12 @@ return error(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function( List<StorefrontProduct> products,  PaginationMeta pagination,  List<StorefrontCategory> categories,  int? selectedCategoryId,  String? search)?  loaded,TResult Function( String message)?  error,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function( List<StorefrontProduct> products,  PaginationMeta pagination,  List<StorefrontCategory> categories,  int? selectedCategoryId,  String? search,  String? categoriesError)?  loaded,TResult Function( String message)?  error,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case StorefrontInitial() when initial != null:
 return initial();case StorefrontLoading() when loading != null:
 return loading();case StorefrontLoaded() when loaded != null:
-return loaded(_that.products,_that.pagination,_that.categories,_that.selectedCategoryId,_that.search);case StorefrontError() when error != null:
+return loaded(_that.products,_that.pagination,_that.categories,_that.selectedCategoryId,_that.search,_that.categoriesError);case StorefrontError() when error != null:
 return error(_that.message);case _:
   return orElse();
 
@@ -149,12 +149,12 @@ return error(_that.message);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function( List<StorefrontProduct> products,  PaginationMeta pagination,  List<StorefrontCategory> categories,  int? selectedCategoryId,  String? search)  loaded,required TResult Function( String message)  error,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function( List<StorefrontProduct> products,  PaginationMeta pagination,  List<StorefrontCategory> categories,  int? selectedCategoryId,  String? search,  String? categoriesError)  loaded,required TResult Function( String message)  error,}) {final _that = this;
 switch (_that) {
 case StorefrontInitial():
 return initial();case StorefrontLoading():
 return loading();case StorefrontLoaded():
-return loaded(_that.products,_that.pagination,_that.categories,_that.selectedCategoryId,_that.search);case StorefrontError():
+return loaded(_that.products,_that.pagination,_that.categories,_that.selectedCategoryId,_that.search,_that.categoriesError);case StorefrontError():
 return error(_that.message);}
 }
 /// A variant of `when` that fallback to returning `null`
@@ -169,12 +169,12 @@ return error(_that.message);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function( List<StorefrontProduct> products,  PaginationMeta pagination,  List<StorefrontCategory> categories,  int? selectedCategoryId,  String? search)?  loaded,TResult? Function( String message)?  error,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function( List<StorefrontProduct> products,  PaginationMeta pagination,  List<StorefrontCategory> categories,  int? selectedCategoryId,  String? search,  String? categoriesError)?  loaded,TResult? Function( String message)?  error,}) {final _that = this;
 switch (_that) {
 case StorefrontInitial() when initial != null:
 return initial();case StorefrontLoading() when loading != null:
 return loading();case StorefrontLoaded() when loaded != null:
-return loaded(_that.products,_that.pagination,_that.categories,_that.selectedCategoryId,_that.search);case StorefrontError() when error != null:
+return loaded(_that.products,_that.pagination,_that.categories,_that.selectedCategoryId,_that.search,_that.categoriesError);case StorefrontError() when error != null:
 return error(_that.message);case _:
   return null;
 
@@ -251,7 +251,7 @@ String toString() {
 
 
 class StorefrontLoaded implements StorefrontState {
-  const StorefrontLoaded({required final  List<StorefrontProduct> products, required this.pagination, required final  List<StorefrontCategory> categories, this.selectedCategoryId, this.search}): _products = products,_categories = categories;
+  const StorefrontLoaded({required final  List<StorefrontProduct> products, required this.pagination, required final  List<StorefrontCategory> categories, this.selectedCategoryId, this.search, this.categoriesError}): _products = products,_categories = categories;
   
 
  final  List<StorefrontProduct> _products;
@@ -271,6 +271,7 @@ class StorefrontLoaded implements StorefrontState {
 
  final  int? selectedCategoryId;
  final  String? search;
+ final  String? categoriesError;
 
 /// Create a copy of StorefrontState
 /// with the given fields replaced by the non-null parameter values.
@@ -282,16 +283,16 @@ $StorefrontLoadedCopyWith<StorefrontLoaded> get copyWith => _$StorefrontLoadedCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is StorefrontLoaded&&const DeepCollectionEquality().equals(other._products, _products)&&(identical(other.pagination, pagination) || other.pagination == pagination)&&const DeepCollectionEquality().equals(other._categories, _categories)&&(identical(other.selectedCategoryId, selectedCategoryId) || other.selectedCategoryId == selectedCategoryId)&&(identical(other.search, search) || other.search == search));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is StorefrontLoaded&&const DeepCollectionEquality().equals(other._products, _products)&&(identical(other.pagination, pagination) || other.pagination == pagination)&&const DeepCollectionEquality().equals(other._categories, _categories)&&(identical(other.selectedCategoryId, selectedCategoryId) || other.selectedCategoryId == selectedCategoryId)&&(identical(other.search, search) || other.search == search)&&(identical(other.categoriesError, categoriesError) || other.categoriesError == categoriesError));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_products),pagination,const DeepCollectionEquality().hash(_categories),selectedCategoryId,search);
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_products),pagination,const DeepCollectionEquality().hash(_categories),selectedCategoryId,search,categoriesError);
 
 @override
 String toString() {
-  return 'StorefrontState.loaded(products: $products, pagination: $pagination, categories: $categories, selectedCategoryId: $selectedCategoryId, search: $search)';
+  return 'StorefrontState.loaded(products: $products, pagination: $pagination, categories: $categories, selectedCategoryId: $selectedCategoryId, search: $search, categoriesError: $categoriesError)';
 }
 
 
@@ -302,7 +303,7 @@ abstract mixin class $StorefrontLoadedCopyWith<$Res> implements $StorefrontState
   factory $StorefrontLoadedCopyWith(StorefrontLoaded value, $Res Function(StorefrontLoaded) _then) = _$StorefrontLoadedCopyWithImpl;
 @useResult
 $Res call({
- List<StorefrontProduct> products, PaginationMeta pagination, List<StorefrontCategory> categories, int? selectedCategoryId, String? search
+ List<StorefrontProduct> products, PaginationMeta pagination, List<StorefrontCategory> categories, int? selectedCategoryId, String? search, String? categoriesError
 });
 
 
@@ -319,13 +320,14 @@ class _$StorefrontLoadedCopyWithImpl<$Res>
 
 /// Create a copy of StorefrontState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? products = null,Object? pagination = null,Object? categories = null,Object? selectedCategoryId = freezed,Object? search = freezed,}) {
+@pragma('vm:prefer-inline') $Res call({Object? products = null,Object? pagination = null,Object? categories = null,Object? selectedCategoryId = freezed,Object? search = freezed,Object? categoriesError = freezed,}) {
   return _then(StorefrontLoaded(
 products: null == products ? _self._products : products // ignore: cast_nullable_to_non_nullable
 as List<StorefrontProduct>,pagination: null == pagination ? _self.pagination : pagination // ignore: cast_nullable_to_non_nullable
 as PaginationMeta,categories: null == categories ? _self._categories : categories // ignore: cast_nullable_to_non_nullable
 as List<StorefrontCategory>,selectedCategoryId: freezed == selectedCategoryId ? _self.selectedCategoryId : selectedCategoryId // ignore: cast_nullable_to_non_nullable
 as int?,search: freezed == search ? _self.search : search // ignore: cast_nullable_to_non_nullable
+as String?,categoriesError: freezed == categoriesError ? _self.categoriesError : categoriesError // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }

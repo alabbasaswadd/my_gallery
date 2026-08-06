@@ -153,4 +153,16 @@ class ProductDetailCubit extends Cubit<ProductDetailState> {
       emit(ProductDetailState.error(e.message));
     }
   }
+
+  Future<void> replaceImage(int imageId, File file) async {
+    final current = state;
+    if (current is! ProductDetailLoaded) return;
+    try {
+      await _service.replaceImage(current.product.id, imageId, file);
+      await load(current.product.id);
+    } on ApiException catch (e) {
+      emit(ProductDetailState.error(e.message));
+      emit(ProductDetailState.loaded(current.product));
+    }
+  }
 }

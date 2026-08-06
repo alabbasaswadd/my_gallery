@@ -168,6 +168,41 @@ class ProductsService {
     }
   }
 
+  Future<void> replaceImage(int productId, int imageId, File file) async {
+    final ext = file.path.split('.').last.toLowerCase();
+    if (!{'jpg', 'jpeg', 'png', 'webp', 'gif'}.contains(ext)) {
+      throw const ApiException(
+        kind: ApiErrorKind.validation,
+        message: 'نوع الملف غير مدعوم. يُسمح فقط بـ: jpeg، png، webp، gif',
+      );
+    }
+    final sizeBytes = await file.length();
+    if (sizeBytes > 5 * 1024 * 1024) {
+      throw const ApiException(
+        kind: ApiErrorKind.validation,
+        message: 'حجم الملف يتجاوز 5 ميجابايت',
+      );
+    }
+    try {
+      final form = FormData()
+        ..files.add(MapEntry(
+          'file',
+          await MultipartFile.fromFile(
+            file.path,
+            filename: file.path.split('/').last,
+          ),
+        ));
+      final resp = await _dio.put(
+        '/products/$productId/images/$imageId',
+        data: form,
+        options: Options(contentType: 'multipart/form-data'),
+      );
+      _assertOk(resp);
+    } on DioException catch (e) {
+      throw exceptionFromDio(e);
+    }
+  }
+
   void _assertOk(Response resp) {
     final status = resp.statusCode ?? 0;
     if (status < 200 || status >= 300) throw _apiError(resp);

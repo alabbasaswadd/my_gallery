@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:my_gallery/core/di/service_locator.dart';
 import 'package:my_gallery/features/auth/domain/auth_cubit.dart';
+import 'package:my_gallery/features/settings/domain/settings_cubit.dart';
 import 'package:my_gallery/features/cart/domain/cart_cubit.dart';
 import 'package:my_gallery/features/categories/data/categories_service.dart';
 import 'package:my_gallery/features/categories/domain/categories_cubit.dart';
@@ -37,7 +38,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final authState = context.watch<AuthCubit>().state;
     final shopName = authState is AuthAuthenticated
         ? authState.user.shopName
-        : 'معرضي';
+        : context.read<SettingsCubit>().currentOrDefault.brandName;
     final role = authState is AuthAuthenticated ? authState.user.role : '';
 
     return MultiBlocProvider(

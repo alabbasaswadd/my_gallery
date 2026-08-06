@@ -1,106 +1,108 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Guidance for Claude Code when working in this repository.
 
 ## Commands
 
 ```bash
-# Install / clean
 flutter pub get
-flutter clean && flutter pub get
-
-# Code generation (required after changing any @freezed or @JsonSerializable model)
-flutter pub run build_runner build --delete-conflicting-outputs
-
-# Run & build
-flutter run                          # debug
-flutter build apk                    # Android APK
-flutter build appbundle              # Android App Bundle (Play Store)
-
-# Quality
+flutter pub run build_runner build --delete-conflicting-outputs   # after any @freezed / @JsonSerializable change
+flutter run --dart-define=SHOP_ID=2                                # SHOP_ID selects the gallery
 flutter analyze
 flutter test
+flutter build apk        # / appbundle
 ```
+
+## What this app is
+
+A dynamic, white-label Flutter admin + storefront for an Arabic e-commerce gallery. A single binary
+serves any gallery: brand name, logo, colors, fonts, and hero slides are fetched at runtime from the
+backend shop settings — nothing about a specific gallery is hardcoded.
+
+- Admin (`/home`, `/products/*`, `/categories/*`, `/orders/*`) — JWT access-token auth.
+- Storefront (`/storefront/*`) — public, anonymous, keyed by shop id.
+
+## Backend contract (`/api/v1`, envelope `{success,message,data,errors,traceId,pagination}`)
+
+Auth (access-token only — **no refresh tokens**):
+- `POST /auth/login` → `{ accessToken, expiresAt, user{ id, fullName, email, role, shopId, shopName, permissions[] } }`
+- `POST /auth/logout` (bearer, no body) · `GET /auth/me`
+
+Products (staff, shop from token):
+- `GET /products` (search/filter/sort/paged) · `GET /products/{id}` · `POST /products` · `PUT /products/{id}` · `DELETE /products/{id}`
+- `PATCH /products/{id}/activate|deactivate|stock|price|discount` · `POST /products/{id}/duplicate`
+- `POST /products/{id}/images` (multipart `files`) · **`PUT /products/{id}/images/{imageId}`** (multipart `file`, replace)
+- `DELETE /products/{id}/images/{imageId}` · `PATCH /products/{id}/cover-image`
+
+Categories (staff): `GET/POST /categories`, `GET/PUT/DELETE /categories/{id}`, activate/deactivate, reorder.
+
+Orders (staff): `GET /orders`, `GET /orders/{id}`, status transitions.
+
+Settings (staff): `GET /settings`, `PUT /settings` (Owner/Manager) — the shop's visual identity.
+
+Storefront (public): `GET /storefront/{shopId}/settings|products|products/{id}|categories`, `POST /storefront/{shopId}/orders`.
+
+## Dynamic identity & theming
+
+- `features/settings/` fetches `GET /storefront/{shopId}/settings` → `StorefrontSettings`
+  (`brandName`, `logo`, `favicon`, palette colors, `borderRadius`, `fontFamily`, `heroSlides[]`).
+- `SettingsCubit` (singleton) caches settings in `shared_preferences`; loaded in `main.dart` before `runApp`.
+- `AppTheme.build(settings, brightness)` in `lib/theme.dart` builds light & dark `ThemeData` from the palette.
+- `ThemeCubit` (singleton) holds `ThemeMode` (system/light/dark), persisted; toggled from the profile screen.
+- Active shop id: staff ⇒ `AuthUser.shopId`; storefront ⇒ `AppConfig.shopId` from `--dart-define=SHOP_ID`.
+  Never a literal `2`.
+- `kDefaultSettings` (`const StorefrontSettings(brandName: 'معرضي')`) is the compile-time fallback used
+  before settings load; it uses the same color defaults as the current theme constants.
+- `SessionNotifier.instance` is a `ChangeNotifier` wired to `GoRouter.refreshListenable`. On 401, the
+  interceptor calls `SessionNotifier.instance.invalidate()`, clears the token, and GoRouter's redirect
+  automatically bounces to `/` (login).
 
 ## Architecture
 
-This is a Flutter admin + storefront app for an Arabic e-commerce gallery. The app serves two roles:
+Feature-first under `lib/features/<name>/{data,domain,presentation}`:
 
-- **Admin** (`/`, `/home`, `/products/*`, `/categories/*`, `/orders/*`) — requires authentication
-- **Storefront** (`/storefront/*`) — public, no auth required
+- `data/<name>_service.dart` — raw Dio; `data/models/*` — `@freezed` + `@JsonSerializable`.
+- `domain/<name>_cubit.dart` — Cubit with a `@freezed` state union (`initial/loading/loaded/error`).
+- `presentation/screens|widgets`.
 
-### Feature Structure
+DI (`core/di/service_locator.dart`, get_it):
+- **Lazy singletons**: Services + `CartCubit` + `SettingsCubit` + `ThemeCubit`.
+- **Factories**: all other Cubits (fresh instance per widget tree).
 
-Each feature under `lib/features/` follows a three-layer split:
+Routing (`routes.dart`, GoRouter):
+- `refreshListenable: SessionNotifier.instance` — 401 mid-session auto-redirects to login.
+- `redirect` guard on `SecureStorage.hasValidSession()`; static routes before parameterized ones.
 
-```
-features/<name>/
-  data/
-    <name>_service.dart        # Raw HTTP via Dio (no Retrofit generator used)
-    models/
-      <name>_models.dart       # @freezed + @JsonSerializable data classes
-      *.freezed.dart / *.g.dart
-  domain/
-    <name>_cubit.dart          # BLoC Cubit with @freezed state union
-    *.freezed.dart
-  presentation/
-    screens/
-    widgets/
-```
+Network (`core/network/api_client.dart`):
+- One shared Dio; interceptor attaches Bearer token.
+- On 401: clears session, calls `SessionNotifier.instance.invalidate()`, raises `unauthorized`.
+- All errors flow through `ApiException.fromDio()` into `ApiException{ kind, message, statusCode, traceId, errors[] }`.
+- `ApiErrorKind` enum: `network, timeout, unauthorized, forbidden, notFound, validation, conflict, rateLimited, server, unknown`.
+- `exceptionFromDio(DioException)` is the single unwrap point used in all services.
 
-### Dependency Injection (`lib/core/di/service_locator.dart`)
+Storage:
+- `flutter_secure_storage` → access token + expiry only (no refresh tokens).
+- `shared_preferences` → cart, cached settings JSON, theme mode.
 
-Uses `get_it`. Registration rules:
-- **Lazy singletons** — all Services + `CartCubit` (cart persists across screens)
-- **Factories** — all other Cubits (fresh instance per route)
+State: sealed `@freezed` unions consumed via `BlocBuilder` + `state.when(...)`.
+Every list/detail screen renders the error state with a message + Retry; no `catch (_) {}`.
 
-### Routing (`lib/routes.dart`)
+## Localization & layout
 
-GoRouter with a `redirect` guard that checks `SecureStorage.hasValidSession()`. Static routes are declared before parameterized ones to prevent conflicts. Auth-protected routes redirect to `/` (login) when no valid session exists.
+Default locale Arabic (`ar`), RTL. Font family from `settings.fontFamily` (Tajawal fallback via
+`GoogleFonts`). Responsive baseline 390×844 via `flutter_screenutil`.
+Error message keys in `lib/l10n/app_ar.arb` / `app_en.arb`: `error_network`, `error_timeout`,
+`error_unauthorized`, `error_forbidden`, `error_not_found`, `error_validation`, `error_conflict`,
+`error_rate_limited`, `error_server`, `error_unknown`.
 
-### Network (`lib/core/network/api_client.dart`)
+Reuse `lib/core/components/*` over raw Material widgets.
 
-Singleton `Dio` instance with an interceptor that:
-1. Attaches the Bearer token from `SecureStorage` to every request
-2. On 401, calls the refresh endpoint, saves new tokens, and retries the original request once
+## When adding a feature
 
-### Storage (`lib/core/storage/secure_storage.dart`)
-
-- **`flutter_secure_storage`** (encrypted) — JWT access token, refresh token, expiry
-- **`shared_preferences`** — cart contents (serialized JSON)
-
-### State Pattern
-
-States are sealed unions via `freezed`:
-
-```dart
-@freezed
-class ProductsState with _$ProductsState {
-  const factory ProductsState.initial() = _Initial;
-  const factory ProductsState.loading() = _Loading;
-  const factory ProductsState.loaded(List<Product> products) = _Loaded;
-  const factory ProductsState.error(String message) = _Error;
-}
-```
-
-Consume with `BlocBuilder<XCubit, XState>` and `state.when(...)`.
-
-### API Config (`lib/core/config/app_config.dart`)
-
-```dart
-baseUrl  = 'https://alqaleatalsaghira-codetechsyria.com'
-apiPrefix = '/api/v1'
-shopId   = 2   // demo/staff shop ID sent with product listing requests
-```
-
-### Localization & Layout
-
-- Default locale: Arabic (`ar`), RTL layout
-- Font: Tajawal (Google Fonts) — supports Arabic script
-- Responsive baseline: 390×844 via `flutter_screenutil`
-- `Directionality` widget wraps RTL-sensitive subtrees
-
-### Reusable Components
-
-Shared UI lives in `lib/core/components/` — prefer these over raw Material widgets:
-`AppButton`, `AppTextField`, `AppCard`, `AppSnackbar`, `AppDrawer`, `AppPagination`, shimmer loaders.
+1. Model (`@freezed`) → run `build_runner`.
+2. Service (Dio, throws mapped `ApiException` via `exceptionFromDio`).
+3. Cubit (`@freezed` state).
+4. Register in `service_locator.dart`.
+5. Route in `routes.dart`.
+6. Screen consuming `state.when`, error state with Retry.
+7. Keep identity/colors/strings dynamic — never hardcode a gallery name or literal `shopId`.
