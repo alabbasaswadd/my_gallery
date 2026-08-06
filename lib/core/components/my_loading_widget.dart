@@ -1,8 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 
-import '../constants/colors.dart';
-
 class MyLoadingWidget extends StatelessWidget {
   const MyLoadingWidget({
     super.key,
@@ -20,7 +18,7 @@ class MyLoadingWidget extends StatelessWidget {
         child: CircularProgressIndicator(
           value: value,
           strokeWidth: strokeWidth,
-          color: color ?? AppColors.kPrimaryColor,
+          color: color ?? Theme.of(context).colorScheme.primary,
         ),
       );
     } else {

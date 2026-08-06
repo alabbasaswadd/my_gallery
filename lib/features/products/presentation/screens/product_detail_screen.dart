@@ -6,6 +6,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:my_gallery/core/constants/colors.dart';
 import 'package:my_gallery/features/auth/domain/auth_cubit.dart';
 import 'package:my_gallery/features/products/data/models/product_models.dart';
 import 'package:my_gallery/features/products/domain/product_detail_cubit.dart';
@@ -116,11 +117,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               width: double.infinity,
               child: OutlinedButton.icon(
                 onPressed: () => _confirmDelete(context, product),
-                icon: const Icon(Icons.delete_outline, color: Colors.red),
-                label: const Text('حذف المنتج',
-                    style: TextStyle(color: Colors.red)),
+                icon: Icon(Icons.delete_outline,
+                    color: Theme.of(context).colorScheme.error),
+                label: Text('حذف المنتج',
+                    style: TextStyle(
+                        color: Theme.of(context).colorScheme.error)),
                 style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: Colors.red),
+                  side: BorderSide(
+                      color: Theme.of(context).colorScheme.error),
                 ),
               ),
             ),
@@ -191,7 +195,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   top: 8,
                   right: 8,
                   child: Material(
-                    color: Colors.black45,
+                    color: AppColors.imageScrim,
                     borderRadius: BorderRadius.circular(20),
                     child: InkWell(
                       borderRadius: BorderRadius.circular(20),
@@ -220,7 +224,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               decoration: BoxDecoration(
                 color: _currentImageIndex == i
                     ? Theme.of(context).colorScheme.primary
-                    : Colors.grey[300],
+                    : Theme.of(context).colorScheme.outlineVariant,
                 borderRadius: BorderRadius.circular(4),
               ),
             );
@@ -305,9 +309,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            color: const Color(0xFFFBF7F4),
+            color: theme.colorScheme.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFF3C2A34).withValues(alpha: 0.08)),
+            border: Border.all(color: theme.colorScheme.outlineVariant),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -424,7 +428,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               await context.read<ProductDetailCubit>().delete();
               if (context.mounted) context.pop();
             },
-            child: const Text('حذف', style: TextStyle(color: Colors.red)),
+            child: Text('حذف', style: TextStyle(color: Theme.of(context).colorScheme.error)),
           ),
         ],
       ),

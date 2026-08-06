@@ -8,6 +8,7 @@ import 'package:my_gallery/features/categories/domain/categories_cubit.dart';
 import 'package:my_gallery/shared/widgets/app_shimmer.dart';
 import 'package:my_gallery/shared/widgets/empty_state.dart';
 import 'package:my_gallery/shared/widgets/network_image.dart';
+import 'package:my_gallery/shared/widgets/theme_toggle_button.dart';
 
 class CategoriesScreen extends StatefulWidget {
   const CategoriesScreen({super.key});
@@ -40,6 +41,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
       appBar: AppBar(
         title: const Text('الفئات'),
         actions: [
+          const ThemeToggleButton(),
           if (canManage)
             IconButton(
               icon: const Icon(Icons.add),
@@ -136,7 +138,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
               Navigator.pop(context);
               context.read<CategoriesCubit>().delete(cat.id);
             },
-            child: const Text('حذف', style: TextStyle(color: Colors.red)),
+            child: Text('حذف', style: TextStyle(color: Theme.of(context).colorScheme.error)),
           ),
         ],
       ),

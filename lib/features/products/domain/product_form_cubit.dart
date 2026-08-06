@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:my_gallery/core/network/api_exception.dart';
@@ -19,27 +21,39 @@ class ProductFormCubit extends Cubit<ProductFormState> {
 
   ProductFormCubit(this._service) : super(const ProductFormState.initial());
 
-  Future<void> create(ProductRequest request) async {
+  /// Creates or updates a product, then handles image replacements and new uploads.
+  ///
+  /// [request] carries removeImageIds and coverImageId for batched image/cover changes.
+  /// [replacements] maps existing image ids to their replacement files.
+  /// [newImages] are local files to append (first becomes cover when no existing cover).
+  Future<void> submit({
+    required ProductRequest request,
+    int? existingId,
+    List<File> newImages = const [],
+    Map<int, File> replacements = const {},
+  }) async {
     emit(const ProductFormState.loading());
     try {
-      final id = await _service.createProduct(request);
-      emit(ProductFormState.success(id));
-    } on ApiException catch (e) {
-      emit(ProductFormState.error(e.message));
-    } catch (_) {
-      emit(const ProductFormState.error('فشل إنشاء المنتج'));
-    }
-  }
+      final int id;
+      if (existingId == null) {
+        id = await _service.createProduct(request);
+      } else {
+        await _service.updateProduct(existingId, request);
+        id = existingId;
+      }
 
-  Future<void> update(int id, ProductRequest request) async {
-    emit(const ProductFormState.loading());
-    try {
-      await _service.updateProduct(id, request);
+      for (final e in replacements.entries) {
+        await _service.replaceImage(id, e.key, e.value);
+      }
+      if (newImages.isNotEmpty) {
+        await _service.uploadImages(id, newImages);
+      }
       emit(ProductFormState.success(id));
     } on ApiException catch (e) {
       emit(ProductFormState.error(e.message));
     } catch (_) {
-      emit(const ProductFormState.error('فشل تحديث المنتج'));
+      emit(ProductFormState.error(
+          existingId == null ? 'فشل إنشاء المنتج' : 'فشل تحديث المنتج'));
     }
   }
 }

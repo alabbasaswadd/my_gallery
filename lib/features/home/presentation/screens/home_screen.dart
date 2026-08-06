@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import 'package:my_gallery/core/di/service_locator.dart';
 import 'package:my_gallery/features/auth/domain/auth_cubit.dart';
-import 'package:my_gallery/features/settings/domain/settings_cubit.dart';
 import 'package:my_gallery/features/cart/domain/cart_cubit.dart';
 import 'package:my_gallery/features/categories/data/categories_service.dart';
 import 'package:my_gallery/features/categories/domain/categories_cubit.dart';
@@ -34,13 +32,21 @@ class _HomeScreenState extends State<HomeScreen> {
   ];
 
   @override
-  Widget build(BuildContext context) {
-    final authState = context.watch<AuthCubit>().state;
-    final shopName = authState is AuthAuthenticated
-        ? authState.user.shopName
-        : context.read<SettingsCubit>().currentOrDefault.brandName;
-    final role = authState is AuthAuthenticated ? authState.user.role : '';
+  void initState() {
+    super.initState();
+    // When the app starts with a valid session the GoRouter redirect goes
+    // directly to /home without mounting LoginScreen, so checkSession() is
+    // never called. Trigger it here if the cubit is still in its initial state.
+    Future.microtask(() {
+      if (mounted) {
+        final cubit = context.read<AuthCubit>();
+        if (cubit.state is AuthInitial) cubit.checkSession();
+      }
+    });
+  }
 
+  @override
+  Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
         BlocProvider(
@@ -55,31 +61,6 @@ class _HomeScreenState extends State<HomeScreen> {
         BlocProvider.value(value: sl<CartCubit>()),
       ],
       child: Scaffold(
-        appBar: AppBar(
-          title: Column(
-            children: [
-              Text(shopName,
-                  style: Theme.of(context).textTheme.titleLarge),
-              if (role.isNotEmpty)
-                Text(
-                  _roleLabel(role),
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .primary
-                            .withValues(alpha: 0.8),
-                      ),
-                ),
-            ],
-          ),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.storefront_outlined),
-              tooltip: 'المتجر',
-              onPressed: () => context.push('/storefront'),
-            ),
-          ],
-        ),
         body: IndexedStack(
           index: _currentIndex,
           children: const [
@@ -104,13 +85,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-
-  String _roleLabel(String role) => switch (role) {
-        'Owner' => 'مالك',
-        'Manager' => 'مدير',
-        'Employee' => 'موظف',
-        _ => role,
-      };
 }
 
 class _TabInfo {

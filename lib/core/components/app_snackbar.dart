@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../constants/colors.dart';
 import 'app_text.dart';
 
 /// Position where the snackbar should be displayed
@@ -268,7 +267,7 @@ class AppSnackbar {
     switch (type) {
       case SnackbarType.error:
         return SnackbarData(
-          backgroundColor: AppColors.kRedColor,
+          backgroundColor: const Color(0xFFBA1A1A),
           icon: Icons.error_outline_rounded,
           title: 'خطأ',
         );

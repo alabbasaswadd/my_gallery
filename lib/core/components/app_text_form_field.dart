@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../constants/colors.dart';
 
 class AppTextFormField extends StatelessWidget {
   const AppTextFormField({
@@ -86,7 +85,7 @@ class AppTextFormField extends StatelessWidget {
             obscureText: obscureText,
             controller: controller,
             validator: validator,
-            cursorColor: AppColors.kPrimaryColor,
+            cursorColor: Theme.of(context).colorScheme.primary,
             enabled: enabled,
             onChanged: onChanged,
             onEditingComplete: onEditingComplete,
@@ -103,7 +102,7 @@ class AppTextFormField extends StatelessWidget {
               prefixIcon: icon != null
                   ? Icon(
                       icon,
-                      color: prefixIconColor ?? AppColors.kPrimaryColor,
+                      color: prefixIconColor ?? Theme.of(context).colorScheme.primary,
                     )
                   : null,
               fillColor: fillColor ?? Colors.transparent,
@@ -136,22 +135,22 @@ class AppTextFormField extends StatelessWidget {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(borderRadius),
-                borderSide: const BorderSide(
-                  color: AppColors.kPrimaryColor, // لون عند التركيز
+                borderSide: BorderSide(
+                  color: Theme.of(context).colorScheme.primary, // لون عند التركيز
                   width: 1.5,
                 ),
               ),
               errorBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(borderRadius),
-                borderSide: const BorderSide(
-                  color: Colors.red, // لون الخطأ
+                borderSide: BorderSide(
+                  color: Theme.of(context).colorScheme.error,
                   width: 1.0,
                 ),
               ),
               focusedErrorBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(borderRadius),
-                borderSide: const BorderSide(
-                  color: Colors.red, // لون الخطأ مع التركيز
+                borderSide: BorderSide(
+                  color: Theme.of(context).colorScheme.error,
                   width: 1.5,
                 ),
               ),

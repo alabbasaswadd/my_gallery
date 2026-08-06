@@ -1,6 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:my_gallery/features/products/data/image_rules.dart';
 import 'package:my_gallery/features/products/data/models/product_models.dart';
 import 'package:my_gallery/features/products/domain/product_form_cubit.dart';
 
@@ -28,6 +32,12 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
   bool _isAvailable = true;
   bool _isActive = true;
 
+  // Image state
+  final List<File> _newImages = [];
+  final Map<int, File> _replacements = {};
+  final Set<int> _removeIds = {};
+  int? _coverId;
+
   bool get _isEditing => widget.existing != null;
 
   @override
@@ -40,13 +50,14 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     _desc = TextEditingController(text: p?.description ?? '');
     _sku = TextEditingController(text: p?.sku ?? '');
     _stock = TextEditingController(text: p?.stockQuantity.toString() ?? '0');
-    _discount = TextEditingController(
-        text: p?.discountPrice?.toStringAsFixed(0) ?? '');
+    _discount =
+        TextEditingController(text: p?.discountPrice?.toStringAsFixed(0) ?? '');
     _categoryId = p?.categoryId;
     _isFeatured = p?.isFeatured ?? false;
     _isNew = p?.isNew ?? false;
     _isAvailable = p?.isAvailable ?? true;
     _isActive = p?.isActive ?? true;
+    _coverId = p?.images.where((i) => i.isCover).firstOrNull?.id;
   }
 
   @override
@@ -69,23 +80,89 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
       name: _name.text.trim(),
       categoryId: _categoryId!,
       price: double.parse(_price.text),
-      shortDescription: _shortDesc.text.trim().isEmpty ? null : _shortDesc.text.trim(),
+      shortDescription:
+          _shortDesc.text.trim().isEmpty ? null : _shortDesc.text.trim(),
       description: _desc.text.trim().isEmpty ? null : _desc.text.trim(),
       sku: _sku.text.trim().isEmpty ? null : _sku.text.trim(),
       stockQuantity: int.tryParse(_stock.text) ?? 0,
-      discountPrice: _discount.text.isEmpty ? null : double.tryParse(_discount.text),
+      discountPrice:
+          _discount.text.isEmpty ? null : double.tryParse(_discount.text),
       isFeatured: _isFeatured,
       isNew: _isNew,
       isAvailable: _isAvailable,
       isActive: _isActive,
+      removeImageIds: _removeIds.toList(),
+      coverImageId: _isEditing ? _coverId : null,
     );
+    context.read<ProductFormCubit>().submit(
+          request: request,
+          existingId: _isEditing ? widget.existing!.id : null,
+          newImages: _newImages,
+          replacements: _replacements,
+        );
+  }
 
-    final cubit = context.read<ProductFormCubit>();
-    if (_isEditing) {
-      cubit.update(widget.existing!.id, request);
-    } else {
-      cubit.create(request);
+  Future<void> _pickNewImages() async {
+    final picked = await ImagePicker().pickMultiImage();
+    if (!mounted || picked.isEmpty) return;
+
+    bool warnedType = false;
+    bool warnedSize = false;
+    final valid = <File>[];
+
+    for (final x in picked) {
+      final file = File(x.path);
+      final ext = file.path.split('.').last.toLowerCase();
+      if (!allowedImageExts.contains(ext)) {
+        warnedType = true;
+        continue;
+      }
+      final size = await file.length();
+      if (size > maxImageBytes) {
+        warnedSize = true;
+        continue;
+      }
+      valid.add(file);
     }
+
+    if (!mounted) return;
+    if (warnedType) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('تم تجاهل بعض الملفات: نوع الملف غير مدعوم')),
+      );
+    }
+    if (warnedSize) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('تم تجاهل بعض الملفات: الحجم يتجاوز 5 ميجابايت')),
+      );
+    }
+    if (valid.isNotEmpty) setState(() => _newImages.addAll(valid));
+  }
+
+  Future<void> _pickReplacementFor(int imageId) async {
+    final picked =
+        await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (picked == null || !mounted) return;
+    final file = File(picked.path);
+    final ext = file.path.split('.').last.toLowerCase();
+    if (!allowedImageExts.contains(ext)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text(
+                'نوع الملف غير مدعوم. يُسمح فقط بـ: jpeg، png، webp، gif')),
+      );
+      return;
+    }
+    final size = await file.length();
+    if (!mounted) return;
+    if (size > maxImageBytes) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('حجم الملف يتجاوز 5 ميجابايت')),
+      );
+      return;
+    }
+    setState(() => _replacements[imageId] = file);
   }
 
   @override
@@ -95,7 +172,8 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
         switch (state) {
           case ProductFormSuccess():
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: Text(_isEditing ? 'تم التحديث بنجاح' : 'تم إنشاء المنتج بنجاح'),
+              content:
+                  Text(_isEditing ? 'تم التحديث بنجاح' : 'تم إنشاء المنتج بنجاح'),
             ));
             context.pop();
           case ProductFormError(:final message):
@@ -149,6 +227,8 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                   const SizedBox(height: 12),
                   _field(_desc, 'وصف تفصيلي — اختياري', maxLines: 4),
                   const SizedBox(height: 20),
+                  _buildImagesSection(context),
+                  const SizedBox(height: 20),
                   Text('الخيارات',
                       style: Theme.of(context).textTheme.titleMedium),
                   const SizedBox(height: 8),
@@ -167,6 +247,238 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildImagesSection(BuildContext context) {
+    final existingImages = widget.existing?.images ?? [];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('الصور', style: Theme.of(context).textTheme.titleMedium),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final img in existingImages) _buildExistingTile(context, img),
+            for (int i = 0; i < _newImages.length; i++)
+              _buildNewImageTile(context, i),
+            _buildAddTile(context),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'الأنواع المسموحة: JPG, PNG, WebP, GIF — الحد الأقصى 5 ميجابايت للصورة.',
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context)
+                    .colorScheme
+                    .onSurface
+                    .withValues(alpha: 0.55),
+              ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildExistingTile(BuildContext context, ProductImage img) {
+    final isDeleted = _removeIds.contains(img.id);
+    final isCover = img.id == _coverId;
+    final replacement = _replacements[img.id];
+
+    return SizedBox(
+      width: 90,
+      height: 90,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: replacement != null
+                ? Image.file(replacement, fit: BoxFit.cover)
+                : Image.network(img.url, fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Container(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .surfaceContainerHighest,
+                          child: const Icon(Icons.broken_image_outlined),
+                        )),
+          ),
+          if (isDeleted)
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.black54,
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          if (isCover && !isDeleted)
+            Positioned(
+              top: 4,
+              right: 4,
+              child: _coverBadge(context),
+            ),
+          if (isDeleted)
+            Center(
+              child: IconButton(
+                tooltip: 'تراجع',
+                icon: const Icon(Icons.undo_rounded, color: Colors.white),
+                onPressed: () => setState(() => _removeIds.remove(img.id)),
+              ),
+            )
+          else
+            Positioned(
+              bottom: 4,
+              left: 4,
+              child: _buildImageMenu(context, img),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _coverBadge(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.primary,
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: const Text(
+        'الغلاف',
+        style: TextStyle(
+            color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+
+  Widget _buildImageMenu(BuildContext context, ProductImage img) {
+    return PopupMenuButton<String>(
+      padding: EdgeInsets.zero,
+      tooltip: 'خيارات الصورة',
+      child: Container(
+        width: 24,
+        height: 24,
+        decoration: BoxDecoration(
+          color: Colors.black54,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: const Icon(Icons.more_horiz, color: Colors.white, size: 16),
+      ),
+      onSelected: (value) {
+        if (value == 'cover') {
+          setState(() => _coverId = img.id);
+        } else if (value == 'replace') {
+          _pickReplacementFor(img.id);
+        } else if (value == 'delete') {
+          setState(() {
+            _removeIds.add(img.id);
+            if (_coverId == img.id) _coverId = null;
+          });
+        }
+      },
+      itemBuilder: (menuCtx) => [
+        PopupMenuItem(
+          value: 'cover',
+          child: Row(children: [
+            Icon(
+              img.id == _coverId
+                  ? Icons.star_rounded
+                  : Icons.star_outline_rounded,
+              size: 18,
+              color: Theme.of(menuCtx).colorScheme.primary,
+            ),
+            const SizedBox(width: 8),
+            const Text('تعيين كغلاف'),
+          ]),
+        ),
+        const PopupMenuItem(
+          value: 'replace',
+          child: Row(children: [
+            Icon(Icons.swap_horiz_rounded, size: 18),
+            SizedBox(width: 8),
+            Text('استبدال الصورة'),
+          ]),
+        ),
+        PopupMenuItem(
+          value: 'delete',
+          child: Row(children: [
+            Icon(Icons.delete_outline_rounded,
+                size: 18, color: Theme.of(menuCtx).colorScheme.error),
+            const SizedBox(width: 8),
+            Text('حذف',
+                style:
+                    TextStyle(color: Theme.of(menuCtx).colorScheme.error)),
+          ]),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildNewImageTile(BuildContext context, int index) {
+    final isFirstInCreate = !_isEditing && index == 0;
+    return SizedBox(
+      width: 90,
+      height: 90,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Image.file(_newImages[index], fit: BoxFit.cover),
+          ),
+          if (isFirstInCreate)
+            Positioned(top: 4, right: 4, child: _coverBadge(context)),
+          Positioned(
+            top: 4,
+            left: 4,
+            child: GestureDetector(
+              onTap: () => setState(() => _newImages.removeAt(index)),
+              child: Container(
+                width: 22,
+                height: 22,
+                decoration: BoxDecoration(
+                  color: Colors.black54,
+                  borderRadius: BorderRadius.circular(11),
+                ),
+                child: const Icon(Icons.close, color: Colors.white, size: 14),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAddTile(BuildContext context) {
+    return GestureDetector(
+      onTap: _pickNewImages,
+      child: Container(
+        width: 90,
+        height: 90,
+        decoration: BoxDecoration(
+          border: Border.all(
+            color:
+                Theme.of(context).colorScheme.primary.withValues(alpha: 0.4),
+            width: 1.5,
+          ),
+          borderRadius: BorderRadius.circular(8),
+          color:
+              Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.add_photo_alternate_outlined,
+                color: Theme.of(context).colorScheme.primary, size: 28),
+            const SizedBox(height: 4),
+            Text(
+              'إضافة صور',
+              style: TextStyle(
+                  color: Theme.of(context).colorScheme.primary, fontSize: 10),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

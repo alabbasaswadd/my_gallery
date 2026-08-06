@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:my_gallery/core/constants/colors.dart';
 import 'package:my_gallery/features/products/data/models/product_models.dart';
 import 'package:my_gallery/shared/widgets/network_image.dart';
 
@@ -84,14 +85,14 @@ class ProductCard extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
               color: product.isActive
-                  ? Colors.green.withValues(alpha: 0.9)
-                  : Colors.grey.withValues(alpha: 0.9),
+                  ? AppColors.statusActive.withValues(alpha: 0.9)
+                  : Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.75),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
               product.isActive ? 'نشط' : 'غير نشط',
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.surface,
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
               ),

@@ -4,8 +4,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:my_gallery/features/orders/data/models/order_models.dart';
 import 'package:my_gallery/features/orders/domain/orders_list_cubit.dart';
+import 'package:my_gallery/features/orders/presentation/widgets/order_status_pill.dart';
 import 'package:my_gallery/shared/widgets/app_shimmer.dart';
 import 'package:my_gallery/shared/widgets/empty_state.dart';
+import 'package:my_gallery/shared/widgets/theme_toggle_button.dart';
 
 class OrdersScreen extends StatefulWidget {
   const OrdersScreen({super.key});
@@ -47,7 +49,10 @@ class _OrdersScreenState extends State<OrdersScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('الطلبات')),
+      appBar: AppBar(
+        title: const Text('الطلبات'),
+        actions: const [ThemeToggleButton()],
+      ),
       body: BlocConsumer<OrdersListCubit, OrdersListState>(
         listener: (context, state) {
           if (state is OrdersListError) {
@@ -159,7 +164,7 @@ class _OrderTile extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(order.orderNumber, style: theme.textTheme.titleMedium),
-              _StatusPill(status: order.status),
+              OrderStatusPill(status: order.status),
             ],
           ),
           subtitle: Column(
@@ -184,32 +189,3 @@ class _OrderTile extends StatelessWidget {
   }
 }
 
-class _StatusPill extends StatelessWidget {
-  final String status;
-  const _StatusPill({required this.status});
-
-  @override
-  Widget build(BuildContext context) {
-    final (color, label) = switch (status) {
-      'New' => (const Color(0xFFD4A02A), 'جديد'),
-      'Reviewed' => (const Color(0xFFC0446A), 'مراجعة'),
-      'Confirmed' => (const Color(0xFF1565C0), 'مؤكد'),
-      'Completed' => (Colors.green, 'مكتمل'),
-      'Cancelled' => (Colors.red[300]!, 'ملغي'),
-      _ => (Colors.grey, status),
-    };
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-            color: color, fontSize: 11, fontWeight: FontWeight.w600),
-      ),
-    );
-  }
-}

@@ -35,22 +35,43 @@ Products (staff, shop from token):
 - `PATCH /products/{id}/activate|deactivate|stock|price|discount` · `POST /products/{id}/duplicate`
 - `POST /products/{id}/images` (multipart `files`) · **`PUT /products/{id}/images/{imageId}`** (multipart `file`, replace)
 - `DELETE /products/{id}/images/{imageId}` · `PATCH /products/{id}/cover-image`
+- The product form manages images inline: pick new files, replace an existing image's file, delete images,
+  and change cover. Deletions + cover change are batched into the `PUT` via `removeImageIds[]` + `coverImageId`;
+  new images are uploaded via `POST .../images` after the product row is saved; replacements via `PUT .../images/{id}`.
+  `lib/features/products/data/image_rules.dart` enforces allowed types (`jpg,jpeg,png,webp,gif`) and 5 MB
+  limit client-side (UI) and inside `uploadImages` before any multipart call.
 
 Categories (staff): `GET/POST /categories`, `GET/PUT/DELETE /categories/{id}`, activate/deactivate, reorder.
 
 Orders (staff): `GET /orders`, `GET /orders/{id}`, status transitions.
 
-Settings (staff): `GET /settings`, `PUT /settings` (Owner/Manager) — the shop's visual identity.
+Settings (staff): `GET /settings`, `PUT /settings` (Owner/Manager) — brand name, logo, hero slides, social links, website.
 
 Storefront (public): `GET /storefront/{shopId}/settings|products|products/{id}|categories`, `POST /storefront/{shopId}/orders`.
 
 ## Dynamic identity & theming
 
 - `features/settings/` fetches `GET /storefront/{shopId}/settings` → `StorefrontSettings`
-  (`brandName`, `logo`, `favicon`, palette colors, `borderRadius`, `fontFamily`, `heroSlides[]`).
+  (`brandName`, `logo`, `favicon`, `heroSlides[]`, `social{ instagram, facebook, whatsApp }`, `website`).
+- Every UI text that shows the gallery name reads `SettingsCubit.currentOrDefault.brandName`; the website
+  button (profile screen + home AppBar icon) reads `.website` and hides when empty. No literal gallery name
+  or URL is ever hardcoded — `kDefaultSettings` is the only allowed fallback.
 - `SettingsCubit` (singleton) caches settings in `shared_preferences`; loaded in `main.dart` before `runApp`.
-- `AppTheme.build(settings, brightness)` in `lib/theme.dart` builds light & dark `ThemeData` from the palette.
-- `ThemeCubit` (singleton) holds `ThemeMode` (system/light/dark), persisted; toggled from the profile screen.
+- `AppTheme.build(brightness)` in `lib/theme.dart` builds light & dark `ThemeData` from hardcoded constants
+  (`_primary`, `_secondary`, `_accent`, `_lightBackground`, etc.) — the palette is internal, not server-driven.
+  - Color strategy: `ColorScheme.fromSeed(seedColor: _primary, brightness: brightness)` generates all M3
+    tonal tokens. Use the computed tokens (`outlineVariant`, `onSurfaceVariant`, `surfaceContainerHighest`, …)
+    for borders/secondary text/surfaces. Never use raw `Color(…)` or named `Colors.*` in screens — always
+    derive from the active colorScheme or `AppColors` semantic constants.
+  - Font: Tajawal (GoogleFonts), hardcoded. Border radius: 16 dp, hardcoded.
+- `lib/core/constants/colors.dart` (`AppColors`) holds fixed semantic colors that don't change with
+  light/dark mode: order/product status colors, WhatsApp brand green, image scrim. Use these only when the
+  color has a fixed semantic meaning that is independent of the theme (e.g. WhatsApp green, active badge).
+- `ThemeCubit` (singleton) holds `ThemeMode` (system/light/dark), persisted to shared_preferences via
+  `ThemeCubit.setMode(mode)`. Users toggle via the animated sun/moon `ThemeToggleButton` widget
+  (`lib/shared/widgets/theme_toggle_button.dart`) present in every tab's AppBar. Default is `ThemeMode.system`.
+- **Single AppBar rule**: `HomeScreen` is a bare Scaffold (no AppBar) that hosts the `BottomNavigationBar`
+  and `IndexedStack`. Each tab screen owns its own `Scaffold` + `AppBar`, preventing double-bar rendering.
 - Active shop id: staff ⇒ `AuthUser.shopId`; storefront ⇒ `AppConfig.shopId` from `--dart-define=SHOP_ID`.
   Never a literal `2`.
 - `kDefaultSettings` (`const StorefrontSettings(brandName: 'معرضي')`) is the compile-time fallback used
@@ -112,3 +133,5 @@ Reuse `lib/core/components/*` over raw Material widgets.
 5. Route in `routes.dart`.
 6. Screen consuming `state.when`, error state with Retry.
 7. Keep identity/colors/strings dynamic — never hardcode a gallery name or literal `shopId`.
+8. Colors: `Theme.of(context).colorScheme.*` for all UI chrome; `AppColors.*` only for fixed semantic
+   colors (status badges, brand colors). Never use raw `Colors.red`, `Colors.grey`, etc. in screens.

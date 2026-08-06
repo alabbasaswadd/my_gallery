@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:my_gallery/core/network/api_client.dart';
 import 'package:my_gallery/core/network/api_exception.dart';
 import 'package:my_gallery/core/network/api_response.dart';
+import 'package:my_gallery/features/products/data/image_rules.dart';
 import 'package:my_gallery/features/products/data/models/product_models.dart';
 
 class ProductsService {
@@ -133,6 +134,7 @@ class ProductsService {
   }
 
   Future<void> uploadImages(int id, List<File> files) async {
+    await assertValidImages(files);
     try {
       final formData = FormData();
       for (final file in files) {

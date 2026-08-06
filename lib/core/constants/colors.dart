@@ -1,31 +1,23 @@
 import 'package:flutter/material.dart';
 
+/// Semantic color constants that are fixed by design and not derived from the
+/// Material 3 color scheme. Use [Theme.of(context).colorScheme] for all
+/// theme-driven colors; only reach for [AppColors] for values that have a
+/// fixed meaning independent of light/dark mode.
 class AppColors {
-  // 💰 Light Mode (Finance Theme)
-  static const Color kPrimaryColor = Color(0xFF059669);
-  static const Color kSecondColor = Color(0xFF10B981);
-  static const Color kThirtColor = Color(0xFF34D399);
+  AppColors._();
 
-  // 🌙 Dark Mode
-  static const Color kPrimaryColorDarkMode = Color(0xFF047857);
-  static const Color kSecondColorDarkMode = Color(0xFF065F46);
-  static const Color kThirtColorDarkMode = Color(0xFF064E3B);
+  // ── Order / product status ────────────────────────────────────────────────
+  static const Color statusNew = Color(0xFFD4A02A);       // amber – matches accent
+  static const Color statusReviewed = Color(0xFFC0446A);  // rose  – matches primary
+  static const Color statusConfirmed = Color(0xFF1565C0); // blue
+  static const Color statusCompleted = Color(0xFF2E7D32); // green
+  static const Color statusActive = Color(0xFF2E7D32);    // green – product active
+  static const Color statusCancelled = Color(0xFFBA1A1A); // error red (M3 light)
 
-  // 🎨 Other Colors
-  static const Color kGreyColor = Color(0xFF64748B);
+  // ── Brand / external ──────────────────────────────────────────────────────
+  static const Color whatsApp = Color(0xFF25D366); // WhatsApp brand green
 
-  static const Color kFontColor = Color(0xFF111827);
-
-  static const Color kRedColor = Color(0xFFDC2626);
-
-  static const Color kBlackColor = Color(0xFF111827);
-
-  static const Color kWhiteColor = Colors.white;
-
-  // إضافية مفيدة لتطبيقات الصرافة
-  static const Color kSuccessColor = Color(0xFF16A34A);
-  static const Color kWarningColor = Color(0xFFF59E0B);
-  static const Color kBackgroundLight = Color(0xFFF8FAFC);
-  static const Color kBackgroundDark = Color(0xFF0F172A);
-  static const Color kCardDark = Color(0xFF1E293B);
+  // ── Overlays / scrims ────────────────────────────────────────────────────
+  static const Color imageScrim = Color(0x73000000); // ~45 % black over images
 }

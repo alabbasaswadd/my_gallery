@@ -32,7 +32,11 @@
       "Bash(Get-Content \"C:\\\\Users\\\\alabbas\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\E--flutter-my-gallery\\\\2585d605-f6ec-479a-b3ff-d4d64259085c\\\\tasks\\\\bl58ng0mm.output\")",
       "Bash(Select-String -Pattern \"Built|✓|apk-release|Gradle task\")",
       "PowerShell(Get-ChildItem -Path \"E:\\\\flutter\\\\my_gallery\\\\lib\\\\features\" -Directory | ForEach-Object { $_.Name })",
-      "PowerShell(flutter analyze *)"
+      "PowerShell(flutter analyze *)",
+      "Bash(grep -v \"^$\")",
+      "Bash(findstr /s /n \"Color\\(0x\" *.dart **/*.dart)",
+      "Bash(findstr /s /n \"Colors\\\\.\" *.dart **/*.dart)",
+      "Bash(findstr /v \"theme.dart\")"
     ]
   }
 }
