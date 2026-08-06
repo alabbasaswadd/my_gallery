@@ -190,21 +190,41 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           style: TextStyle(color: Colors.white, fontSize: 11)),
                     ),
                   ),
-                // Replace image button
+                // Per-image management menu (set cover / replace / delete).
                 Positioned(
                   top: 8,
                   right: 8,
                   child: Material(
                     color: AppColors.imageScrim,
                     borderRadius: BorderRadius.circular(20),
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(20),
-                      onTap: () => _replaceImage(context, img.id),
-                      child: const Padding(
-                        padding: EdgeInsets.all(6),
-                        child: Icon(Icons.edit_outlined,
-                            color: Colors.white, size: 18),
-                      ),
+                    child: PopupMenuButton<String>(
+                      tooltip: 'خيارات الصورة',
+                      icon: const Icon(Icons.more_vert,
+                          color: Colors.white, size: 20),
+                      onSelected: (v) {
+                        switch (v) {
+                          case 'cover':
+                            context.read<ProductDetailCubit>().setCover(img.id);
+                          case 'replace':
+                            _replaceImage(context, img.id);
+                          case 'delete':
+                            _confirmDeleteImage(context, img.id);
+                        }
+                      },
+                      itemBuilder: (_) => [
+                        if (!isCover)
+                          const PopupMenuItem(
+                              value: 'cover', child: Text('تعيين كغلاف')),
+                        const PopupMenuItem(
+                            value: 'replace', child: Text('استبدال الصورة')),
+                        PopupMenuItem(
+                          value: 'delete',
+                          child: Text('حذف الصورة',
+                              style: TextStyle(
+                                  color:
+                                      Theme.of(context).colorScheme.error)),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -261,7 +281,41 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           onPressed: () => cubit.duplicate(),
           child: const Text('نسخ'),
         ),
+        FilledButton.tonal(
+          onPressed: () => _addImages(context),
+          child: const Text('إضافة صور'),
+        ),
       ],
+    );
+  }
+
+  Future<void> _addImages(BuildContext context) async {
+    final picked = await ImagePicker().pickMultiImage(imageQuality: 90);
+    if (picked.isEmpty || !mounted) return;
+    final files = picked.map((x) => File(x.path)).toList();
+    await context.read<ProductDetailCubit>().uploadImages(files);
+  }
+
+  void _confirmDeleteImage(BuildContext context, int imageId) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('حذف الصورة'),
+        content: const Text('هل تريد حذف هذه الصورة؟'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('إلغاء')),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              context.read<ProductDetailCubit>().deleteImage(imageId);
+            },
+            child: Text('حذف',
+                style: TextStyle(color: Theme.of(context).colorScheme.error)),
+          ),
+        ],
+      ),
     );
   }
 

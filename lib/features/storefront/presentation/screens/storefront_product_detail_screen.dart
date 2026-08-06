@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:my_gallery/core/network/api_exception.dart';
 import 'package:my_gallery/features/cart/data/models/cart_item.dart';
 import 'package:my_gallery/features/cart/domain/cart_cubit.dart';
 import 'package:my_gallery/features/storefront/data/models/storefront_models.dart';
@@ -42,10 +43,17 @@ class _StorefrontProductDetailScreenState
           _loading = false;
         });
       }
-    } catch (e) {
+    } on ApiException catch (e) {
       if (mounted) {
         setState(() {
-          _error = e.toString();
+          _error = e.message;
+          _loading = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _error = 'تعذّر تحميل المنتج';
           _loading = false;
         });
       }

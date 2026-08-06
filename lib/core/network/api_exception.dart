@@ -56,17 +56,37 @@ class ApiException implements Exception {
 
     final status = response.statusCode ?? 0;
     final data = response.data;
-    final serverMessage = data is Map ? data['message'] as String? : null;
-    final traceId = data is Map ? data['traceId'] as String? : null;
-    final rawErrors = data is Map && data['errors'] is List
-        ? (data['errors'] as List).whereType<String>().toList()
-        : <String>[];
+    // Two failure shapes flow from the API:
+    //  1. ApiResponse envelope: { success, message, errors: [..], traceId }
+    //  2. RFC-7807 problem+json (model-binding): { title, errors: { field: [..] }, traceId }
+    final serverMessage = data is Map
+        ? (data['message'] as String?) ?? (data['title'] as String?)
+        : null;
+    final traceId = data is Map
+        ? (data['traceId'] as String?) ??
+            ((data['extensions'] is Map
+                ? (data['extensions'] as Map)['traceId']
+                : null) as String?)
+        : null;
+    var rawErrors = <String>[];
+    if (data is Map && data['errors'] is List) {
+      rawErrors = (data['errors'] as List).whereType<String>().toList();
+    } else if (data is Map && data['errors'] is Map) {
+      // problem+json: errors is a map of field -> list of messages.
+      rawErrors = (data['errors'] as Map)
+          .values
+          .expand((v) => v is List
+              ? v.map((e) => e.toString())
+              : <String>[v.toString()])
+          .toList();
+    }
 
     return switch (status) {
       400 || 422 => ApiException(
           kind: ApiErrorKind.validation,
-          message: serverMessage ??
-              (rawErrors.isNotEmpty ? rawErrors.join('، ') : 'بيانات غير صالحة'),
+          message: rawErrors.isNotEmpty
+              ? rawErrors.join('، ')
+              : (serverMessage ?? 'بيانات غير صالحة'),
           statusCode: status,
           traceId: traceId,
           errors: rawErrors,
