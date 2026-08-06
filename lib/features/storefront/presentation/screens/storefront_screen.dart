@@ -1,8 +1,11 @@
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:my_gallery/features/cart/domain/cart_cubit.dart';
+import 'package:my_gallery/features/settings/data/models/settings_models.dart';
+import 'package:my_gallery/features/settings/domain/settings_cubit.dart';
 import 'package:my_gallery/features/storefront/data/models/storefront_models.dart';
 import 'package:my_gallery/features/storefront/domain/storefront_cubit.dart';
 import 'package:my_gallery/shared/widgets/app_shimmer.dart';
@@ -103,6 +106,7 @@ class _StorefrontScreenState extends State<StorefrontScreen> {
             ) =>
               Column(
                 children: [
+                  _buildHero(context),
                   _buildSearch(context),
                   if (categoriesError != null)
                     _buildCategoriesError(context, categoriesError)
@@ -150,6 +154,109 @@ class _StorefrontScreenState extends State<StorefrontScreen> {
             _ => const SizedBox.shrink(),
           };
         },
+      ),
+    );
+  }
+
+  Widget _buildHero(BuildContext context) {
+    final slides = context
+        .watch<SettingsCubit>()
+        .currentOrDefault
+        .heroSlides
+        .where((s) => s.imageUrl.isNotEmpty)
+        .toList();
+    if (slides.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      child: CarouselSlider(
+        options: CarouselOptions(
+          height: 160,
+          viewportFraction: 1,
+          autoPlay: slides.length > 1,
+          autoPlayInterval: const Duration(seconds: 5),
+        ),
+        items: slides.map((s) => _buildHeroSlide(context, s)).toList(),
+      ),
+    );
+  }
+
+  Widget _buildHeroSlide(BuildContext context, HeroSlide slide) {
+    final title = slide.title ?? '';
+    final subtitle = slide.subtitle ?? '';
+    final ctaText = slide.ctaText ?? '';
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(16),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          AppNetworkImage(
+            imagePath: slide.imageUrl,
+            height: 160,
+            width: double.infinity,
+          ),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.transparent,
+                  Colors.black.withValues(alpha: 0.55),
+                ],
+              ),
+            ),
+          ),
+          Positioned(
+            right: 16,
+            left: 16,
+            bottom: 12,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (title.isNotEmpty)
+                  Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                if (subtitle.isNotEmpty) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(color: Colors.white70, fontSize: 13),
+                  ),
+                ],
+                if (ctaText.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primary,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      ctaText,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
