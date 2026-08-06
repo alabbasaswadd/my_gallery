@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:my_gallery/features/auth/domain/auth_cubit.dart';
+import 'package:my_gallery/features/settings/domain/settings_cubit.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -36,7 +37,6 @@ class _SplashScreenState extends State<SplashScreen> {
         }
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFFFBF7F4),
         body: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -45,11 +45,11 @@ class _SplashScreenState extends State<SplashScreen> {
                 width: 100,
                 height: 100,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFC0446A),
+                  color: Theme.of(context).colorScheme.primary,
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFFC0446A).withValues(alpha: 0.3),
+                      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
                       blurRadius: 24,
                       offset: const Offset(0, 8),
                     ),
@@ -66,9 +66,9 @@ class _SplashScreenState extends State<SplashScreen> {
                   .scale(begin: const Offset(0.7, 0.7)),
               const SizedBox(height: 24),
               Text(
-                'معرضي',
+                context.watch<SettingsCubit>().currentOrDefault.brandName,
                 style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                      color: const Color(0xFFC0446A),
+                      color: Theme.of(context).colorScheme.primary,
                       fontWeight: FontWeight.w800,
                     ),
               ).animate().fadeIn(delay: 300.ms, duration: 400.ms),
@@ -76,7 +76,7 @@ class _SplashScreenState extends State<SplashScreen> {
               Text(
                 'لوحة تحكم المتجر',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: const Color(0xFF2A2024).withValues(alpha: 0.5),
+                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
                     ),
               ).animate().fadeIn(delay: 500.ms, duration: 400.ms),
             ],

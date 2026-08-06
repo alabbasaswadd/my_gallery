@@ -55,7 +55,6 @@ class AuthCubit extends Cubit<AuthState> {
       final result = await _authService.login(email: email, password: password);
       await SecureStorage.saveTokens(
         accessToken: result.accessToken,
-        refreshToken: result.refreshToken,
         expiresAt: result.expiresAt,
       );
       _currentUser = result.user;

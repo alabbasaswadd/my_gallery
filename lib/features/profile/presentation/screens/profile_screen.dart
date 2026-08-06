@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:my_gallery/features/auth/domain/auth_cubit.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -31,6 +32,19 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 _buildRoleBadge(context, user.role),
+                if (user.role == 'Owner' || user.role == 'Manager') ...[
+                  const SizedBox(height: 16),
+                  Card(
+                    child: ListTile(
+                      leading: Icon(Icons.share_outlined,
+                          color: Theme.of(context).colorScheme.primary),
+                      title: const Text('روابط التواصل الاجتماعي'),
+                      subtitle: const Text('إنستغرام، فيسبوك، واتساب'),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => context.push('/settings/social'),
+                    ),
+                  ).animate().fadeIn(delay: 350.ms, duration: 250.ms),
+                ],
                 const SizedBox(height: 32),
                 OutlinedButton.icon(
                   onPressed: () => _confirmLogout(context),

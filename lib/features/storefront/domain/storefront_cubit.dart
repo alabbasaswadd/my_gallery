@@ -17,6 +17,7 @@ sealed class StorefrontState with _$StorefrontState {
     required List<StorefrontCategory> categories,
     int? selectedCategoryId,
     String? search,
+    String? categoriesError,
   }) = StorefrontLoaded;
   const factory StorefrontState.error(String message) = StorefrontError;
 }
@@ -29,6 +30,7 @@ class StorefrontCubit extends Cubit<StorefrontState> {
   List<StorefrontProduct> _products = [];
   PaginationMeta _pagination = const PaginationMeta();
   List<StorefrontCategory> _categories = [];
+  String? _categoriesError;
   int? _categoryId;
   String? _search;
   int _page = 1;
@@ -60,6 +62,11 @@ class StorefrontCubit extends Cubit<StorefrontState> {
     _emitLoaded();
   }
 
+  Future<void> retryCategories() async {
+    await _fetchCategories();
+    _emitLoaded();
+  }
+
   Future<void> _fetchProducts({bool append = false}) async {
     _fetching = true;
     try {
@@ -86,7 +93,12 @@ class StorefrontCubit extends Cubit<StorefrontState> {
   Future<void> _fetchCategories() async {
     try {
       _categories = await _service.getCategories();
-    } catch (_) {}
+      _categoriesError = null;
+    } on ApiException catch (e) {
+      _categoriesError = e.message;
+    } catch (_) {
+      _categoriesError = 'فشل تحميل الفئات';
+    }
   }
 
   void _emitLoaded() {
@@ -96,6 +108,7 @@ class StorefrontCubit extends Cubit<StorefrontState> {
       categories: _categories,
       selectedCategoryId: _categoryId,
       search: _search,
+      categoriesError: _categoriesError,
     ));
   }
 }

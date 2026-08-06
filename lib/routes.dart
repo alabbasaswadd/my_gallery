@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:my_gallery/core/di/service_locator.dart';
+import 'package:my_gallery/core/network/session_notifier.dart';
 import 'package:my_gallery/core/storage/secure_storage.dart';
 import 'package:my_gallery/features/auth/data/auth_service.dart';
 import 'package:my_gallery/features/auth/domain/auth_cubit.dart';
@@ -27,12 +28,15 @@ import 'package:my_gallery/features/storefront/domain/storefront_cubit.dart';
 import 'package:my_gallery/features/storefront/presentation/screens/checkout_screen.dart';
 import 'package:my_gallery/features/storefront/presentation/screens/order_success_screen.dart';
 import 'package:my_gallery/features/storefront/presentation/screens/storefront_product_detail_screen.dart';
+import 'package:my_gallery/features/settings/domain/social_links_cubit.dart';
+import 'package:my_gallery/features/settings/presentation/screens/social_links_screen.dart';
 import 'package:my_gallery/features/storefront/presentation/screens/storefront_screen.dart';
 
 final _authCubit = AuthCubit(sl<AuthService>());
 
 final router = GoRouter(
   initialLocation: '/',
+  refreshListenable: SessionNotifier.instance,
   redirect: (context, state) async {
     final location = state.matchedLocation;
     final hasSession = await SecureStorage.hasValidSession();
@@ -100,6 +104,17 @@ final router = GoRouter(
           child: CategoryFormScreen(existing: cat),
         );
       },
+    ),
+
+    // ------------------------------------
+    // Settings
+    // ------------------------------------
+    GoRoute(
+      path: '/settings/social',
+      builder: (context, state) => BlocProvider(
+        create: (_) => sl<SocialLinksCubit>(),
+        child: const SocialLinksScreen(),
+      ),
     ),
 
     // ------------------------------------

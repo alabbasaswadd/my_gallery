@@ -64,8 +64,8 @@ class _StorefrontScreenState extends State<StorefrontScreen> {
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 200),
                           padding: const EdgeInsets.all(4),
-                          decoration: const BoxDecoration(
-                            color: Color(0xFFC0446A),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.primary,
                             shape: BoxShape.circle,
                           ),
                           child: Text(
@@ -99,11 +99,15 @@ class _StorefrontScreenState extends State<StorefrontScreen> {
               :final categories,
               :final selectedCategoryId,
               :final pagination,
+              :final categoriesError,
             ) =>
               Column(
                 children: [
                   _buildSearch(context),
-                  _buildCategories(context, categories, selectedCategoryId),
+                  if (categoriesError != null)
+                    _buildCategoriesError(context, categoriesError)
+                  else
+                    _buildCategories(context, categories, selectedCategoryId),
                   Expanded(
                     child: products.isEmpty
                         ? const EmptyState(
@@ -171,6 +175,26 @@ class _StorefrontScreenState extends State<StorefrontScreen> {
                 )
               : null,
         ),
+      ),
+    );
+  }
+
+  Widget _buildCategoriesError(BuildContext context, String error) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: Row(
+        children: [
+          const Icon(Icons.warning_amber_outlined, size: 16, color: Colors.orange),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(error,
+                style: Theme.of(context).textTheme.bodySmall),
+          ),
+          TextButton(
+            onPressed: () => context.read<StorefrontCubit>().retryCategories(),
+            child: const Text('إعادة المحاولة'),
+          ),
+        ],
       ),
     );
   }

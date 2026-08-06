@@ -13,6 +13,10 @@ import 'package:my_gallery/features/products/data/products_service.dart';
 import 'package:my_gallery/features/products/domain/product_detail_cubit.dart';
 import 'package:my_gallery/features/products/domain/product_form_cubit.dart';
 import 'package:my_gallery/features/products/domain/products_list_cubit.dart';
+import 'package:my_gallery/features/settings/data/settings_service.dart';
+import 'package:my_gallery/features/settings/domain/settings_cubit.dart';
+import 'package:my_gallery/features/settings/domain/social_links_cubit.dart';
+import 'package:my_gallery/features/settings/domain/theme_cubit.dart';
 import 'package:my_gallery/features/storefront/data/storefront_service.dart';
 import 'package:my_gallery/features/storefront/domain/checkout_cubit.dart';
 import 'package:my_gallery/features/storefront/domain/storefront_cubit.dart';
@@ -26,9 +30,12 @@ Future<void> setupServiceLocator() async {
   sl.registerLazySingleton(() => CategoriesService(dio: ApiClient.dio));
   sl.registerLazySingleton(() => StorefrontService(dio: ApiClient.dio));
   sl.registerLazySingleton(() => OrdersService(dio: ApiClient.dio));
+  sl.registerLazySingleton(() => SettingsService(dio: ApiClient.dio));
 
-  // Cart — singleton so cart state is shared across the app
+  // Singletons — shared state across the app
   sl.registerLazySingleton(() => CartCubit());
+  sl.registerLazySingleton(() => SettingsCubit(sl<SettingsService>()));
+  sl.registerLazySingleton(() => ThemeCubit());
 
   // Cubits — factories (fresh instance per widget tree)
   sl.registerFactory(() => AuthCubit(sl<AuthService>()));
@@ -41,4 +48,6 @@ Future<void> setupServiceLocator() async {
   sl.registerFactory(() => CheckoutCubit(sl<StorefrontService>()));
   sl.registerFactory(() => OrdersListCubit(sl<OrdersService>()));
   sl.registerFactory(() => OrderDetailCubit(sl<OrdersService>()));
+  sl.registerFactory(() => SocialLinksCubit(sl<SettingsService>(),
+      settingsCubit: sl<SettingsCubit>()));
 }
