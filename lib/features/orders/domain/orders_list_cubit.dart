@@ -64,11 +64,13 @@ class OrdersListCubit extends Cubit<OrdersListState> {
         _orders = resp.data ?? [];
       }
       _pagination = resp.pagination ?? const PaginationMeta();
-      emit(OrdersListState.loaded(
-        orders: _orders,
-        pagination: _pagination,
-        statusFilter: _status,
-      ));
+      emit(
+        OrdersListState.loaded(
+          orders: _orders,
+          pagination: _pagination,
+          statusFilter: _status,
+        ),
+      );
     } on ApiException catch (e) {
       emit(OrdersListState.error(e.message));
     } catch (_) {

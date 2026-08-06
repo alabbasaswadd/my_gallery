@@ -44,8 +44,8 @@ class MyGalleryApp extends StatelessWidget {
                 builder: (_, __) => MaterialApp.router(
                   debugShowCheckedModeBanner: false,
                   title: settings.brandName,
-                  theme: AppTheme.build(settings, Brightness.light),
-                  darkTheme: AppTheme.build(settings, Brightness.dark),
+                  theme: AppTheme.build(Brightness.light),
+                  darkTheme: AppTheme.build(Brightness.dark),
                   themeMode: themeMode,
                   routerConfig: router,
                   locale: const Locale('ar'),

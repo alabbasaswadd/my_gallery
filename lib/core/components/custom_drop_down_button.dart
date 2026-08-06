@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../constants/colors.dart';
-
 class CustomDropdown<T> extends StatelessWidget {
   final T? value;
   final List<DropdownMenuItem<T>> items;
@@ -49,7 +47,7 @@ class CustomDropdown<T> extends StatelessWidget {
           isExpanded: true,
           icon: Icon(
             Icons.arrow_drop_down,
-            color: AppColors.kPrimaryColor,
+            color: Theme.of(context).colorScheme.primary,
             size: iconSize,
           ),
           elevation: 2,
@@ -59,7 +57,7 @@ class CustomDropdown<T> extends StatelessWidget {
           hint: Row(
             children: [
               if (prefixIcon != null) ...[
-                Icon(prefixIcon, color: AppColors.kPrimaryColor),
+                Icon(prefixIcon, color: Theme.of(context).colorScheme.primary),
                 const SizedBox(width: 12),
               ],
               Text(

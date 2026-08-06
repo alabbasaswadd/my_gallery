@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../constants/colors.dart';
 import 'app_text.dart';
 
 class AppButton extends StatelessWidget {
@@ -8,9 +7,9 @@ class AppButton extends StatelessWidget {
     super.key,
     required this.text,
     required this.onPressed,
-    this.color = AppColors.kPrimaryColor,
-    this.textColor = Colors.white,
-    this.iconColor = Colors.white,
+    this.color,
+    this.textColor,
+    this.iconColor,
     this.isLoading = false,
     this.borderRadius = 12.0,
     this.height = 50.0,
@@ -20,11 +19,11 @@ class AppButton extends StatelessWidget {
     this.iconAlignment = MainAxisAlignment.center,
   });
 
-  final text;
+  final dynamic text;
   final Function() onPressed;
-  final Color color;
-  final Color iconColor;
-  final Color textColor;
+  final Color? color;
+  final Color? iconColor;
+  final Color? textColor;
   final bool isLoading;
   final double borderRadius;
   final double height;
@@ -35,23 +34,31 @@ class AppButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final effectiveColor = color ?? cs.primary;
+    final effectiveTextColor = textColor ?? cs.onPrimary;
+    final effectiveIconColor = iconColor ?? cs.onPrimary;
+
     return Padding(
       padding: padding,
       child: Material(
-        color: color,
+        color: effectiveColor,
         borderRadius: BorderRadius.circular(borderRadius),
         elevation: elevation,
         child: InkWell(
           onTap: isLoading ? null : onPressed,
           borderRadius: BorderRadius.circular(borderRadius),
-          splashColor: Colors.white.withOpacity(0.2),
-          highlightColor: Colors.white.withOpacity(0.1),
+          splashColor: cs.onPrimary.withValues(alpha: 0.2),
+          highlightColor: cs.onPrimary.withValues(alpha: 0.1),
           child: Container(
             height: height,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(borderRadius),
               gradient: LinearGradient(
-                colors: [color, Color.lerp(color, Colors.black, 0.1)!],
+                colors: [
+                  effectiveColor,
+                  Color.lerp(effectiveColor, Colors.black, 0.1)!,
+                ],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
               ),
@@ -66,20 +73,20 @@ class AppButton extends StatelessWidget {
                     mainAxisAlignment: iconAlignment,
                     children: [
                       if (icon != null) ...[
-                        Icon(icon, color: iconColor),
+                        Icon(icon, color: effectiveIconColor),
                         const SizedBox(width: 8),
                       ],
-                      AppText(text, color: Colors.white),
+                      AppText(text, color: effectiveTextColor),
                     ],
                   ),
                 ),
                 if (isLoading)
-                  const SizedBox(
+                  SizedBox(
                     width: 20,
                     height: 20,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation(Colors.white),
+                      valueColor: AlwaysStoppedAnimation(effectiveTextColor),
                     ),
                   ),
               ],

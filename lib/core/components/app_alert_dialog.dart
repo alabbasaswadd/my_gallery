@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../constants/colors.dart';
 import 'app_animation.dart';
 import 'app_text.dart';
 
@@ -28,9 +27,8 @@ class AppAlertDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final effectiveIconColor = iconColor ?? AppColors.kPrimaryColor;
+    final cs = Theme.of(context).colorScheme;
+    final effectiveIconColor = iconColor ?? cs.primary;
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -38,94 +36,71 @@ class AppAlertDialog extends StatelessWidget {
       child: Container(
         constraints: const BoxConstraints(maxWidth: 400),
         decoration: BoxDecoration(
-          color: isDark ? AppColors.kCardDark : Colors.white,
+          color: cs.surfaceContainer,
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(isDark ? 0.4 : 0.12),
+              color: cs.shadow.withValues(alpha: 0.15),
               blurRadius: 32,
               offset: const Offset(0, 8),
             ),
           ],
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Top accent bar
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  color: effectiveIconColor.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  icon ?? Icons.help_outline_rounded,
+                  color: effectiveIconColor,
+                  size: 32,
+                ),
+              ),
+              const SizedBox(height: 20),
+              AppText(
+                title,
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                textAlign: TextAlign.center,
+                color: cs.onSurface,
+              ),
+              const SizedBox(height: 10),
+              AppText(
+                content,
+                maxLines: 5,
+                textAlign: TextAlign.center,
+                fontSize: 14,
+                color: cs.onSurfaceVariant,
+                height: 1.6,
+              ),
+              const SizedBox(height: 28),
+              Row(
                 children: [
-                  // Icon badge
-                  Container(
-                    width: 64,
-                    height: 64,
-                    decoration: BoxDecoration(
-                      color: effectiveIconColor.withOpacity(0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      icon ?? Icons.help_outline_rounded,
-                      color: effectiveIconColor,
-                      size: 32,
+                  Expanded(
+                    child: AppAnimation(
+                      scale: 0.95,
+                      child: _OutlineButton(label: noLabel ?? 'لا', onPressed: onNo),
                     ),
                   ),
-                  const SizedBox(height: 20),
-
-                  // Title
-                  AppText(
-                    title,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    textAlign: TextAlign.center,
-                    color: colorScheme.onSurface,
-                  ),
-                  const SizedBox(height: 10),
-
-                  // Content
-                  AppText(
-                    content,
-                    maxLines: 5,
-                    textAlign: TextAlign.center,
-                    fontSize: 14,
-                    color: colorScheme.onSurface.withOpacity(0.6),
-                    height: 1.6,
-                  ),
-                  const SizedBox(height: 28),
-
-                  // Action buttons
-                  Row(
-                    children: [
-                      // Cancel button
-                      Expanded(
-                        child: AppAnimation(
-                          scale: 0.95,
-                          child: _OutlineButton(
-                            label: noLabel ?? "لا",
-                            onPressed: onNo,
-                            isDark: isDark,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-
-                      // Confirm button
-                      Expanded(
-                        child: AppAnimation(
-                          scale: 0.95,
-                          child: _FilledButton(
-                            label: okLabel ?? "نعم",
-                            onPressed: onOk,
-                          ),
-                        ),
-                      ),
-                    ],
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: AppAnimation(
+                      scale: 0.95,
+                      child: _FilledButton(label: okLabel ?? 'نعم', onPressed: onOk),
+                    ),
                   ),
                 ],
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -134,76 +109,53 @@ class AppAlertDialog extends StatelessWidget {
 
 class _FilledButton extends StatelessWidget {
   const _FilledButton({required this.label, required this.onPressed});
-
   final String label;
   final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: onPressed,
       child: Container(
         height: 48,
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [AppColors.kPrimaryColor, AppColors.kSecondColor],
-          ),
+          color: cs.primary,
           borderRadius: BorderRadius.circular(14),
           boxShadow: [
             BoxShadow(
-              color: AppColors.kPrimaryColor.withOpacity(0.35),
+              color: cs.primary.withValues(alpha: 0.35),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
           ],
         ),
         alignment: Alignment.center,
-        child: AppText(
-          label,
-          fontSize: 14,
-          fontWeight: FontWeight.w700,
-          color: Colors.white,
-        ),
+        child: AppText(label, fontSize: 14, fontWeight: FontWeight.w700, color: cs.onPrimary),
       ),
     );
   }
 }
 
 class _OutlineButton extends StatelessWidget {
-  const _OutlineButton({
-    required this.label,
-    required this.onPressed,
-    required this.isDark,
-  });
-
+  const _OutlineButton({required this.label, required this.onPressed});
   final String label;
   final VoidCallback onPressed;
-  final bool isDark;
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: onPressed,
       child: Container(
         height: 48,
         decoration: BoxDecoration(
-          color: isDark
-              ? Colors.white.withOpacity(0.06)
-              : AppColors.kGreyColor.withOpacity(0.08),
+          color: cs.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: isDark
-                ? Colors.white.withOpacity(0.12)
-                : AppColors.kGreyColor.withOpacity(0.25),
-          ),
+          border: Border.all(color: cs.outlineVariant),
         ),
         alignment: Alignment.center,
-        child: AppText(
-          label,
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-          color: isDark ? Colors.white70 : AppColors.kGreyColor,
-        ),
+        child: AppText(label, fontSize: 14, fontWeight: FontWeight.w600, color: cs.onSurfaceVariant),
       ),
     );
   }

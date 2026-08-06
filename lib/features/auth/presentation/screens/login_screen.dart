@@ -58,7 +58,6 @@ class _LoginScreenState extends State<LoginScreen> {
       builder: (context, state) {
         if (state is AuthInitial || state is AuthChecking) {
           return const Scaffold(
-            backgroundColor: Color(0xFFFBF7F4),
             body: Center(child: CircularProgressIndicator()),
           );
         }

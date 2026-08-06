@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../constants/colors.dart';
-
 class MyIcon extends StatelessWidget {
   const MyIcon({
     super.key,
@@ -21,7 +19,7 @@ class MyIcon extends StatelessWidget {
       top: top,
       child: Transform.rotate(
         angle: rotate,
-        child: Icon(icon, size: 34, color: AppColors.kSecondColor),
+        child: Icon(icon, size: 34, color: Theme.of(context).colorScheme.secondary),
       ),
     );
   }

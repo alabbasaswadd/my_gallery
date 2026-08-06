@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:my_gallery/features/auth/domain/auth_cubit.dart';
 import 'package:my_gallery/features/products/data/models/product_models.dart';
 import 'package:my_gallery/features/products/domain/products_list_cubit.dart';
 import 'package:my_gallery/features/products/presentation/widgets/product_card.dart';
 import 'package:my_gallery/features/products/presentation/widgets/products_filter_sheet.dart';
+import 'package:my_gallery/features/settings/domain/settings_cubit.dart';
 import 'package:my_gallery/shared/widgets/app_shimmer.dart';
 import 'package:my_gallery/shared/widgets/empty_state.dart';
+import 'package:my_gallery/shared/widgets/theme_toggle_button.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ProductsScreen extends StatefulWidget {
   const ProductsScreen({super.key});
@@ -58,14 +62,53 @@ class _ProductsScreenState extends State<ProductsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final settings = context.watch<SettingsCubit>().currentOrDefault;
+    final authState = context.watch<AuthCubit>().state;
+    final shopName = authState is AuthAuthenticated
+        ? authState.user.shopName
+        : settings.brandName;
+    final role =
+        authState is AuthAuthenticated ? authState.user.role : '';
+    final website = settings.website;
+
+    final canManage =
+        role == 'Owner' || role == 'Manager' || role == 'Employee';
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('المنتجات'),
+        title: Column(
+          children: [
+            Text(shopName),
+            if (role.isNotEmpty)
+              Text(
+                _roleLabel(role),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .primary
+                          .withValues(alpha: 0.8),
+                    ),
+              ),
+          ],
+        ),
         actions: [
+          const ThemeToggleButton(),
+          if (website.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.public_rounded),
+              tooltip: 'زيارة الموقع',
+              onPressed: () => _launchWebsite(context, website),
+            ),
           IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () => context.push('/products/create'),
+            icon: const Icon(Icons.storefront_outlined),
+            tooltip: 'المتجر',
+            onPressed: () => context.push('/storefront'),
           ),
+          if (canManage)
+            IconButton(
+              icon: const Icon(Icons.add),
+              onPressed: () => context.push('/products/create'),
+            ),
         ],
       ),
       body: Column(
@@ -172,5 +215,23 @@ class _ProductsScreenState extends State<ProductsScreen> {
       itemCount: 6,
       itemBuilder: (_, __) => const ProductCardShimmer(),
     );
+  }
+
+  String _roleLabel(String role) => switch (role) {
+        'Owner' => 'مالك',
+        'Manager' => 'مدير',
+        'Employee' => 'موظف',
+        _ => role,
+      };
+
+  Future<void> _launchWebsite(BuildContext context, String url) async {
+    final uri = Uri.tryParse(url);
+    if (uri == null) return;
+    final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!ok && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('تعذّر فتح الموقع')),
+      );
+    }
   }
 }

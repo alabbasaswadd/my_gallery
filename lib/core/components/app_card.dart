@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../constants/colors.dart';
-
 class AppCard extends StatefulWidget {
   final Widget child;
   final VoidCallback? onTap;
@@ -104,14 +102,14 @@ class _AppCardState extends State<AppCard> with SingleTickerProviderStateMixin {
         [
           if (isDark)
             BoxShadow(
-              color: Colors.black.withOpacity(0.5 * intensity),
+              color: Colors.black.withValues(alpha:0.5 * intensity),
               blurRadius: widget.elevation * 1.5,
               spreadRadius: -1.0, // تقليل الانتشار لمظهر أكثر دقة
               offset: const Offset(0, 2),
             )
           else
             BoxShadow(
-              color: Colors.black.withOpacity(0.15 * intensity),
+              color: Colors.black.withValues(alpha:0.15 * intensity),
               blurRadius: widget.elevation * 2,
               spreadRadius: -1.0,
               offset: const Offset(0, 2),
@@ -120,10 +118,7 @@ class _AppCardState extends State<AppCard> with SingleTickerProviderStateMixin {
   }
 
   Color _getBackgroundColor(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return widget.color ??
-        (isDark ? AppColors.kPrimaryColorDarkMode : Colors.white);
+    return widget.color ?? Theme.of(context).colorScheme.surface;
   }
 
   @override
@@ -153,10 +148,10 @@ class _AppCardState extends State<AppCard> with SingleTickerProviderStateMixin {
             onTap: widget.onTap,
             onLongPress: widget.onLongPress,
             splashColor: widget.enableRippleEffect
-                ? theme.colorScheme.primary.withOpacity(0.08)
+                ? theme.colorScheme.primary.withValues(alpha:0.08)
                 : Colors.transparent,
             highlightColor: widget.enableRippleEffect
-                ? theme.colorScheme.primary.withOpacity(0.04)
+                ? theme.colorScheme.primary.withValues(alpha:0.04)
                 : Colors.transparent,
             child: Padding(padding: widget.padding, child: widget.child),
           ),

@@ -3,6 +3,9 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:my_gallery/features/auth/domain/auth_cubit.dart';
+import 'package:my_gallery/features/settings/domain/settings_cubit.dart';
+import 'package:my_gallery/shared/widgets/theme_toggle_button.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -11,9 +14,15 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final authState = context.watch<AuthCubit>().state;
     final user = authState is AuthAuthenticated ? authState.user : null;
+    final settings = context.watch<SettingsCubit>().currentOrDefault;
+    final website = settings.website;
+    final cs = Theme.of(context).colorScheme;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('الملف الشخصي')),
+      appBar: AppBar(
+        title: const Text('الملف الشخصي'),
+        actions: const [ThemeToggleButton()],
+      ),
       body: user == null
           ? const Center(child: CircularProgressIndicator())
           : ListView(
@@ -32,12 +41,22 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 _buildRoleBadge(context, user.role),
+                if (website.isNotEmpty) ...[
+                  const SizedBox(height: 16),
+                  Card(
+                    child: ListTile(
+                      leading: Icon(Icons.public_rounded, color: cs.primary),
+                      title: const Text('زيارة الموقع الرسمي'),
+                      trailing: const Icon(Icons.open_in_new_rounded),
+                      onTap: () => _launchWebsite(context, website),
+                    ),
+                  ).animate().fadeIn(delay: 320.ms, duration: 250.ms),
+                ],
                 if (user.role == 'Owner' || user.role == 'Manager') ...[
                   const SizedBox(height: 16),
                   Card(
                     child: ListTile(
-                      leading: Icon(Icons.share_outlined,
-                          color: Theme.of(context).colorScheme.primary),
+                      leading: Icon(Icons.share_outlined, color: cs.primary),
                       title: const Text('روابط التواصل الاجتماعي'),
                       subtitle: const Text('إنستغرام، فيسبوك، واتساب'),
                       trailing: const Icon(Icons.chevron_right),
@@ -48,11 +67,11 @@ class ProfileScreen extends StatelessWidget {
                 const SizedBox(height: 32),
                 OutlinedButton.icon(
                   onPressed: () => _confirmLogout(context),
-                  icon: const Icon(Icons.logout, color: Colors.red),
-                  label: const Text('تسجيل الخروج',
-                      style: TextStyle(color: Colors.red)),
+                  icon: Icon(Icons.logout, color: cs.error),
+                  label: Text('تسجيل الخروج',
+                      style: TextStyle(color: cs.error)),
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Colors.red),
+                    side: BorderSide(color: cs.error),
                     minimumSize: const Size.fromHeight(52),
                   ),
                 ).animate().fadeIn(delay: 400.ms, duration: 300.ms),
@@ -62,6 +81,7 @@ class ProfileScreen extends StatelessWidget {
   }
 
   Widget _buildAvatar(BuildContext context, String fullName) {
+    final cs = Theme.of(context).colorScheme;
     final initials = fullName
         .split(' ')
         .take(2)
@@ -72,11 +92,11 @@ class ProfileScreen extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 48,
-            backgroundColor: Theme.of(context).colorScheme.primary,
+            backgroundColor: cs.primary,
             child: Text(
               initials,
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: cs.onPrimary,
                 fontSize: 28,
                 fontWeight: FontWeight.w700,
               ),
@@ -121,12 +141,13 @@ class ProfileScreen extends StatelessWidget {
   }
 
   Widget _buildRoleBadge(BuildContext context, String role) {
-    final colors = {
-      'Owner': (const Color(0xFFC0446A), 'المالك'),
-      'Manager': (const Color(0xFFD4A02A), 'المدير'),
-      'Employee': (const Color(0xFF3C2A34), 'الموظف'),
+    final cs = Theme.of(context).colorScheme;
+    final (color, label) = switch (role) {
+      'Owner' => (cs.primary, 'المالك'),
+      'Manager' => (cs.tertiary, 'المدير'),
+      'Employee' => (cs.secondary, 'الموظف'),
+      _ => (cs.outline, role),
     };
-    final (color, label) = colors[role] ?? (Colors.grey, role);
 
     return Center(
       child: Container(
@@ -155,7 +176,19 @@ class ProfileScreen extends StatelessWidget {
         _ => role,
       };
 
+  Future<void> _launchWebsite(BuildContext context, String url) async {
+    final uri = Uri.tryParse(url);
+    if (uri == null) return;
+    final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!ok && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('تعذّر فتح الموقع')),
+      );
+    }
+  }
+
   void _confirmLogout(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
@@ -170,8 +203,7 @@ class ProfileScreen extends StatelessWidget {
               Navigator.pop(context);
               context.read<AuthCubit>().logout();
             },
-            child:
-                const Text('خروج', style: TextStyle(color: Colors.red)),
+            child: Text('خروج', style: TextStyle(color: cs.error)),
           ),
         ],
       ),
