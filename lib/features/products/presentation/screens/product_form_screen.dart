@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:my_gallery/features/categories/data/models/category_models.dart';
+import 'package:my_gallery/features/categories/domain/categories_cubit.dart';
 import 'package:my_gallery/features/products/data/image_rules.dart';
 import 'package:my_gallery/features/products/data/models/product_models.dart';
 import 'package:my_gallery/features/products/domain/product_form_cubit.dart';
@@ -58,6 +60,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     _isAvailable = p?.isAvailable ?? true;
     _isActive = p?.isActive ?? true;
     _coverId = p?.images.where((i) => i.isCover).firstOrNull?.id;
+    context.read<CategoriesCubit>().load();
   }
 
   @override
@@ -70,6 +73,8 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
 
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
+    // Fallback guard: the dropdown validator covers the loaded state; this also
+    // covers the brief window where categories are still loading/failed.
     if (_categoryId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('يرجى اختيار الفئة')),
@@ -79,7 +84,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     final request = ProductRequest(
       name: _name.text.trim(),
       categoryId: _categoryId!,
-      price: double.parse(_price.text),
+      price: double.tryParse(_price.text.trim()) ?? 0,
       shortDescription:
           _shortDesc.text.trim().isEmpty ? null : _shortDesc.text.trim(),
       description: _desc.text.trim().isEmpty ? null : _desc.text.trim(),
@@ -212,8 +217,22 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                 children: [
                   _field(_name, 'اسم المنتج *', required: true),
                   const SizedBox(height: 12),
-                  _field(_price, 'السعر (س.ل) *',
-                      type: TextInputType.number, required: true),
+                  _buildCategoryPicker(context),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _price,
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
+                    decoration: const InputDecoration(labelText: 'السعر (س.ل) *'),
+                    validator: (v) {
+                      final t = v?.trim() ?? '';
+                      if (t.isEmpty) return 'هذا الحقل مطلوب';
+                      final n = double.tryParse(t);
+                      if (n == null) return 'أدخل رقماً صحيحاً';
+                      if (n <= 0) return 'السعر يجب أن يكون أكبر من صفر';
+                      return null;
+                    },
+                  ),
                   const SizedBox(height: 12),
                   _field(_stock, 'الكمية في المخزون',
                       type: TextInputType.number),
@@ -244,6 +263,64 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                 ],
               ),
             ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildCategoryPicker(BuildContext context) {
+    return BlocBuilder<CategoriesCubit, CategoriesState>(
+      builder: (context, state) {
+        if (state is CategoriesLoaded) {
+          final categories = state.categories;
+          final ids = categories.map((c) => c.id).toSet();
+          final value = ids.contains(_categoryId) ? _categoryId : null;
+          return DropdownButtonFormField<int>(
+            initialValue: value,
+            isExpanded: true,
+            decoration: const InputDecoration(labelText: 'الفئة *'),
+            hint: const Text('اختر الفئة'),
+            items: [
+              for (final CategoryListItem c in categories)
+                DropdownMenuItem(value: c.id, child: Text(c.name)),
+            ],
+            onChanged: (v) => setState(() => _categoryId = v),
+            validator: (v) => v == null ? 'يرجى اختيار الفئة' : null,
+          );
+        }
+        if (state is CategoriesError) {
+          return InputDecorator(
+            decoration: const InputDecoration(labelText: 'الفئة *'),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    state.message,
+                    style:
+                        TextStyle(color: Theme.of(context).colorScheme.error),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () => context.read<CategoriesCubit>().load(),
+                  child: const Text('إعادة'),
+                ),
+              ],
+            ),
+          );
+        }
+        return const InputDecorator(
+          decoration: InputDecoration(labelText: 'الفئة *'),
+          child: Row(
+            children: [
+              SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+              SizedBox(width: 12),
+              Text('جارٍ تحميل الفئات...'),
+            ],
           ),
         );
       },

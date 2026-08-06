@@ -19,6 +19,10 @@ class CategoryFormCubit extends Cubit<CategoryFormState> {
 
   CategoryFormCubit(this._service) : super(const CategoryFormState.initial());
 
+  /// Fetches the full category for the edit form. Throws [ApiException] on
+  /// failure so the screen can render a load-error state with retry.
+  Future<CategoryDetail> loadDetail(int id) => _service.getCategory(id);
+
   Future<void> create(CategoryRequest request) async {
     emit(const CategoryFormState.loading());
     try {

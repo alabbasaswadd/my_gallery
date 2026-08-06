@@ -8,7 +8,7 @@ import 'package:my_gallery/features/auth/domain/auth_cubit.dart';
 import 'package:my_gallery/features/auth/presentation/screens/login_screen.dart';
 import 'package:my_gallery/features/cart/domain/cart_cubit.dart';
 import 'package:my_gallery/features/cart/presentation/screens/cart_screen.dart';
-import 'package:my_gallery/features/categories/data/models/category_models.dart';
+import 'package:my_gallery/features/categories/domain/categories_cubit.dart';
 import 'package:my_gallery/features/categories/domain/category_form_cubit.dart';
 import 'package:my_gallery/features/categories/presentation/screens/category_form_screen.dart';
 import 'package:my_gallery/features/home/presentation/screens/home_screen.dart';
@@ -61,8 +61,11 @@ final router = GoRouter(
     // Static product routes must come before /:id to avoid "create" being parsed as an id
     GoRoute(
       path: '/products/create',
-      builder: (context, state) => BlocProvider(
-        create: (_) => sl<ProductFormCubit>(),
+      builder: (context, state) => MultiBlocProvider(
+        providers: [
+          BlocProvider(create: (_) => sl<ProductFormCubit>()),
+          BlocProvider(create: (_) => sl<CategoriesCubit>()),
+        ],
         child: const ProductFormScreen(),
       ),
     ),
@@ -70,8 +73,11 @@ final router = GoRouter(
       path: '/products/:id/edit',
       builder: (context, state) {
         final product = state.extra as ProductDetail?;
-        return BlocProvider(
-          create: (_) => sl<ProductFormCubit>(),
+        return MultiBlocProvider(
+          providers: [
+            BlocProvider(create: (_) => sl<ProductFormCubit>()),
+            BlocProvider(create: (_) => sl<CategoriesCubit>()),
+          ],
           child: ProductFormScreen(existing: product),
         );
       },
@@ -100,10 +106,10 @@ final router = GoRouter(
     GoRoute(
       path: '/categories/:id/edit',
       builder: (context, state) {
-        final cat = state.extra as CategoryDetail?;
+        final id = int.parse(state.pathParameters['id']!);
         return BlocProvider(
           create: (_) => sl<CategoryFormCubit>(),
-          child: CategoryFormScreen(existing: cat),
+          child: CategoryFormScreen(editId: id),
         );
       },
     ),
