@@ -6,6 +6,8 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:my_gallery/features/categories/data/models/category_models.dart';
 import 'package:my_gallery/features/categories/domain/categories_cubit.dart';
+import 'package:my_gallery/features/occasions/data/models/occasion_models.dart';
+import 'package:my_gallery/features/occasions/domain/occasions_cubit.dart';
 import 'package:my_gallery/features/products/data/image_rules.dart';
 import 'package:my_gallery/features/products/data/models/product_models.dart';
 import 'package:my_gallery/features/products/domain/product_form_cubit.dart';
@@ -29,6 +31,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
   late final TextEditingController _stock;
   late final TextEditingController _discount;
   int? _categoryId;
+  final Set<int> _occasionIds = {};
   bool _isFeatured = false;
   bool _isNew = false;
   bool _isAvailable = true;
@@ -60,7 +63,9 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     _isAvailable = p?.isAvailable ?? true;
     _isActive = p?.isActive ?? true;
     _coverId = p?.images.where((i) => i.isCover).firstOrNull?.id;
+    _occasionIds.addAll(p?.occasionIds ?? const []);
     context.read<CategoriesCubit>().load();
+    context.read<OccasionsCubit>().load();
   }
 
   @override
@@ -96,6 +101,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
       isNew: _isNew,
       isAvailable: _isAvailable,
       isActive: _isActive,
+      occasionIds: _occasionIds.toList(),
       removeImageIds: _removeIds.toList(),
       coverImageId: _isEditing ? _coverId : null,
     );
@@ -246,6 +252,8 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                   const SizedBox(height: 12),
                   _field(_desc, 'وصف تفصيلي — اختياري', maxLines: 4),
                   const SizedBox(height: 20),
+                  _buildOccasionSelector(context),
+                  const SizedBox(height: 20),
                   _buildImagesSection(context),
                   const SizedBox(height: 20),
                   Text('الخيارات',
@@ -266,6 +274,74 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildOccasionSelector(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('المناسبات', style: Theme.of(context).textTheme.titleMedium),
+        const SizedBox(height: 4),
+        Text(
+          'اختر المناسبات التي يناسبها هذا المنتج',
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+        const SizedBox(height: 8),
+        BlocBuilder<OccasionsCubit, OccasionsState>(
+          builder: (context, state) {
+            if (state is OccasionsLoaded) {
+              if (state.occasions.isEmpty) {
+                return Text('لا توجد مناسبات',
+                    style: Theme.of(context).textTheme.bodySmall);
+              }
+              return Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final OccasionListItem o in state.occasions)
+                    FilterChip(
+                      label: Text(o.name),
+                      selected: _occasionIds.contains(o.id),
+                      onSelected: (sel) => setState(() {
+                        if (sel) {
+                          _occasionIds.add(o.id);
+                        } else {
+                          _occasionIds.remove(o.id);
+                        }
+                      }),
+                    ),
+                ],
+              );
+            }
+            if (state is OccasionsError) {
+              return Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      state.message,
+                      style: TextStyle(
+                          color: Theme.of(context).colorScheme.error),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () => context.read<OccasionsCubit>().load(),
+                    child: const Text('إعادة'),
+                  ),
+                ],
+              );
+            }
+            return const Padding(
+              padding: EdgeInsets.symmetric(vertical: 8),
+              child: SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            );
+          },
+        ),
+      ],
     );
   }
 

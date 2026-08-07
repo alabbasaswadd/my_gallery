@@ -6,6 +6,9 @@ import 'package:my_gallery/features/cart/domain/cart_cubit.dart';
 import 'package:my_gallery/features/categories/data/categories_service.dart';
 import 'package:my_gallery/features/categories/domain/categories_cubit.dart';
 import 'package:my_gallery/features/categories/domain/category_form_cubit.dart';
+import 'package:my_gallery/features/occasions/data/occasions_service.dart';
+import 'package:my_gallery/features/occasions/domain/occasion_form_cubit.dart';
+import 'package:my_gallery/features/occasions/domain/occasions_cubit.dart';
 import 'package:my_gallery/features/orders/data/orders_service.dart';
 import 'package:my_gallery/features/orders/domain/order_detail_cubit.dart';
 import 'package:my_gallery/features/orders/domain/orders_list_cubit.dart';
@@ -32,6 +35,7 @@ Future<void> setupServiceLocator() async {
   sl.registerLazySingleton(() => StorefrontService(dio: ApiClient.dio));
   sl.registerLazySingleton(() => OrdersService(dio: ApiClient.dio));
   sl.registerLazySingleton(() => SettingsService(dio: ApiClient.dio));
+  sl.registerLazySingleton(() => OccasionsService(dio: ApiClient.dio));
 
   // Singletons — shared state across the app
   sl.registerLazySingleton(() => CartCubit());
@@ -45,6 +49,8 @@ Future<void> setupServiceLocator() async {
   sl.registerFactory(() => ProductFormCubit(sl<ProductsService>()));
   sl.registerFactory(() => CategoriesCubit(sl<CategoriesService>()));
   sl.registerFactory(() => CategoryFormCubit(sl<CategoriesService>()));
+  sl.registerFactory(() => OccasionsCubit(sl<OccasionsService>()));
+  sl.registerFactory(() => OccasionFormCubit(sl<OccasionsService>()));
   sl.registerFactory(() => StorefrontCubit(sl<StorefrontService>()));
   sl.registerFactory(() => CheckoutCubit(sl<StorefrontService>()));
   sl.registerFactory(() => OrdersListCubit(sl<OrdersService>()));

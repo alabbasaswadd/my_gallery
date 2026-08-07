@@ -4,9 +4,11 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:my_gallery/features/cart/domain/cart_cubit.dart';
+import 'package:my_gallery/features/occasions/data/models/occasion_models.dart';
 import 'package:my_gallery/features/settings/data/models/settings_models.dart';
 import 'package:my_gallery/features/settings/domain/settings_cubit.dart';
 import 'package:my_gallery/features/storefront/data/models/storefront_models.dart';
+import 'package:my_gallery/features/storefront/data/storefront_service.dart';
 import 'package:my_gallery/features/storefront/domain/storefront_cubit.dart';
 import 'package:my_gallery/shared/widgets/app_shimmer.dart';
 import 'package:my_gallery/shared/widgets/empty_state.dart';
@@ -107,6 +109,7 @@ class _StorefrontScreenState extends State<StorefrontScreen> {
               Column(
                 children: [
                   _buildHero(context),
+                  const _PopularOccasions(),
                   _buildSearch(context),
                   if (categoriesError != null)
                     _buildCategoriesError(context, categoriesError)
@@ -428,6 +431,94 @@ class _ProductCard extends StatelessWidget {
           .animate()
           .fadeIn(delay: (index * 40).ms, duration: 300.ms)
           .slideY(begin: 0.08, end: 0),
+    );
+  }
+}
+
+/// Horizontal "Popular Occasions" strip on the storefront home.
+class _PopularOccasions extends StatefulWidget {
+  const _PopularOccasions();
+
+  @override
+  State<_PopularOccasions> createState() => _PopularOccasionsState();
+}
+
+class _PopularOccasionsState extends State<_PopularOccasions> {
+  final _service = StorefrontService();
+  List<OccasionListItem> _occasions = const [];
+  bool _loaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    try {
+      final occasions = await _service.getOccasions();
+      if (mounted) {
+        setState(() {
+          _occasions = occasions;
+          _loaded = true;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => _loaded = true);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_loaded || _occasions.isEmpty) return const SizedBox.shrink();
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+          child: Text('مناسبات مميّزة', style: theme.textTheme.titleMedium),
+        ),
+        SizedBox(
+          height: 108,
+          child: ListView.separated(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            scrollDirection: Axis.horizontal,
+            itemCount: _occasions.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 12),
+            itemBuilder: (context, i) {
+              final o = _occasions[i];
+              return GestureDetector(
+                onTap: () => context.push('/storefront/occasions/${o.id}',
+                    extra: o.name),
+                child: SizedBox(
+                  width: 84,
+                  child: Column(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: AppNetworkImage(
+                          imagePath: o.imageUrl,
+                          width: 72,
+                          height: 72,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        o.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.bodySmall,
+                      ),
+                    ],
+                  ),
+                ),
+              ).animate().fadeIn(delay: (i * 50).ms, duration: 250.ms);
+            },
+          ),
+        ),
+      ],
     );
   }
 }
