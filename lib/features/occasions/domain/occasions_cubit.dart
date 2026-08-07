@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -19,6 +20,7 @@ sealed class OccasionsState with _$OccasionsState {
 
 class OccasionsCubit extends Cubit<OccasionsState> {
   final OccasionsService _service;
+  Timer? _pollTimer;
 
   OccasionsCubit(this._service) : super(const OccasionsState.initial());
 
@@ -29,6 +31,7 @@ class OccasionsCubit extends Cubit<OccasionsState> {
     try {
       _occasions = await _service.getOccasions();
       emit(OccasionsState.loaded(_occasions));
+      _startPolling();
     } on ApiException catch (e) {
       emit(OccasionsState.error(e.message));
     } catch (_) {
@@ -37,6 +40,33 @@ class OccasionsCubit extends Cubit<OccasionsState> {
   }
 
   Future<void> refresh() => load();
+
+  // ── Background polling ────────────────────────────────────────────────────
+
+  void _startPolling() {
+    _pollTimer?.cancel();
+    _pollTimer = Timer.periodic(
+      const Duration(seconds: 30),
+      (_) => _pollRefresh(),
+    );
+  }
+
+  Future<void> _pollRefresh() async {
+    if (isClosed || state is OccasionsLoading) return;
+    try {
+      final fresh = await _service.getOccasions();
+
+      String sig(List<OccasionListItem> list) =>
+          list.map((o) => '${o.id}:${o.isActive}:${o.productCount}').join('|');
+
+      if (fresh.length != _occasions.length || sig(fresh) != sig(_occasions)) {
+        _occasions = fresh;
+        if (!isClosed) emit(OccasionsState.loaded(_occasions));
+      }
+    } catch (_) {
+      // Silent: background failures must not disrupt the visible UI
+    }
+  }
 
   Future<void> toggleActive(int id, bool currentlyActive) async {
     try {
@@ -81,5 +111,11 @@ class OccasionsCubit extends Cubit<OccasionsState> {
     } on ApiException catch (e) {
       emit(OccasionsState.error(e.message));
     }
+  }
+
+  @override
+  Future<void> close() {
+    _pollTimer?.cancel();
+    return super.close();
   }
 }

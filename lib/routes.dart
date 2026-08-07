@@ -38,6 +38,8 @@ import 'package:my_gallery/features/settings/domain/social_links_cubit.dart';
 import 'package:my_gallery/features/settings/presentation/screens/site_customization_screen.dart';
 import 'package:my_gallery/features/settings/presentation/screens/social_links_screen.dart';
 import 'package:my_gallery/features/storefront/presentation/screens/storefront_screen.dart';
+import 'package:my_gallery/features/onboarding/data/onboarding_repository.dart';
+import 'package:my_gallery/features/onboarding/presentation/screens/onboarding_screen.dart';
 
 final _authCubit = AuthCubit(sl<AuthService>());
 
@@ -46,13 +48,21 @@ final router = GoRouter(
   refreshListenable: SessionNotifier.instance,
   redirect: (context, state) async {
     final location = state.matchedLocation;
+    final onboardingDone = await OnboardingRepository().isCompleted();
+    if (!onboardingDone && location != '/onboarding') return '/onboarding';
     final hasSession = await SecureStorage.hasValidSession();
-    final isPublic = location == '/' || location.startsWith('/storefront');
+    final isPublic = location == '/' ||
+        location.startsWith('/storefront') ||
+        location == '/onboarding';
     if (!hasSession && !isPublic) return '/';
     if (hasSession && location == '/') return '/home';
     return null;
   },
   routes: [
+    GoRoute(
+      path: '/onboarding',
+      builder: (context, state) => const OnboardingScreen(),
+    ),
     GoRoute(
       path: '/',
       builder: (context, state) =>

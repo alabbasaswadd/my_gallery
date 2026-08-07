@@ -27,6 +27,7 @@ dependencies:
 
   # Routing
   go_router: ^17.1.0
+  smooth_page_indicator: ^1.1.0
 
   # Networking
   dio: ^5.7.0
@@ -57,6 +58,16 @@ dev_dependencies:
   freezed: ^3.0.6
   retrofit_generator: ^10.2.5
   build_runner: ^2.4.15
+  flutter_launcher_icons: ^0.14.1
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  remove_alpha_ios: true
+  image_path: "assets/images/app_icon.png"
+  adaptive_icon_background: "#4338CA"
+  adaptive_icon_foreground: "assets/images/app_icon_fg.png"
+  min_sdk_android: 21
 
 flutter:
   generate: true
