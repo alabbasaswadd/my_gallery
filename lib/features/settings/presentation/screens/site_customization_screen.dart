@@ -12,7 +12,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:my_gallery/core/components/app_snackbar.dart';
 import 'package:my_gallery/core/config/app_config.dart';
 import 'package:my_gallery/features/settings/data/models/settings_models.dart';
-import 'package:my_gallery/features/settings/domain/settings_cubit.dart';
 import 'package:my_gallery/features/settings/domain/site_customization_cubit.dart';
 import 'package:my_gallery/features/settings/domain/theme_cubit.dart';
 import 'package:my_gallery/theme.dart';

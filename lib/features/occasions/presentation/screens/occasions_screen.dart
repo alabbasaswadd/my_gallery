@@ -24,6 +24,16 @@ class _OccasionsScreenState extends State<OccasionsScreen> {
     context.read<OccasionsCubit>().load();
   }
 
+  Future<void> _openCreate() async {
+    await context.push('/occasions/create');
+    if (mounted) context.read<OccasionsCubit>().refresh();
+  }
+
+  Future<void> _openEdit(int id) async {
+    await context.push('/occasions/$id/edit');
+    if (mounted) context.read<OccasionsCubit>().refresh();
+  }
+
   bool _canManage(BuildContext context) {
     final authState = context.watch<AuthCubit>().state;
     if (authState is AuthAuthenticated) {
@@ -45,7 +55,7 @@ class _OccasionsScreenState extends State<OccasionsScreen> {
           if (canManage)
             IconButton(
               icon: const Icon(Icons.add),
-              onPressed: () => context.push('/occasions/create'),
+              onPressed: _openCreate,
             ),
         ],
       ),
@@ -68,8 +78,7 @@ class _OccasionsScreenState extends State<OccasionsScreen> {
                     message: 'لا توجد مناسبات',
                     icon: Icons.celebration_outlined,
                     actionLabel: canManage ? 'إضافة مناسبة' : null,
-                    onAction:
-                        canManage ? () => context.push('/occasions/create') : null,
+                    onAction: canManage ? _openCreate : null,
                   )
                 : RefreshIndicator(
                     onRefresh: () => context.read<OccasionsCubit>().refresh(),
@@ -96,8 +105,7 @@ class _OccasionsScreenState extends State<OccasionsScreen> {
                           onToggleActive: () => context
                               .read<OccasionsCubit>()
                               .toggleActive(occasion.id, occasion.isActive),
-                          onEdit: () =>
-                              context.push('/occasions/${occasion.id}/edit'),
+                          onEdit: () => _openEdit(occasion.id),
                           onDelete: () => _confirmDelete(context, occasion),
                         );
                       },

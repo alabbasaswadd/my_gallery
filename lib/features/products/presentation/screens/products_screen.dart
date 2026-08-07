@@ -52,28 +52,14 @@ class _ProductsScreenState extends State<ProductsScreen> {
     cubit.applyFilter(cubit.currentFilter.copyWith(search: query, page: 1));
   }
 
-  /// Refreshes everything the home surface depends on: products, categories,
-  /// and the shop identity (settings → hero slider, store info, cache). The
-  /// SettingsCubit re-caches on load, so the local cache is refreshed too.
-  Future<void> _refreshAll({bool silent = false}) async {
-    final authState = context.read<AuthCubit>().state;
-    final shopId = authState is AuthAuthenticated
-        ? authState.user.shopId
-        : AppConfig.shopId;
-    await Future.wait([
-      context.read<ProductsListCubit>().refresh(),
-      context.read<CategoriesCubit>().load(),
-      context.read<SettingsCubit>().load(shopId),
-    ]);
-    if (!silent && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('تم تحديث البيانات'),
-          behavior: SnackBarBehavior.floating,
-          duration: Duration(seconds: 1),
-        ),
-      );
-    }
+  Future<void> _openCreate() async {
+    await context.push('/products/create');
+    if (mounted) context.read<ProductsListCubit>().refresh();
+  }
+
+  Future<void> _openProduct(int id) async {
+    await context.push('/products/$id');
+    if (mounted) context.read<ProductsListCubit>().refresh();
   }
 
   void _showFilter(BuildContext context, ProductFilter current) {
@@ -140,10 +126,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
             onPressed: () => context.push('/storefront'),
           ),
           if (canManage)
-            IconButton(
-              icon: const Icon(Icons.add),
-              onPressed: () => context.push('/products/create'),
-            ),
+            IconButton(icon: const Icon(Icons.add), onPressed: _openCreate),
         ],
       ),
       body: Column(
@@ -191,20 +174,28 @@ class _ProductsScreenState extends State<ProductsScreen> {
   Widget _buildBody() {
     return BlocBuilder<ProductsListCubit, ProductsListState>(
       builder: (context, state) {
-        return switch (state) {
-          ProductsListLoading() => _buildShimmer(),
-          ProductsListLoaded(:final items, :final pagination) =>
-            items.isEmpty
-                ? EmptyState(
-                    message: 'لا توجد منتجات',
-                    icon: Icons.inventory_2_outlined,
-                    actionLabel: 'إضافة منتج',
-                    onAction: () => context.push('/products/create'),
-                  )
-                : RefreshIndicator(
-                    onRefresh: () => _refreshAll(silent: true),
-                    child: GridView.builder(
+        return RefreshIndicator(
+          onRefresh: () => context.read<ProductsListCubit>().refresh(),
+          child: switch (state) {
+            ProductsListLoading() => _buildShimmer(),
+            ProductsListLoaded(:final items, :final pagination) =>
+              items.isEmpty
+                  ? CustomScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      slivers: [
+                        SliverFillRemaining(
+                          child: EmptyState(
+                            message: 'لا توجد منتجات',
+                            icon: Icons.inventory_2_outlined,
+                            actionLabel: 'إضافة منتج',
+                            onAction: _openCreate,
+                          ),
+                        ),
+                      ],
+                    )
+                  : GridView.builder(
                       controller: _scrollCtrl,
+                      physics: const AlwaysScrollableScrollPhysics(),
                       padding: const EdgeInsets.all(16),
                       gridDelegate:
                           const SliverGridDelegateWithFixedCrossAxisCount(
@@ -222,23 +213,24 @@ class _ProductsScreenState extends State<ProductsScreen> {
                         return ProductCard(
                           product: product,
                           index: i,
-                          onTap: () => context.push('/products/${product.id}'),
+                          onTap: () => _openProduct(product.id),
                         );
                       },
                     ),
-                  ),
-          ProductsListError(:final message) => ErrorState(
-            message: message,
-            onRetry: () => context.read<ProductsListCubit>().load(),
-          ),
-          _ => const SizedBox.shrink(),
-        };
+            ProductsListError(:final message) => ErrorState(
+              message: message,
+              onRetry: () => context.read<ProductsListCubit>().load(),
+            ),
+            _ => const SizedBox.shrink(),
+          },
+        );
       },
     );
   }
 
   Widget _buildShimmer() {
     return GridView.builder(
+      physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.all(16),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,

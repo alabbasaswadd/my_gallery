@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:my_gallery/core/network/api_exception.dart';
@@ -21,6 +23,7 @@ sealed class OrdersListState with _$OrdersListState {
 
 class OrdersListCubit extends Cubit<OrdersListState> {
   final OrdersService _service;
+  Timer? _pollTimer;
 
   OrdersListCubit(this._service) : super(const OrdersListState.initial());
 
@@ -64,13 +67,13 @@ class OrdersListCubit extends Cubit<OrdersListState> {
         _orders = resp.data ?? [];
       }
       _pagination = resp.pagination ?? const PaginationMeta();
-      emit(
-        OrdersListState.loaded(
-          orders: _orders,
-          pagination: _pagination,
-          statusFilter: _status,
-        ),
-      );
+      emit(OrdersListState.loaded(
+        orders: _orders,
+        pagination: _pagination,
+        statusFilter: _status,
+      ));
+      // Start/restart the background poll after every fresh (non-append) load
+      if (!append) _startPolling();
     } on ApiException catch (e) {
       emit(OrdersListState.error(e.message));
     } catch (_) {
@@ -78,13 +81,62 @@ class OrdersListCubit extends Cubit<OrdersListState> {
     }
   }
 
+  // ── Background polling ────────────────────────────────────────────────────
+
+  void _startPolling() {
+    _pollTimer?.cancel();
+    _pollTimer = Timer.periodic(
+      const Duration(seconds: 20),
+      (_) => _pollRefresh(),
+    );
+  }
+
+  Future<void> _pollRefresh() async {
+    // Skip if a user-initiated fetch is in progress or the cubit is closed
+    if (_fetching || isClosed || state is OrdersListLoading) return;
+    try {
+      final resp = await _service.getOrders(
+        status: _status == 'All' ? null : _status,
+        page: 1,
+      );
+      final fresh = resp.data ?? [];
+
+      // Compare a short signature of the top items (id + status).
+      // Emitting only on an actual change avoids unnecessary rebuilds.
+      String sig(List<OrderListItem> list) =>
+          list.take(10).map((o) => '${o.id}:${o.status}').join('|');
+
+      if (fresh.length != _orders.length || sig(fresh) != sig(_orders)) {
+        _orders = fresh;
+        _pagination = resp.pagination ?? _pagination;
+        if (!isClosed) {
+          emit(OrdersListState.loaded(
+            orders: _orders,
+            pagination: _pagination,
+            statusFilter: _status,
+          ));
+        }
+      }
+    } catch (_) {
+      // Silent: background failures must not disrupt the visible UI
+    }
+  }
+
+  // ── Sync helper called by OrderDetailScreen ───────────────────────────────
+
   void updateOrderStatus(int orderId, String newStatus) {
-    _orders = _orders.map((o) {
-      return o.id == orderId ? o.copyWith(status: newStatus) : o;
-    }).toList();
+    _orders = _orders
+        .map((o) => o.id == orderId ? o.copyWith(status: newStatus) : o)
+        .toList();
     final current = state;
     if (current is OrdersListLoaded) {
       emit(current.copyWith(orders: _orders));
     }
+  }
+
+  @override
+  Future<void> close() {
+    _pollTimer?.cancel();
+    return super.close();
   }
 }

@@ -131,8 +131,8 @@ class _StorefrontProductDetailScreenState
                       right: 6,
                       child: Container(
                         padding: const EdgeInsets.all(4),
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFC0446A),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.primary,
                           shape: BoxShape.circle,
                         ),
                         child: Text(
@@ -190,7 +190,7 @@ class _StorefrontProductDetailScreenState
                     decoration: BoxDecoration(
                       color: _carousel == i
                           ? theme.colorScheme.primary
-                          : Colors.grey[300],
+                          : theme.colorScheme.outlineVariant,
                       borderRadius: BorderRadius.circular(4),
                     ),
                   );
