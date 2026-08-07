@@ -24,6 +24,17 @@ _StorefrontSettings _$StorefrontSettingsFromJson(Map<String, dynamic> json) =>
       brandName: json['brandName'] as String,
       logo: json['logo'] as String?,
       favicon: json['favicon'] as String?,
+      website: json['website'] as String? ?? '',
+      primaryColor: json['primaryColor'] as String? ?? '#C0446A',
+      secondaryColor: json['secondaryColor'] as String? ?? '#3C2A34',
+      accentColor: json['accentColor'] as String? ?? '#D4A02A',
+      backgroundColor: json['backgroundColor'] as String? ?? '#FBF7F4',
+      surfaceColor: json['surfaceColor'] as String? ?? '#FFFFFF',
+      textColor: json['textColor'] as String? ?? '#2A2024',
+      borderRadius: json['borderRadius'] == null
+          ? 16.0
+          : radiusFromJson(json['borderRadius']),
+      fontFamily: json['fontFamily'] as String? ?? 'Tajawal',
       heroSlides:
           (json['heroSlides'] as List<dynamic>?)
               ?.map((e) => HeroSlide.fromJson(e as Map<String, dynamic>))
@@ -32,7 +43,6 @@ _StorefrontSettings _$StorefrontSettingsFromJson(Map<String, dynamic> json) =>
       social: json['social'] == null
           ? const SocialLinks()
           : SocialLinks.fromJson(json['social'] as Map<String, dynamic>),
-      website: json['website'] as String? ?? '',
     );
 
 Map<String, dynamic> _$StorefrontSettingsToJson(_StorefrontSettings instance) =>
@@ -40,9 +50,17 @@ Map<String, dynamic> _$StorefrontSettingsToJson(_StorefrontSettings instance) =>
       'brandName': instance.brandName,
       'logo': instance.logo,
       'favicon': instance.favicon,
+      'website': instance.website,
+      'primaryColor': instance.primaryColor,
+      'secondaryColor': instance.secondaryColor,
+      'accentColor': instance.accentColor,
+      'backgroundColor': instance.backgroundColor,
+      'surfaceColor': instance.surfaceColor,
+      'textColor': instance.textColor,
+      'borderRadius': instance.borderRadius,
+      'fontFamily': instance.fontFamily,
       'heroSlides': instance.heroSlides,
       'social': instance.social,
-      'website': instance.website,
     };
 
 _HeroSlide _$HeroSlideFromJson(Map<String, dynamic> json) => _HeroSlide(
