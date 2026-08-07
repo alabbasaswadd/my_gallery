@@ -7,6 +7,7 @@ import 'package:my_gallery/core/network/api_exception.dart';
 import 'package:my_gallery/features/cart/data/models/cart_item.dart';
 import 'package:my_gallery/features/cart/domain/cart_cubit.dart';
 import 'package:my_gallery/features/storefront/data/models/storefront_models.dart';
+import 'package:my_gallery/features/products/presentation/widgets/product_share_sheet.dart';
 import 'package:my_gallery/features/storefront/data/storefront_service.dart';
 import 'package:my_gallery/shared/widgets/empty_state.dart';
 import 'package:my_gallery/shared/widgets/network_image.dart';
@@ -35,8 +36,9 @@ class _StorefrontProductDetailScreenState
 
   Future<void> _load() async {
     try {
-      final product =
-          await context.read<StorefrontService>().getProduct(widget.productId);
+      final product = await context.read<StorefrontService>().getProduct(
+        widget.productId,
+      );
       if (mounted) {
         setState(() {
           _product = product;
@@ -68,12 +70,14 @@ class _StorefrontProductDetailScreenState
           ? p.images.first
           : const StorefrontImage(id: 0, url: ''),
     );
-    context.read<CartCubit>().add(CartItem(
-          productId: p.id,
-          name: p.name,
-          unitPrice: effectivePrice,
-          imageUrl: coverImage.url.isNotEmpty ? coverImage.url : null,
-        ));
+    context.read<CartCubit>().add(
+      CartItem(
+        productId: p.id,
+        name: p.name,
+        unitPrice: effectivePrice,
+        imageUrl: coverImage.url.isNotEmpty ? coverImage.url : null,
+      ),
+    );
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('تمت الإضافة إلى السلة: ${p.name}'),
@@ -102,6 +106,15 @@ class _StorefrontProductDetailScreenState
       appBar: AppBar(
         title: Text(p.name),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.share_outlined),
+            tooltip: 'مشاركة',
+            onPressed: () => showProductShareSheet(
+              context,
+              productId: p.id,
+              productName: p.name,
+            ),
+          ),
           BlocBuilder<CartCubit, CartState>(
             builder: (_, cartState) {
               final count = cartState.items.fold(0, (s, i) => s + i.quantity);
@@ -122,9 +135,13 @@ class _StorefrontProductDetailScreenState
                           color: Color(0xFFC0446A),
                           shape: BoxShape.circle,
                         ),
-                        child: Text('$count',
-                            style: const TextStyle(
-                                color: Colors.white, fontSize: 10)),
+                        child: Text(
+                          '$count',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                          ),
+                        ),
                       ),
                     ),
                 ],
@@ -192,9 +209,10 @@ class _StorefrontProductDetailScreenState
                 ),
               ),
             const SizedBox(height: 20),
-            Text(p.name, style: theme.textTheme.headlineMedium)
-                .animate()
-                .fadeIn(duration: 250.ms),
+            Text(
+              p.name,
+              style: theme.textTheme.headlineMedium,
+            ).animate().fadeIn(duration: 250.ms),
             const SizedBox(height: 8),
             Row(
               children: [
@@ -211,8 +229,7 @@ class _StorefrontProductDetailScreenState
                     '${p.price.toStringAsFixed(0)} س.ل',
                     style: theme.textTheme.bodyMedium?.copyWith(
                       decoration: TextDecoration.lineThrough,
-                      color:
-                          theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
                     ),
                   ),
                 ],
