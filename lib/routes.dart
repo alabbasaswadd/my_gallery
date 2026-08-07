@@ -41,7 +41,7 @@ import 'package:my_gallery/features/storefront/presentation/screens/storefront_s
 
 final _authCubit = AuthCubit(sl<AuthService>());
 
-final router = GoRouter(
+final router = GoRouter(  
   initialLocation: '/',
   refreshListenable: SessionNotifier.instance,
   redirect: (context, state) async {
@@ -83,6 +83,7 @@ final router = GoRouter(
           providers: [
             BlocProvider(create: (_) => sl<ProductFormCubit>()),
             BlocProvider(create: (_) => sl<CategoriesCubit>()),
+            BlocProvider(create: (_) => sl<OccasionsCubit>()),
           ],
           child: ProductFormScreen(existing: product),
         );
@@ -125,8 +126,11 @@ final router = GoRouter(
     // ------------------------------------
     GoRoute(
       path: '/occasions',
-      builder: (context, state) => BlocProvider(
-        create: (_) => sl<OccasionsCubit>(),
+      builder: (context, state) => MultiBlocProvider(
+        providers: [
+          BlocProvider.value(value: _authCubit),
+          BlocProvider(create: (_) => sl<OccasionsCubit>()),
+        ],
         child: const OccasionsScreen(),
       ),
     ),

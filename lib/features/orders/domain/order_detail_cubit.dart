@@ -42,6 +42,10 @@ class OrderDetailCubit extends Cubit<OrderDetailState> {
       emit(OrderDetailState.loaded(current.order));
       emit(OrderDetailState.error(e.message));
       emit(OrderDetailState.loaded(current.order));
+    } catch (_) {
+      emit(OrderDetailState.loaded(current.order));
+      emit(const OrderDetailState.error('فشل تحديث الحالة'));
+      emit(OrderDetailState.loaded(current.order));
     }
   }
 }

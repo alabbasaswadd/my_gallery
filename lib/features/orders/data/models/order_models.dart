@@ -41,7 +41,7 @@ sealed class OrderDetail with _$OrderDetail {
 @freezed
 sealed class OrderDetailItem with _$OrderDetailItem {
   const factory OrderDetailItem({
-    required int id,
+    @JsonKey(name: 'productId') required int id,
     required String productName,
     required double unitPrice,
     required int quantity,
