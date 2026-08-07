@@ -130,3 +130,27 @@ These require adding controllers/handlers/DTOs/validators (and in some cases mig
 - [ ] Product detail add/replace/cover/delete image works.
 - [ ] Products filter by category works and clears.
 - [ ] Storefront shows hero slides.
+
+---
+
+## Addendum — Product Sharing / QR / Details Redesign phase (2026-08-07)
+
+A new UX phase on `feature/qa-implementation`. Full detail: **`QA/PRODUCT_SHARING_REPORT.md`**.
+
+- **Product Details** fully redesigned (Material 3): rounded image gallery (counter + cover badge +
+  per-image menu), header card (status chips, price + strikethrough + discount %, stock-availability
+  pill), quick-actions card, product-information card, category + occasions card, description card,
+  skeleton loading state, staggered animations, RTL-safe.
+- **Sharing** — Copy link / Share link / Open in browser from Product Details (admin + storefront).
+- **Product QR** & **Store QR** — printable card (logo, name, product name, QR, URL); Save PNG to
+  gallery (`gal`), Share image (`share_plus`), Copy URL. QR encodes only the URL.
+- **Home refresh** — AppBar button + pull-to-refresh reload products + categories + settings
+  (hero slider / store info / cache re-written).
+- **Backend**: no changes needed — reuses `settings.website` + product `id` (`{website}/product/{id}`);
+  products have no slug, so id is used per "prefer slug, otherwise id".
+- **Deps added**: `share_plus`, `qr_flutter`, `path_provider`, `gal` (+ Android/iOS gallery-save config).
+  `pubspec.yaml` SDK floor lowered to `>=3.10.0 <4.0.0` (backward compatible) to resolve on the
+  installed SDK.
+- **Verification**: `dart format` applied; `flutter analyze/test/build` **still blocked** by the
+  Flutter 3.38.4 vs 3.44.9 SDK gap. **Pushed unverified by explicit user decision** — see
+  `QA/PUSH_BLOCKERS.md`.

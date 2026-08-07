@@ -1,6 +1,19 @@
 # PUSH_BLOCKERS.md
 
-**Status: PUSH HELD.** Per the mission rule ("run flutter analyze / flutter test … if anything fails, create QA/PUSH_BLOCKERS.md and do NOT push"), the Flutter verification gate cannot be executed in this environment, so the branch was **committed locally but NOT pushed**.
+**Status (2026-08-07 · Product-Sharing/QR phase): PUSHED, UNVERIFIED — by explicit user decision.**
+The Flutter verification gate (`build_runner` / `flutter analyze` / `flutter test`) still cannot run
+in this environment (same SDK gap as below). The user reviewed this and chose to **push the branch
+now without local verification**. The new sharing/QR/product-details code is self-contained, uses no
+`build_runner` codegen, and was authored to be analyzer-clean; the outstanding analyzer errors are
+**pre-existing and environmental** (missing generated `*.freezed.dart`/`*.g.dart`, e.g. occasions)
+and resolve once the team runs `build_runner` on Flutter 3.44.9.
+
+**The team MUST still run the reviewer checklist below on Flutter ~3.44.9 before merging.**
+
+---
+
+### Earlier status (Occasions phase): PUSH HELD.
+Per the mission rule ("run flutter analyze / flutter test … if anything fails, create QA/PUSH_BLOCKERS.md and do NOT push"), the Flutter verification gate could not be executed in this environment, so that phase was committed locally but not pushed.
 
 ## What passed
 - ✅ **Backend `dotnet build`** — clean (0 warnings / 0 errors) on .NET 10 after every commit.

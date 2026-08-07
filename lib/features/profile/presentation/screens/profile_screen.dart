@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:my_gallery/core/utils/store_links.dart';
 import 'package:my_gallery/features/auth/domain/auth_cubit.dart';
+import 'package:my_gallery/features/settings/data/models/settings_models.dart';
 import 'package:my_gallery/features/settings/domain/settings_cubit.dart';
+import 'package:my_gallery/shared/widgets/qr_export_screen.dart';
 import 'package:my_gallery/shared/widgets/theme_toggle_button.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -52,6 +55,16 @@ class ProfileScreen extends StatelessWidget {
                     ),
                   ).animate().fadeIn(delay: 320.ms, duration: 250.ms),
                 ],
+                const SizedBox(height: 16),
+                Card(
+                  child: ListTile(
+                    leading: Icon(Icons.qr_code_2_rounded, color: cs.primary),
+                    title: const Text('رمز QR للمتجر'),
+                    subtitle: const Text('لمشاركة رابط المتجر بسهولة'),
+                    trailing: const Icon(Icons.chevron_left),
+                    onTap: () => _openStoreQr(context, settings),
+                  ),
+                ).animate().fadeIn(delay: 330.ms, duration: 250.ms),
                 if (user.role == 'Owner' || user.role == 'Manager') ...[
                   const SizedBox(height: 16),
                   Card(
@@ -66,8 +79,10 @@ class ProfileScreen extends StatelessWidget {
                   const SizedBox(height: 16),
                   Card(
                     child: ListTile(
-                      leading:
-                          Icon(Icons.celebration_outlined, color: cs.primary),
+                      leading: Icon(
+                        Icons.celebration_outlined,
+                        color: cs.primary,
+                      ),
                       title: const Text('إدارة المناسبات'),
                       subtitle: const Text('الزفاف، عيد الميلاد، التخرّج…'),
                       trailing: const Icon(Icons.chevron_right),
@@ -89,8 +104,10 @@ class ProfileScreen extends StatelessWidget {
                 OutlinedButton.icon(
                   onPressed: () => _confirmLogout(context),
                   icon: Icon(Icons.logout, color: cs.error),
-                  label: Text('تسجيل الخروج',
-                      style: TextStyle(color: cs.error)),
+                  label: Text(
+                    'تسجيل الخروج',
+                    style: TextStyle(color: cs.error),
+                  ),
                   style: OutlinedButton.styleFrom(
                     side: BorderSide(color: cs.error),
                     minimumSize: const Size.fromHeight(52),
@@ -112,17 +129,20 @@ class ProfileScreen extends StatelessWidget {
       child: Column(
         children: [
           CircleAvatar(
-            radius: 48,
-            backgroundColor: cs.primary,
-            child: Text(
-              initials,
-              style: TextStyle(
-                color: cs.onPrimary,
-                fontSize: 28,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ).animate().fadeIn(duration: 400.ms).scale(begin: const Offset(0.8, 0.8)),
+                radius: 48,
+                backgroundColor: cs.primary,
+                child: Text(
+                  initials,
+                  style: TextStyle(
+                    color: cs.onPrimary,
+                    fontSize: 28,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              )
+              .animate()
+              .fadeIn(duration: 400.ms)
+              .scale(begin: const Offset(0.8, 0.8)),
           const SizedBox(height: 12),
           Text(
             fullName,
@@ -145,15 +165,20 @@ class ProfileScreen extends StatelessWidget {
           return Column(
             children: [
               ListTile(
-                leading: Icon(item.$1,
-                    color: Theme.of(context).colorScheme.primary),
-                title: Text(item.$2,
-                    style: Theme.of(context).textTheme.bodySmall),
-                subtitle: Text(item.$3,
-                    style: Theme.of(context).textTheme.titleMedium),
+                leading: Icon(
+                  item.$1,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                title: Text(
+                  item.$2,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                subtitle: Text(
+                  item.$3,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
               ).animate().fadeIn(delay: (i * 60 + 150).ms, duration: 250.ms),
-              if (i < items.length - 1)
-                const Divider(height: 1, indent: 56),
+              if (i < items.length - 1) const Divider(height: 1, indent: 56),
             ],
           );
         }).toList(),
@@ -191,20 +216,44 @@ class ProfileScreen extends StatelessWidget {
   }
 
   String _roleLabel(String role) => switch (role) {
-        'Owner' => 'مالك',
-        'Manager' => 'مدير',
-        'Employee' => 'موظف',
-        _ => role,
-      };
+    'Owner' => 'مالك',
+    'Manager' => 'مدير',
+    'Employee' => 'موظف',
+    _ => role,
+  };
+
+  void _openStoreQr(BuildContext context, StorefrontSettings settings) {
+    final url = StoreLinks.storeUrl(settings);
+    if (url == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('أضف رابط الموقع من إعدادات المظهر أولاً'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => QrExportScreen(
+          appBarTitle: 'رمز QR للمتجر',
+          url: url,
+          storeName: settings.brandName,
+          logoUrl: settings.logo,
+          fileBaseName: 'store_qr',
+        ),
+      ),
+    );
+  }
 
   Future<void> _launchWebsite(BuildContext context, String url) async {
     final uri = Uri.tryParse(url);
     if (uri == null) return;
     final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (!ok && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('تعذّر فتح الموقع')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('تعذّر فتح الموقع')));
     }
   }
 
@@ -217,8 +266,9 @@ class ProfileScreen extends StatelessWidget {
         content: const Text('هل تريد تسجيل الخروج؟'),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('إلغاء')),
+            onPressed: () => Navigator.pop(context),
+            child: const Text('إلغاء'),
+          ),
           TextButton(
             onPressed: () {
               Navigator.pop(context);

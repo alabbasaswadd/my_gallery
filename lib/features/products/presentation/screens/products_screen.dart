@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:my_gallery/core/config/app_config.dart';
 import 'package:my_gallery/features/auth/domain/auth_cubit.dart';
 import 'package:my_gallery/features/categories/data/models/category_models.dart';
 import 'package:my_gallery/features/categories/domain/categories_cubit.dart';
@@ -108,6 +109,11 @@ class _ProductsScreenState extends State<ProductsScreen> {
         ),
         actions: [
           const ThemeToggleButton(),
+          IconButton(
+            icon: const Icon(Icons.refresh_rounded),
+            tooltip: 'تحديث',
+            onPressed: () => _refreshAll(),
+          ),
           if (website.isNotEmpty)
             IconButton(
               icon: const Icon(Icons.public_rounded),
