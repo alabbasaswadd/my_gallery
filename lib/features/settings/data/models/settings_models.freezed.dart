@@ -278,7 +278,9 @@ as String,
 /// @nodoc
 mixin _$StorefrontSettings {
 
- String get brandName; String? get logo; String? get favicon; List<HeroSlide> get heroSlides; SocialLinks get social; String get website;
+ String get brandName; String? get logo; String? get favicon; String get website;// ── Visual identity palette (hex #RRGGBB strings on the wire) ───────────
+ String get primaryColor; String get secondaryColor; String get accentColor; String get backgroundColor; String get surfaceColor; String get textColor;// Server sends a CSS string like "16px"; parsed to a double for rendering.
+@JsonKey(fromJson: radiusFromJson) double get borderRadius; String get fontFamily; List<HeroSlide> get heroSlides; SocialLinks get social;
 /// Create a copy of StorefrontSettings
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -291,16 +293,16 @@ $StorefrontSettingsCopyWith<StorefrontSettings> get copyWith => _$StorefrontSett
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is StorefrontSettings&&(identical(other.brandName, brandName) || other.brandName == brandName)&&(identical(other.logo, logo) || other.logo == logo)&&(identical(other.favicon, favicon) || other.favicon == favicon)&&const DeepCollectionEquality().equals(other.heroSlides, heroSlides)&&(identical(other.social, social) || other.social == social)&&(identical(other.website, website) || other.website == website));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is StorefrontSettings&&(identical(other.brandName, brandName) || other.brandName == brandName)&&(identical(other.logo, logo) || other.logo == logo)&&(identical(other.favicon, favicon) || other.favicon == favicon)&&(identical(other.website, website) || other.website == website)&&(identical(other.primaryColor, primaryColor) || other.primaryColor == primaryColor)&&(identical(other.secondaryColor, secondaryColor) || other.secondaryColor == secondaryColor)&&(identical(other.accentColor, accentColor) || other.accentColor == accentColor)&&(identical(other.backgroundColor, backgroundColor) || other.backgroundColor == backgroundColor)&&(identical(other.surfaceColor, surfaceColor) || other.surfaceColor == surfaceColor)&&(identical(other.textColor, textColor) || other.textColor == textColor)&&(identical(other.borderRadius, borderRadius) || other.borderRadius == borderRadius)&&(identical(other.fontFamily, fontFamily) || other.fontFamily == fontFamily)&&const DeepCollectionEquality().equals(other.heroSlides, heroSlides)&&(identical(other.social, social) || other.social == social));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,brandName,logo,favicon,const DeepCollectionEquality().hash(heroSlides),social,website);
+int get hashCode => Object.hash(runtimeType,brandName,logo,favicon,website,primaryColor,secondaryColor,accentColor,backgroundColor,surfaceColor,textColor,borderRadius,fontFamily,const DeepCollectionEquality().hash(heroSlides),social);
 
 @override
 String toString() {
-  return 'StorefrontSettings(brandName: $brandName, logo: $logo, favicon: $favicon, heroSlides: $heroSlides, social: $social, website: $website)';
+  return 'StorefrontSettings(brandName: $brandName, logo: $logo, favicon: $favicon, website: $website, primaryColor: $primaryColor, secondaryColor: $secondaryColor, accentColor: $accentColor, backgroundColor: $backgroundColor, surfaceColor: $surfaceColor, textColor: $textColor, borderRadius: $borderRadius, fontFamily: $fontFamily, heroSlides: $heroSlides, social: $social)';
 }
 
 
@@ -311,7 +313,7 @@ abstract mixin class $StorefrontSettingsCopyWith<$Res>  {
   factory $StorefrontSettingsCopyWith(StorefrontSettings value, $Res Function(StorefrontSettings) _then) = _$StorefrontSettingsCopyWithImpl;
 @useResult
 $Res call({
- String brandName, String? logo, String? favicon, List<HeroSlide> heroSlides, SocialLinks social, String website
+ String brandName, String? logo, String? favicon, String website, String primaryColor, String secondaryColor, String accentColor, String backgroundColor, String surfaceColor, String textColor,@JsonKey(fromJson: radiusFromJson) double borderRadius, String fontFamily, List<HeroSlide> heroSlides, SocialLinks social
 });
 
 
@@ -328,15 +330,23 @@ class _$StorefrontSettingsCopyWithImpl<$Res>
 
 /// Create a copy of StorefrontSettings
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? brandName = null,Object? logo = freezed,Object? favicon = freezed,Object? heroSlides = null,Object? social = null,Object? website = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? brandName = null,Object? logo = freezed,Object? favicon = freezed,Object? website = null,Object? primaryColor = null,Object? secondaryColor = null,Object? accentColor = null,Object? backgroundColor = null,Object? surfaceColor = null,Object? textColor = null,Object? borderRadius = null,Object? fontFamily = null,Object? heroSlides = null,Object? social = null,}) {
   return _then(_self.copyWith(
 brandName: null == brandName ? _self.brandName : brandName // ignore: cast_nullable_to_non_nullable
 as String,logo: freezed == logo ? _self.logo : logo // ignore: cast_nullable_to_non_nullable
 as String?,favicon: freezed == favicon ? _self.favicon : favicon // ignore: cast_nullable_to_non_nullable
-as String?,heroSlides: null == heroSlides ? _self.heroSlides : heroSlides // ignore: cast_nullable_to_non_nullable
+as String?,website: null == website ? _self.website : website // ignore: cast_nullable_to_non_nullable
+as String,primaryColor: null == primaryColor ? _self.primaryColor : primaryColor // ignore: cast_nullable_to_non_nullable
+as String,secondaryColor: null == secondaryColor ? _self.secondaryColor : secondaryColor // ignore: cast_nullable_to_non_nullable
+as String,accentColor: null == accentColor ? _self.accentColor : accentColor // ignore: cast_nullable_to_non_nullable
+as String,backgroundColor: null == backgroundColor ? _self.backgroundColor : backgroundColor // ignore: cast_nullable_to_non_nullable
+as String,surfaceColor: null == surfaceColor ? _self.surfaceColor : surfaceColor // ignore: cast_nullable_to_non_nullable
+as String,textColor: null == textColor ? _self.textColor : textColor // ignore: cast_nullable_to_non_nullable
+as String,borderRadius: null == borderRadius ? _self.borderRadius : borderRadius // ignore: cast_nullable_to_non_nullable
+as double,fontFamily: null == fontFamily ? _self.fontFamily : fontFamily // ignore: cast_nullable_to_non_nullable
+as String,heroSlides: null == heroSlides ? _self.heroSlides : heroSlides // ignore: cast_nullable_to_non_nullable
 as List<HeroSlide>,social: null == social ? _self.social : social // ignore: cast_nullable_to_non_nullable
-as SocialLinks,website: null == website ? _self.website : website // ignore: cast_nullable_to_non_nullable
-as String,
+as SocialLinks,
   ));
 }
 /// Create a copy of StorefrontSettings
@@ -427,10 +437,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String brandName,  String? logo,  String? favicon,  List<HeroSlide> heroSlides,  SocialLinks social,  String website)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String brandName,  String? logo,  String? favicon,  String website,  String primaryColor,  String secondaryColor,  String accentColor,  String backgroundColor,  String surfaceColor,  String textColor, @JsonKey(fromJson: radiusFromJson)  double borderRadius,  String fontFamily,  List<HeroSlide> heroSlides,  SocialLinks social)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _StorefrontSettings() when $default != null:
-return $default(_that.brandName,_that.logo,_that.favicon,_that.heroSlides,_that.social,_that.website);case _:
+return $default(_that.brandName,_that.logo,_that.favicon,_that.website,_that.primaryColor,_that.secondaryColor,_that.accentColor,_that.backgroundColor,_that.surfaceColor,_that.textColor,_that.borderRadius,_that.fontFamily,_that.heroSlides,_that.social);case _:
   return orElse();
 
 }
@@ -448,10 +458,10 @@ return $default(_that.brandName,_that.logo,_that.favicon,_that.heroSlides,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String brandName,  String? logo,  String? favicon,  List<HeroSlide> heroSlides,  SocialLinks social,  String website)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String brandName,  String? logo,  String? favicon,  String website,  String primaryColor,  String secondaryColor,  String accentColor,  String backgroundColor,  String surfaceColor,  String textColor, @JsonKey(fromJson: radiusFromJson)  double borderRadius,  String fontFamily,  List<HeroSlide> heroSlides,  SocialLinks social)  $default,) {final _that = this;
 switch (_that) {
 case _StorefrontSettings():
-return $default(_that.brandName,_that.logo,_that.favicon,_that.heroSlides,_that.social,_that.website);}
+return $default(_that.brandName,_that.logo,_that.favicon,_that.website,_that.primaryColor,_that.secondaryColor,_that.accentColor,_that.backgroundColor,_that.surfaceColor,_that.textColor,_that.borderRadius,_that.fontFamily,_that.heroSlides,_that.social);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -465,10 +475,10 @@ return $default(_that.brandName,_that.logo,_that.favicon,_that.heroSlides,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String brandName,  String? logo,  String? favicon,  List<HeroSlide> heroSlides,  SocialLinks social,  String website)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String brandName,  String? logo,  String? favicon,  String website,  String primaryColor,  String secondaryColor,  String accentColor,  String backgroundColor,  String surfaceColor,  String textColor, @JsonKey(fromJson: radiusFromJson)  double borderRadius,  String fontFamily,  List<HeroSlide> heroSlides,  SocialLinks social)?  $default,) {final _that = this;
 switch (_that) {
 case _StorefrontSettings() when $default != null:
-return $default(_that.brandName,_that.logo,_that.favicon,_that.heroSlides,_that.social,_that.website);case _:
+return $default(_that.brandName,_that.logo,_that.favicon,_that.website,_that.primaryColor,_that.secondaryColor,_that.accentColor,_that.backgroundColor,_that.surfaceColor,_that.textColor,_that.borderRadius,_that.fontFamily,_that.heroSlides,_that.social);case _:
   return null;
 
 }
@@ -480,12 +490,23 @@ return $default(_that.brandName,_that.logo,_that.favicon,_that.heroSlides,_that.
 @JsonSerializable()
 
 class _StorefrontSettings implements StorefrontSettings {
-  const _StorefrontSettings({required this.brandName, this.logo, this.favicon, final  List<HeroSlide> heroSlides = const [], this.social = const SocialLinks(), this.website = ''}): _heroSlides = heroSlides;
+  const _StorefrontSettings({required this.brandName, this.logo, this.favicon, this.website = '', this.primaryColor = '#C0446A', this.secondaryColor = '#3C2A34', this.accentColor = '#D4A02A', this.backgroundColor = '#FBF7F4', this.surfaceColor = '#FFFFFF', this.textColor = '#2A2024', @JsonKey(fromJson: radiusFromJson) this.borderRadius = 16.0, this.fontFamily = 'Tajawal', final  List<HeroSlide> heroSlides = const [], this.social = const SocialLinks()}): _heroSlides = heroSlides;
   factory _StorefrontSettings.fromJson(Map<String, dynamic> json) => _$StorefrontSettingsFromJson(json);
 
 @override final  String brandName;
 @override final  String? logo;
 @override final  String? favicon;
+@override@JsonKey() final  String website;
+// ── Visual identity palette (hex #RRGGBB strings on the wire) ───────────
+@override@JsonKey() final  String primaryColor;
+@override@JsonKey() final  String secondaryColor;
+@override@JsonKey() final  String accentColor;
+@override@JsonKey() final  String backgroundColor;
+@override@JsonKey() final  String surfaceColor;
+@override@JsonKey() final  String textColor;
+// Server sends a CSS string like "16px"; parsed to a double for rendering.
+@override@JsonKey(fromJson: radiusFromJson) final  double borderRadius;
+@override@JsonKey() final  String fontFamily;
  final  List<HeroSlide> _heroSlides;
 @override@JsonKey() List<HeroSlide> get heroSlides {
   if (_heroSlides is EqualUnmodifiableListView) return _heroSlides;
@@ -494,7 +515,6 @@ class _StorefrontSettings implements StorefrontSettings {
 }
 
 @override@JsonKey() final  SocialLinks social;
-@override@JsonKey() final  String website;
 
 /// Create a copy of StorefrontSettings
 /// with the given fields replaced by the non-null parameter values.
@@ -509,16 +529,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _StorefrontSettings&&(identical(other.brandName, brandName) || other.brandName == brandName)&&(identical(other.logo, logo) || other.logo == logo)&&(identical(other.favicon, favicon) || other.favicon == favicon)&&const DeepCollectionEquality().equals(other._heroSlides, _heroSlides)&&(identical(other.social, social) || other.social == social)&&(identical(other.website, website) || other.website == website));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _StorefrontSettings&&(identical(other.brandName, brandName) || other.brandName == brandName)&&(identical(other.logo, logo) || other.logo == logo)&&(identical(other.favicon, favicon) || other.favicon == favicon)&&(identical(other.website, website) || other.website == website)&&(identical(other.primaryColor, primaryColor) || other.primaryColor == primaryColor)&&(identical(other.secondaryColor, secondaryColor) || other.secondaryColor == secondaryColor)&&(identical(other.accentColor, accentColor) || other.accentColor == accentColor)&&(identical(other.backgroundColor, backgroundColor) || other.backgroundColor == backgroundColor)&&(identical(other.surfaceColor, surfaceColor) || other.surfaceColor == surfaceColor)&&(identical(other.textColor, textColor) || other.textColor == textColor)&&(identical(other.borderRadius, borderRadius) || other.borderRadius == borderRadius)&&(identical(other.fontFamily, fontFamily) || other.fontFamily == fontFamily)&&const DeepCollectionEquality().equals(other._heroSlides, _heroSlides)&&(identical(other.social, social) || other.social == social));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,brandName,logo,favicon,const DeepCollectionEquality().hash(_heroSlides),social,website);
+int get hashCode => Object.hash(runtimeType,brandName,logo,favicon,website,primaryColor,secondaryColor,accentColor,backgroundColor,surfaceColor,textColor,borderRadius,fontFamily,const DeepCollectionEquality().hash(_heroSlides),social);
 
 @override
 String toString() {
-  return 'StorefrontSettings(brandName: $brandName, logo: $logo, favicon: $favicon, heroSlides: $heroSlides, social: $social, website: $website)';
+  return 'StorefrontSettings(brandName: $brandName, logo: $logo, favicon: $favicon, website: $website, primaryColor: $primaryColor, secondaryColor: $secondaryColor, accentColor: $accentColor, backgroundColor: $backgroundColor, surfaceColor: $surfaceColor, textColor: $textColor, borderRadius: $borderRadius, fontFamily: $fontFamily, heroSlides: $heroSlides, social: $social)';
 }
 
 
@@ -529,7 +549,7 @@ abstract mixin class _$StorefrontSettingsCopyWith<$Res> implements $StorefrontSe
   factory _$StorefrontSettingsCopyWith(_StorefrontSettings value, $Res Function(_StorefrontSettings) _then) = __$StorefrontSettingsCopyWithImpl;
 @override @useResult
 $Res call({
- String brandName, String? logo, String? favicon, List<HeroSlide> heroSlides, SocialLinks social, String website
+ String brandName, String? logo, String? favicon, String website, String primaryColor, String secondaryColor, String accentColor, String backgroundColor, String surfaceColor, String textColor,@JsonKey(fromJson: radiusFromJson) double borderRadius, String fontFamily, List<HeroSlide> heroSlides, SocialLinks social
 });
 
 
@@ -546,15 +566,23 @@ class __$StorefrontSettingsCopyWithImpl<$Res>
 
 /// Create a copy of StorefrontSettings
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? brandName = null,Object? logo = freezed,Object? favicon = freezed,Object? heroSlides = null,Object? social = null,Object? website = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? brandName = null,Object? logo = freezed,Object? favicon = freezed,Object? website = null,Object? primaryColor = null,Object? secondaryColor = null,Object? accentColor = null,Object? backgroundColor = null,Object? surfaceColor = null,Object? textColor = null,Object? borderRadius = null,Object? fontFamily = null,Object? heroSlides = null,Object? social = null,}) {
   return _then(_StorefrontSettings(
 brandName: null == brandName ? _self.brandName : brandName // ignore: cast_nullable_to_non_nullable
 as String,logo: freezed == logo ? _self.logo : logo // ignore: cast_nullable_to_non_nullable
 as String?,favicon: freezed == favicon ? _self.favicon : favicon // ignore: cast_nullable_to_non_nullable
-as String?,heroSlides: null == heroSlides ? _self._heroSlides : heroSlides // ignore: cast_nullable_to_non_nullable
+as String?,website: null == website ? _self.website : website // ignore: cast_nullable_to_non_nullable
+as String,primaryColor: null == primaryColor ? _self.primaryColor : primaryColor // ignore: cast_nullable_to_non_nullable
+as String,secondaryColor: null == secondaryColor ? _self.secondaryColor : secondaryColor // ignore: cast_nullable_to_non_nullable
+as String,accentColor: null == accentColor ? _self.accentColor : accentColor // ignore: cast_nullable_to_non_nullable
+as String,backgroundColor: null == backgroundColor ? _self.backgroundColor : backgroundColor // ignore: cast_nullable_to_non_nullable
+as String,surfaceColor: null == surfaceColor ? _self.surfaceColor : surfaceColor // ignore: cast_nullable_to_non_nullable
+as String,textColor: null == textColor ? _self.textColor : textColor // ignore: cast_nullable_to_non_nullable
+as String,borderRadius: null == borderRadius ? _self.borderRadius : borderRadius // ignore: cast_nullable_to_non_nullable
+as double,fontFamily: null == fontFamily ? _self.fontFamily : fontFamily // ignore: cast_nullable_to_non_nullable
+as String,heroSlides: null == heroSlides ? _self._heroSlides : heroSlides // ignore: cast_nullable_to_non_nullable
 as List<HeroSlide>,social: null == social ? _self.social : social // ignore: cast_nullable_to_non_nullable
-as SocialLinks,website: null == website ? _self.website : website // ignore: cast_nullable_to_non_nullable
-as String,
+as SocialLinks,
   ));
 }
 

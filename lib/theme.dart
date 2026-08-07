@@ -32,19 +32,23 @@ class ThemePalette {
   });
 
   factory ThemePalette.fromSettings(StorefrontSettings s) => ThemePalette(
-        primary: hexToColor(s.primaryColor, fallback: kDefaultPalette.primary),
-        secondary:
-            hexToColor(s.secondaryColor, fallback: kDefaultPalette.secondary),
-        accent: hexToColor(s.accentColor, fallback: kDefaultPalette.accent),
-        background:
-            hexToColor(s.backgroundColor, fallback: kDefaultPalette.background),
-        surface: hexToColor(s.surfaceColor, fallback: kDefaultPalette.surface),
-        text: hexToColor(s.textColor, fallback: kDefaultPalette.text),
-        radius: s.borderRadius,
-        fontFamily: supportedFonts.contains(s.fontFamily)
-            ? s.fontFamily
-            : 'Tajawal',
-      );
+    primary: hexToColor(s.primaryColor, fallback: kDefaultPalette.primary),
+    secondary: hexToColor(
+      s.secondaryColor,
+      fallback: kDefaultPalette.secondary,
+    ),
+    accent: hexToColor(s.accentColor, fallback: kDefaultPalette.accent),
+    background: hexToColor(
+      s.backgroundColor,
+      fallback: kDefaultPalette.background,
+    ),
+    surface: hexToColor(s.surfaceColor, fallback: kDefaultPalette.surface),
+    text: hexToColor(s.textColor, fallback: kDefaultPalette.text),
+    radius: s.borderRadius,
+    fontFamily: supportedFonts.contains(s.fontFamily)
+        ? s.fontFamily
+        : 'Tajawal',
+  );
 }
 
 /// Font families the app can render (Google Fonts). Anything else falls back to
@@ -67,8 +71,8 @@ const kDefaultPalette = ThemePalette(
 /// Picks the palette that drives the live theme, based on the user's choice.
 ThemePalette activePalette(StorefrontSettings settings, ThemeSource source) =>
     source == ThemeSource.appDefault
-        ? kDefaultPalette
-        : ThemePalette.fromSettings(settings);
+    ? kDefaultPalette
+    : ThemePalette.fromSettings(settings);
 
 class AppTheme {
   static ThemeData build(Brightness brightness, ThemePalette palette) {
@@ -97,8 +101,9 @@ class AppTheme {
       onError: isDark ? const Color(0xFF690005) : Colors.white,
     );
 
-    final scaffoldBg =
-        isDark ? colorScheme.surfaceContainerLowest : palette.background;
+    final scaffoldBg = isDark
+        ? colorScheme.surfaceContainerLowest
+        : palette.background;
 
     final textMain = colorScheme.onSurface;
     final textSecondary = colorScheme.onSurfaceVariant;
@@ -125,8 +130,12 @@ class AppTheme {
         shadowColor: borderSubtle,
         surfaceTintColor: Colors.transparent,
         centerTitle: true,
-        titleTextStyle:
-            _font(font, color: textMain, size: 18, weight: FontWeight.w700),
+        titleTextStyle: _font(
+          font,
+          color: textMain,
+          size: 18,
+          weight: FontWeight.w700,
+        ),
         iconTheme: IconThemeData(color: textSecondary),
         actionsIconTheme: IconThemeData(color: textSecondary),
       ),
@@ -146,8 +155,9 @@ class AppTheme {
           backgroundColor: primary,
           foregroundColor: Colors.white,
           minimumSize: const Size.fromHeight(52),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(radius),
+          ),
           textStyle: _font(font, size: 16, weight: FontWeight.w600),
           elevation: 0,
         ),
@@ -158,8 +168,9 @@ class AppTheme {
           backgroundColor: primary,
           foregroundColor: Colors.white,
           minimumSize: const Size.fromHeight(52),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(radius),
+          ),
           textStyle: _font(font, size: 16, weight: FontWeight.w600),
         ),
       ),
@@ -169,8 +180,9 @@ class AppTheme {
           foregroundColor: primary,
           side: BorderSide(color: primary),
           minimumSize: const Size.fromHeight(52),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(radius),
+          ),
           textStyle: _font(font, size: 16, weight: FontWeight.w600),
         ),
       ),
@@ -205,8 +217,10 @@ class AppTheme {
           borderRadius: BorderRadius.circular(radius),
           borderSide: BorderSide(color: colorScheme.error, width: 2),
         ),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 16,
+        ),
         labelStyle: _font(font, color: textSecondary, size: 14),
         hintStyle: _font(font, color: textSecondary, size: 14),
         floatingLabelStyle: _font(font, color: primary, size: 12),
@@ -239,13 +253,11 @@ class AppTheme {
             : colorScheme.inverseSurface,
         contentTextStyle: _font(
           font,
-          color:
-              isDark ? colorScheme.onSurface : colorScheme.onInverseSurface,
+          color: isDark ? colorScheme.onSurface : colorScheme.onInverseSurface,
           size: 14,
         ),
         actionTextColor: isDark ? primary : colorScheme.inversePrimary,
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
 
       dividerTheme: DividerThemeData(
@@ -258,8 +270,7 @@ class AppTheme {
         backgroundColor: primary,
         foregroundColor: Colors.white,
         elevation: 2,
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
 
       bottomSheetTheme: const BottomSheetThemeData(
@@ -287,7 +298,8 @@ class AppTheme {
         textColor: textMain,
         tileColor: Colors.transparent,
         shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(radius)),
+          borderRadius: BorderRadius.circular(radius),
+        ),
       ),
 
       popupMenuTheme: PopupMenuThemeData(
@@ -308,8 +320,12 @@ class AppTheme {
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         elevation: 4,
-        titleTextStyle:
-            _font(font, size: 18, weight: FontWeight.w600, color: textMain),
+        titleTextStyle: _font(
+          font,
+          size: 18,
+          weight: FontWeight.w600,
+          color: textMain,
+        ),
         contentTextStyle: _font(font, size: 14, color: textMain),
       ),
 
@@ -367,28 +383,54 @@ class AppTheme {
   ) {
     final fontTheme = GoogleFonts.getTextTheme(family, base);
     return fontTheme.copyWith(
-      displayLarge: fontTheme.displayLarge
-          ?.copyWith(color: text, fontWeight: FontWeight.w700),
-      displayMedium: fontTheme.displayMedium
-          ?.copyWith(color: text, fontWeight: FontWeight.w700),
-      headlineLarge: fontTheme.headlineLarge
-          ?.copyWith(color: text, fontWeight: FontWeight.w700, fontSize: 24),
-      headlineMedium: fontTheme.headlineMedium
-          ?.copyWith(color: text, fontWeight: FontWeight.w600, fontSize: 20),
-      titleLarge: fontTheme.titleLarge
-          ?.copyWith(color: text, fontWeight: FontWeight.w600, fontSize: 18),
-      titleMedium: fontTheme.titleMedium
-          ?.copyWith(color: text, fontWeight: FontWeight.w500, fontSize: 16),
+      displayLarge: fontTheme.displayLarge?.copyWith(
+        color: text,
+        fontWeight: FontWeight.w700,
+      ),
+      displayMedium: fontTheme.displayMedium?.copyWith(
+        color: text,
+        fontWeight: FontWeight.w700,
+      ),
+      headlineLarge: fontTheme.headlineLarge?.copyWith(
+        color: text,
+        fontWeight: FontWeight.w700,
+        fontSize: 24,
+      ),
+      headlineMedium: fontTheme.headlineMedium?.copyWith(
+        color: text,
+        fontWeight: FontWeight.w600,
+        fontSize: 20,
+      ),
+      titleLarge: fontTheme.titleLarge?.copyWith(
+        color: text,
+        fontWeight: FontWeight.w600,
+        fontSize: 18,
+      ),
+      titleMedium: fontTheme.titleMedium?.copyWith(
+        color: text,
+        fontWeight: FontWeight.w500,
+        fontSize: 16,
+      ),
       bodyLarge: fontTheme.bodyLarge?.copyWith(color: text, fontSize: 16),
       bodyMedium: fontTheme.bodyMedium?.copyWith(color: text, fontSize: 14),
-      bodySmall: fontTheme.bodySmall
-          ?.copyWith(color: textSecondary, fontSize: 12),
+      bodySmall: fontTheme.bodySmall?.copyWith(
+        color: textSecondary,
+        fontSize: 12,
+      ),
       labelLarge: fontTheme.labelLarge?.copyWith(
-          color: Colors.white, fontWeight: FontWeight.w600, fontSize: 16),
+        color: Colors.white,
+        fontWeight: FontWeight.w600,
+        fontSize: 16,
+      ),
       labelMedium: fontTheme.labelMedium?.copyWith(
-          color: textSecondary, fontWeight: FontWeight.w500, fontSize: 12),
-      labelSmall:
-          fontTheme.labelSmall?.copyWith(color: textSecondary, fontSize: 11),
+        color: textSecondary,
+        fontWeight: FontWeight.w500,
+        fontSize: 12,
+      ),
+      labelSmall: fontTheme.labelSmall?.copyWith(
+        color: textSecondary,
+        fontSize: 11,
+      ),
     );
   }
 }
