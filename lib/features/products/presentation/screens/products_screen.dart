@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:my_gallery/core/config/app_config.dart';
 import 'package:my_gallery/features/auth/domain/auth_cubit.dart';
 import 'package:my_gallery/features/categories/data/models/category_models.dart';
 import 'package:my_gallery/features/categories/domain/categories_cubit.dart';
@@ -51,6 +52,30 @@ class _ProductsScreenState extends State<ProductsScreen> {
     cubit.applyFilter(cubit.currentFilter.copyWith(search: query, page: 1));
   }
 
+  /// Refreshes everything the home surface depends on: products, categories,
+  /// and the shop identity (settings → hero slider, store info, cache). The
+  /// SettingsCubit re-caches on load, so the local cache is refreshed too.
+  Future<void> _refreshAll({bool silent = false}) async {
+    final authState = context.read<AuthCubit>().state;
+    final shopId = authState is AuthAuthenticated
+        ? authState.user.shopId
+        : AppConfig.shopId;
+    await Future.wait([
+      context.read<ProductsListCubit>().refresh(),
+      context.read<CategoriesCubit>().load(),
+      context.read<SettingsCubit>().load(shopId),
+    ]);
+    if (!silent && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('تم تحديث البيانات'),
+          behavior: SnackBarBehavior.floating,
+          duration: Duration(seconds: 1),
+        ),
+      );
+    }
+  }
+
   void _showFilter(BuildContext context, ProductFilter current) {
     final catState = context.read<CategoriesCubit>().state;
     final categories = catState is CategoriesLoaded
@@ -74,8 +99,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
     final shopName = authState is AuthAuthenticated
         ? authState.user.shopName
         : settings.brandName;
-    final role =
-        authState is AuthAuthenticated ? authState.user.role : '';
+    final role = authState is AuthAuthenticated ? authState.user.role : '';
     final website = settings.website;
 
     final canManage =
@@ -90,16 +114,20 @@ class _ProductsScreenState extends State<ProductsScreen> {
               Text(
                 _roleLabel(role),
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .primary
-                          .withValues(alpha: 0.8),
-                    ),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.primary.withValues(alpha: 0.8),
+                ),
               ),
           ],
         ),
         actions: [
           const ThemeToggleButton(),
+          IconButton(
+            icon: const Icon(Icons.refresh_rounded),
+            tooltip: 'تحديث',
+            onPressed: () => _refreshAll(),
+          ),
           if (website.isNotEmpty)
             IconButton(
               icon: const Icon(Icons.public_rounded),
@@ -132,8 +160,9 @@ class _ProductsScreenState extends State<ProductsScreen> {
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
       child: BlocBuilder<ProductsListCubit, ProductsListState>(
         builder: (context, state) {
-          final filter =
-              state is ProductsListLoaded ? state.filter : const ProductFilter();
+          final filter = state is ProductsListLoaded
+              ? state.filter
+              : const ProductFilter();
           return Row(
             children: [
               Expanded(
@@ -173,18 +202,17 @@ class _ProductsScreenState extends State<ProductsScreen> {
                     onAction: () => context.push('/products/create'),
                   )
                 : RefreshIndicator(
-                    onRefresh: () =>
-                        context.read<ProductsListCubit>().refresh(),
+                    onRefresh: () => _refreshAll(silent: true),
                     child: GridView.builder(
                       controller: _scrollCtrl,
                       padding: const EdgeInsets.all(16),
                       gridDelegate:
                           const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        crossAxisSpacing: 12,
-                        mainAxisSpacing: 12,
-                        childAspectRatio: 0.72,
-                      ),
+                            crossAxisCount: 2,
+                            crossAxisSpacing: 12,
+                            mainAxisSpacing: 12,
+                            childAspectRatio: 0.72,
+                          ),
                       itemCount: items.length + (pagination.hasNext ? 2 : 0),
                       itemBuilder: (context, i) {
                         if (i >= items.length) {
@@ -194,16 +222,15 @@ class _ProductsScreenState extends State<ProductsScreen> {
                         return ProductCard(
                           product: product,
                           index: i,
-                          onTap: () =>
-                              context.push('/products/${product.id}'),
+                          onTap: () => context.push('/products/${product.id}'),
                         );
                       },
                     ),
                   ),
           ProductsListError(:final message) => ErrorState(
-              message: message,
-              onRetry: () => context.read<ProductsListCubit>().load(),
-            ),
+            message: message,
+            onRetry: () => context.read<ProductsListCubit>().load(),
+          ),
           _ => const SizedBox.shrink(),
         };
       },
@@ -225,20 +252,20 @@ class _ProductsScreenState extends State<ProductsScreen> {
   }
 
   String _roleLabel(String role) => switch (role) {
-        'Owner' => 'مالك',
-        'Manager' => 'مدير',
-        'Employee' => 'موظف',
-        _ => role,
-      };
+    'Owner' => 'مالك',
+    'Manager' => 'مدير',
+    'Employee' => 'موظف',
+    _ => role,
+  };
 
   Future<void> _launchWebsite(BuildContext context, String url) async {
     final uri = Uri.tryParse(url);
     if (uri == null) return;
     final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (!ok && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('تعذّر فتح الموقع')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('تعذّر فتح الموقع')));
     }
   }
 }
