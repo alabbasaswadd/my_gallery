@@ -41,7 +41,8 @@
       "Bash(New-Item -ItemType Directory -Force -Path \"E:\\\\flutter\\\\my_gallery\\\\lib\\\\features\\\\onboarding\\\\data\")",
       "Bash(New-Item -ItemType Directory -Force -Path \"E:\\\\flutter\\\\my_gallery\\\\lib\\\\features\\\\onboarding\\\\presentation\\\\widgets\")",
       "Bash(New-Item -ItemType Directory -Force -Path \"E:\\\\flutter\\\\my_gallery\\\\lib\\\\features\\\\onboarding\\\\presentation\\\\screens\")",
-      "Bash(dir \"E:\\\\flutter\\\\my_gallery\\\\.claude\\\\worktrees\\\\agent-a6a1fc208dd7484f8\\\\lib\\\\features\\\\onboarding\" /s /b)"
+      "Bash(dir \"E:\\\\flutter\\\\my_gallery\\\\.claude\\\\worktrees\\\\agent-a6a1fc208dd7484f8\\\\lib\\\\features\\\\onboarding\" /s /b)",
+      "Bash(Select-String \"error|experiment_not_enabled\")"
     ]
   }
 }

@@ -47,6 +47,11 @@ class _ProductsScreenState extends State<ProductsScreen> {
     }
   }
 
+  void _refreshAll() {
+    context.read<ProductsListCubit>().refresh();
+    context.read<CategoriesCubit>().load();
+  }
+
   void _onSearch(String query) {
     final cubit = context.read<ProductsListCubit>();
     cubit.applyFilter(cubit.currentFilter.copyWith(search: query, page: 1));

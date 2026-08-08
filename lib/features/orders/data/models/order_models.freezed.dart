@@ -580,7 +580,7 @@ as String?,
 /// @nodoc
 mixin _$OrderDetailItem {
 
- int get id; String get productName; double get unitPrice; int get quantity; double get lineTotal;
+@JsonKey(name: 'productId') int get id; String get productName; double get unitPrice; int get quantity; double get lineTotal;
 /// Create a copy of OrderDetailItem
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -613,7 +613,7 @@ abstract mixin class $OrderDetailItemCopyWith<$Res>  {
   factory $OrderDetailItemCopyWith(OrderDetailItem value, $Res Function(OrderDetailItem) _then) = _$OrderDetailItemCopyWithImpl;
 @useResult
 $Res call({
- int id, String productName, double unitPrice, int quantity, double lineTotal
+@JsonKey(name: 'productId') int id, String productName, double unitPrice, int quantity, double lineTotal
 });
 
 
@@ -719,7 +719,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String productName,  double unitPrice,  int quantity,  double lineTotal)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'productId')  int id,  String productName,  double unitPrice,  int quantity,  double lineTotal)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _OrderDetailItem() when $default != null:
 return $default(_that.id,_that.productName,_that.unitPrice,_that.quantity,_that.lineTotal);case _:
@@ -740,7 +740,7 @@ return $default(_that.id,_that.productName,_that.unitPrice,_that.quantity,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String productName,  double unitPrice,  int quantity,  double lineTotal)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'productId')  int id,  String productName,  double unitPrice,  int quantity,  double lineTotal)  $default,) {final _that = this;
 switch (_that) {
 case _OrderDetailItem():
 return $default(_that.id,_that.productName,_that.unitPrice,_that.quantity,_that.lineTotal);}
@@ -757,7 +757,7 @@ return $default(_that.id,_that.productName,_that.unitPrice,_that.quantity,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String productName,  double unitPrice,  int quantity,  double lineTotal)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'productId')  int id,  String productName,  double unitPrice,  int quantity,  double lineTotal)?  $default,) {final _that = this;
 switch (_that) {
 case _OrderDetailItem() when $default != null:
 return $default(_that.id,_that.productName,_that.unitPrice,_that.quantity,_that.lineTotal);case _:
@@ -772,10 +772,10 @@ return $default(_that.id,_that.productName,_that.unitPrice,_that.quantity,_that.
 @JsonSerializable()
 
 class _OrderDetailItem implements OrderDetailItem {
-  const _OrderDetailItem({required this.id, required this.productName, required this.unitPrice, required this.quantity, required this.lineTotal});
+  const _OrderDetailItem({@JsonKey(name: 'productId') required this.id, required this.productName, required this.unitPrice, required this.quantity, required this.lineTotal});
   factory _OrderDetailItem.fromJson(Map<String, dynamic> json) => _$OrderDetailItemFromJson(json);
 
-@override final  int id;
+@override@JsonKey(name: 'productId') final  int id;
 @override final  String productName;
 @override final  double unitPrice;
 @override final  int quantity;
@@ -814,7 +814,7 @@ abstract mixin class _$OrderDetailItemCopyWith<$Res> implements $OrderDetailItem
   factory _$OrderDetailItemCopyWith(_OrderDetailItem value, $Res Function(_OrderDetailItem) _then) = __$OrderDetailItemCopyWithImpl;
 @override @useResult
 $Res call({
- int id, String productName, double unitPrice, int quantity, double lineTotal
+@JsonKey(name: 'productId') int id, String productName, double unitPrice, int quantity, double lineTotal
 });
 
 
