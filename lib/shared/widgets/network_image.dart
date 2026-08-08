@@ -20,9 +20,14 @@ class AppNetworkImage extends StatelessWidget {
   });
 
   String? get _fullUrl {
-    if (imagePath == null || imagePath!.isEmpty) return null;
-    if (imagePath!.startsWith('http')) return imagePath;
-    return '${AppConfig.baseUrl}$imagePath';
+    final path = imagePath;
+    if (path == null || path.isEmpty) return null;
+    // Legacy full URL (old MinIO links) or any external image → use directly.
+    if (path.startsWith('http')) return path;
+    // Legacy local static path (/uploads/…) served straight from the host.
+    if (path.startsWith('/')) return '${AppConfig.baseUrl}$path';
+    // New relative storage key (uploads/shop-x/…) → served by the image endpoint.
+    return '${AppConfig.apiBaseUrl}/images/$path';
   }
 
   @override

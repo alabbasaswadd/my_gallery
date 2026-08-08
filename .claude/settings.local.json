@@ -37,12 +37,21 @@
       "Bash(findstr /s /n \"Color\\(0x\" *.dart **/*.dart)",
       "Bash(findstr /s /n \"Colors\\\\.\" *.dart **/*.dart)",
       "Bash(findstr /v \"theme.dart\")",
+<<<<<<< Updated upstream
       "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); pkgs=[p['name'] for p in d.get\\('packages',[]\\)]; print\\([p for p in pkgs if 'smooth' in p or 'lottie' in p or 'svg' in p]\\)\")",
       "Bash(New-Item -ItemType Directory -Force -Path \"E:\\\\flutter\\\\my_gallery\\\\lib\\\\features\\\\onboarding\\\\data\")",
       "Bash(New-Item -ItemType Directory -Force -Path \"E:\\\\flutter\\\\my_gallery\\\\lib\\\\features\\\\onboarding\\\\presentation\\\\widgets\")",
       "Bash(New-Item -ItemType Directory -Force -Path \"E:\\\\flutter\\\\my_gallery\\\\lib\\\\features\\\\onboarding\\\\presentation\\\\screens\")",
       "Bash(dir \"E:\\\\flutter\\\\my_gallery\\\\.claude\\\\worktrees\\\\agent-a6a1fc208dd7484f8\\\\lib\\\\features\\\\onboarding\" /s /b)",
       "Bash(Select-String \"error|experiment_not_enabled\")"
+=======
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(where flutter *)",
+      "Read(//c/Users/Ibrahem/fvm/**)",
+      "Read(//d//**)"
+>>>>>>> Stashed changes
     ]
   }
 }
