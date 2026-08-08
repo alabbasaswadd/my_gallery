@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:my_gallery/core/components/app_snackbar.dart';
 import 'package:my_gallery/core/network/api_exception.dart';
 import 'package:my_gallery/features/cart/data/models/cart_item.dart';
 import 'package:my_gallery/features/cart/domain/cart_cubit.dart';
@@ -78,12 +79,7 @@ class _StorefrontProductDetailScreenState
         imageUrl: coverImage.url.isNotEmpty ? coverImage.url : null,
       ),
     );
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('تمت الإضافة إلى السلة: ${p.name}'),
-        duration: const Duration(seconds: 2),
-      ),
-    );
+    AppSnackbar.showSuccess(context, 'تمت الإضافة إلى السلة: ${p.name}');
   }
 
   @override

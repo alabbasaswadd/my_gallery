@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:my_gallery/core/config/app_config.dart';
 import 'package:my_gallery/core/di/service_locator.dart';
@@ -11,13 +12,20 @@ import 'package:my_gallery/routes.dart';
 import 'package:my_gallery/theme.dart' show AppTheme, activePalette;
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  // Keep the native splash visible while the app initializes.
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+
   await setupServiceLocator();
   // Load persisted theme and cached settings before the first frame.
   await Future.wait([
     sl<ThemeCubit>().load(),
     sl<SettingsCubit>().load(AppConfig.shopId),
   ]);
+
+  // Remove the splash now that initialization is complete.
+  FlutterNativeSplash.remove();
+
   runApp(const MyGalleryApp());
 }
 
@@ -31,18 +39,20 @@ class MyGalleryApp extends StatelessWidget {
         BlocProvider.value(value: sl<SettingsCubit>()),
         BlocProvider.value(value: sl<ThemeCubit>()),
       ],
-      child: BlocBuilder<ThemeCubit, ThemeSettings>(
-        builder: (context, themeSettings) {
-          return BlocBuilder<SettingsCubit, SettingsState>(
-            builder: (context, settingsState) {
-              final settings = settingsState is SettingsLoaded
-                  ? settingsState.settings
-                  : kDefaultSettings;
-              final palette = activePalette(settings, themeSettings.source);
-              return ScreenUtilInit(
-                designSize: const Size(390, 844),
-                minTextAdapt: true,
-                builder: (_, __) => MaterialApp.router(
+      // ScreenUtilInit sits outside the BlocBuilders so that theme/settings
+      // changes do not trigger a ScreenUtil re-initialization.
+      child: ScreenUtilInit(
+        designSize: const Size(390, 844),
+        minTextAdapt: true,
+        builder: (_, __) => BlocBuilder<ThemeCubit, ThemeSettings>(
+          builder: (context, themeSettings) {
+            return BlocBuilder<SettingsCubit, SettingsState>(
+              builder: (context, settingsState) {
+                final settings = settingsState is SettingsLoaded
+                    ? settingsState.settings
+                    : kDefaultSettings;
+                final palette = activePalette(settings, themeSettings.source);
+                return MaterialApp.router(
                   debugShowCheckedModeBanner: false,
                   title: settings.brandName,
                   theme: AppTheme.build(Brightness.light, palette),
@@ -60,11 +70,11 @@ class MyGalleryApp extends StatelessWidget {
                     textDirection: TextDirection.rtl,
                     child: child!,
                   ),
-                ),
-              );
-            },
-          );
-        },
+                );
+              },
+            );
+          },
+        ),
       ),
     );
   }

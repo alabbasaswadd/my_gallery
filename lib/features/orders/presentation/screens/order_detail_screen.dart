@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:my_gallery/core/components/app_snackbar.dart';
 import 'package:my_gallery/core/constants/colors.dart';
 import 'package:my_gallery/features/orders/data/models/order_models.dart';
 import 'package:my_gallery/features/orders/domain/order_detail_cubit.dart';
@@ -52,12 +53,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     return BlocConsumer<OrderDetailCubit, OrderDetailState>(
       listener: (context, state) {
         if (state is OrderDetailError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.message),
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ),
-          );
+          AppSnackbar.showError(context, state.message);
         }
         if (state is OrderDetailLoaded) {
           // Sync status back to the orders list if it exists in context

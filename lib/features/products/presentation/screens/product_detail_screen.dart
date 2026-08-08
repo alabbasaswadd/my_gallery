@@ -6,7 +6,9 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:my_gallery/core/components/app_snackbar.dart';
 import 'package:my_gallery/core/constants/colors.dart';
+import 'package:my_gallery/core/di/service_locator.dart';
 import 'package:my_gallery/features/auth/domain/auth_cubit.dart';
 import 'package:my_gallery/features/categories/data/categories_service.dart';
 import 'package:my_gallery/features/categories/data/models/category_models.dart';
@@ -41,20 +43,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       listener: (context, state) {
         switch (state) {
           case ProductDetailActionSuccess(:final message):
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(message),
-                behavior: SnackBarBehavior.floating,
-              ),
-            );
+            AppSnackbar.showSuccess(context, message);
           case ProductDetailError(:final message):
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(message),
-                behavior: SnackBarBehavior.floating,
-                backgroundColor: Theme.of(context).colorScheme.error,
-              ),
-            );
+            AppSnackbar.showError(context, message);
           default:
             break;
         }
@@ -855,8 +846,9 @@ class _TaxonomyCardState extends State<_TaxonomyCard> {
 
   Future<void> _load() async {
     try {
+      // Use singleton services from DI to avoid creating extra Dio instances.
       if (widget.categoryId != null) {
-        final cats = await CategoriesService().getCategories();
+        final cats = await sl<CategoriesService>().getCategories();
         CategoryListItem? match;
         for (final c in cats) {
           if (c.id == widget.categoryId) {
@@ -867,7 +859,7 @@ class _TaxonomyCardState extends State<_TaxonomyCard> {
         _categoryName = match?.name;
       }
       if (widget.occasionIds.isNotEmpty) {
-        final all = await OccasionsService().getOccasions();
+        final all = await sl<OccasionsService>().getOccasions();
         final ids = widget.occasionIds.toSet();
         _occasions = all.where((o) => ids.contains(o.id)).toList();
       }

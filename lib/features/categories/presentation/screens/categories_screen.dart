@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:my_gallery/core/components/app_snackbar.dart';
 import 'package:my_gallery/features/auth/domain/auth_cubit.dart';
 import 'package:my_gallery/features/categories/data/models/category_models.dart';
 import 'package:my_gallery/features/categories/domain/categories_cubit.dart';
@@ -52,12 +53,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
       body: BlocConsumer<CategoriesCubit, CategoriesState>(
         listener: (context, state) {
           if (state is CategoriesError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Theme.of(context).colorScheme.error,
-              ),
-            );
+            AppSnackbar.showError(context, state.message);
           }
         },
         builder: (context, state) {
@@ -208,12 +204,17 @@ class _CategoryTile extends StatelessWidget {
                         if (v == 'edit') onEdit();
                         if (v == 'delete') onDelete();
                       },
-                      itemBuilder: (_) => [
+                      itemBuilder: (menuCtx) => [
                         const PopupMenuItem(value: 'edit', child: Text('تعديل')),
-                        const PopupMenuItem(
-                            value: 'delete',
-                            child: Text('حذف',
-                                style: TextStyle(color: Colors.red))),
+                        PopupMenuItem(
+                          value: 'delete',
+                          child: Text(
+                            'حذف',
+                            style: TextStyle(
+                              color: Theme.of(menuCtx).colorScheme.error,
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ],

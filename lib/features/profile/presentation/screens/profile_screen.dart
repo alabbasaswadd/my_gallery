@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:my_gallery/core/components/app_snackbar.dart';
 import 'package:my_gallery/core/utils/store_links.dart';
 import 'package:my_gallery/features/auth/domain/auth_cubit.dart';
 import 'package:my_gallery/features/settings/data/models/settings_models.dart';
@@ -225,12 +226,7 @@ class ProfileScreen extends StatelessWidget {
   void _openStoreQr(BuildContext context, StorefrontSettings settings) {
     final url = StoreLinks.storeUrl(settings);
     if (url == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('أضف رابط الموقع من إعدادات المظهر أولاً'),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      AppSnackbar.showInfo(context, 'أضف رابط الموقع من إعدادات المظهر أولاً');
       return;
     }
     Navigator.of(context).push(
@@ -251,9 +247,7 @@ class ProfileScreen extends StatelessWidget {
     if (uri == null) return;
     final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (!ok && context.mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('تعذّر فتح الموقع')));
+      AppSnackbar.showError(context, 'تعذّر فتح الموقع');
     }
   }
 

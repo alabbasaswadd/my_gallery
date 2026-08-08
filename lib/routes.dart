@@ -43,13 +43,20 @@ import 'package:my_gallery/features/onboarding/presentation/screens/onboarding_s
 
 final _authCubit = AuthCubit(sl<AuthService>());
 
-final router = GoRouter(  
+// Cached onboarding flag — once true it stays true for the session lifetime
+// (onboarding can only go from not-done → done, never the reverse).
+bool _onboardingDone = false;
+
+final router = GoRouter(
   initialLocation: '/',
   refreshListenable: SessionNotifier.instance,
   redirect: (context, state) async {
     final location = state.matchedLocation;
-    final onboardingDone = await OnboardingRepository().isCompleted();
-    if (!onboardingDone && location != '/onboarding') return '/onboarding';
+    // Only read storage when we haven't confirmed completion yet.
+    if (!_onboardingDone) {
+      _onboardingDone = await OnboardingRepository().isCompleted();
+    }
+    if (!_onboardingDone && location != '/onboarding') return '/onboarding';
     final hasSession = await SecureStorage.hasValidSession();
     final isPublic = location == '/' ||
         location.startsWith('/storefront') ||

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:my_gallery/core/components/app_snackbar.dart';
 import 'package:my_gallery/features/auth/domain/auth_cubit.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -45,12 +46,7 @@ class _LoginScreenState extends State<LoginScreen> {
           case AuthAuthenticated():
             context.go('/home');
           case AuthError(:final message):
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(message),
-                backgroundColor: Theme.of(context).colorScheme.error,
-              ),
-            );
+            AppSnackbar.showError(context, message);
           default:
             break;
         }

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gal/gal.dart';
+import 'package:my_gallery/core/components/app_snackbar.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -25,7 +26,7 @@ class ShareService {
     String confirmation = 'تم نسخ الرابط',
   }) async {
     await Clipboard.setData(ClipboardData(text: text));
-    if (context.mounted) _snack(context, confirmation);
+    if (context.mounted) AppSnackbar.showSuccess(context, confirmation);
   }
 
   /// Opens the native share sheet with plain [text] (a link, typically).
@@ -38,12 +39,12 @@ class ShareService {
   static Future<bool> openUrl(BuildContext context, String url) async {
     final uri = Uri.tryParse(url);
     if (uri == null) {
-      if (context.mounted) _snack(context, 'رابط غير صالح', isError: true);
+      if (context.mounted) AppSnackbar.showError(context, 'رابط غير صالح');
       return false;
     }
     final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (!ok && context.mounted) {
-      _snack(context, 'تعذّر فتح الرابط', isError: true);
+      AppSnackbar.showError(context, 'تعذّر فتح الرابط');
     }
     return ok;
   }
@@ -82,38 +83,22 @@ class ShareService {
         final granted = await Gal.requestAccess();
         if (!granted) {
           if (context.mounted) {
-            _snack(context, 'لم يتم منح إذن الوصول إلى المعرض', isError: true);
+            AppSnackbar.showError(context, 'لم يتم منح إذن الوصول إلى المعرض');
           }
           return false;
         }
       }
       await Gal.putImageBytes(bytes, album: _galAlbum, name: name);
-      if (context.mounted) _snack(context, 'تم حفظ الصورة في المعرض');
+      if (context.mounted) AppSnackbar.showSuccess(context, 'تم حفظ الصورة في المعرض');
       return true;
     } on GalException catch (e) {
       if (context.mounted) {
-        _snack(context, 'تعذّر حفظ الصورة: ${e.type.message}', isError: true);
+        AppSnackbar.showError(context, 'تعذّر حفظ الصورة: ${e.type.message}');
       }
       return false;
     } catch (_) {
-      if (context.mounted) _snack(context, 'تعذّر حفظ الصورة', isError: true);
+      if (context.mounted) AppSnackbar.showError(context, 'تعذّر حفظ الصورة');
       return false;
     }
-  }
-
-  static void _snack(
-    BuildContext context,
-    String message, {
-    bool isError = false,
-  }) {
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text(message),
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: isError ? Theme.of(context).colorScheme.error : null,
-      ),
-    );
   }
 }

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:my_gallery/core/components/app_snackbar.dart';
 import 'package:my_gallery/features/categories/data/models/category_models.dart';
 import 'package:my_gallery/features/categories/domain/categories_cubit.dart';
 import 'package:my_gallery/features/occasions/data/models/occasion_models.dart';
@@ -81,9 +82,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     // Fallback guard: the dropdown validator covers the loaded state; this also
     // covers the brief window where categories are still loading/failed.
     if (_categoryId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('يرجى اختيار الفئة')),
-      );
+      AppSnackbar.showError(context, 'يرجى اختيار الفئة');
       return;
     }
     final request = ProductRequest(
@@ -138,15 +137,10 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
 
     if (!mounted) return;
     if (warnedType) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('تم تجاهل بعض الملفات: نوع الملف غير مدعوم')),
-      );
+      AppSnackbar.showWarning(context, 'تم تجاهل بعض الملفات: نوع الملف غير مدعوم');
     }
     if (warnedSize) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('تم تجاهل بعض الملفات: الحجم يتجاوز 5 ميجابايت')),
-      );
+      AppSnackbar.showWarning(context, 'تم تجاهل بعض الملفات: الحجم يتجاوز 5 ميجابايت');
     }
     if (valid.isNotEmpty) setState(() => _newImages.addAll(valid));
   }
@@ -158,19 +152,16 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     final file = File(picked.path);
     final ext = file.path.split('.').last.toLowerCase();
     if (!allowedImageExts.contains(ext)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text(
-                'نوع الملف غير مدعوم. يُسمح فقط بـ: jpeg، png، webp، gif')),
+      AppSnackbar.showWarning(
+        context,
+        'نوع الملف غير مدعوم. يُسمح فقط بـ: jpeg، png، webp، gif',
       );
       return;
     }
     final size = await file.length();
     if (!mounted) return;
     if (size > maxImageBytes) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('حجم الملف يتجاوز 5 ميجابايت')),
-      );
+      AppSnackbar.showWarning(context, 'حجم الملف يتجاوز 5 ميجابايت');
       return;
     }
     setState(() => _replacements[imageId] = file);
@@ -182,16 +173,13 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
       listener: (context, state) {
         switch (state) {
           case ProductFormSuccess():
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content:
-                  Text(_isEditing ? 'تم التحديث بنجاح' : 'تم إنشاء المنتج بنجاح'),
-            ));
+            AppSnackbar.showSuccess(
+              context,
+              _isEditing ? 'تم التحديث بنجاح' : 'تم إنشاء المنتج بنجاح',
+            );
             context.pop();
           case ProductFormError(:final message):
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: Text(message),
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ));
+            AppSnackbar.showError(context, message);
           default:
             break;
         }

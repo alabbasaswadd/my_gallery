@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:my_gallery/core/components/app_snackbar.dart';
 import 'package:my_gallery/core/config/app_config.dart';
 import 'package:my_gallery/shared/services/share_service.dart';
 import 'package:my_gallery/shared/widgets/qr_card.dart';
@@ -81,9 +82,7 @@ class _QrExportScreenState extends State<QrExportScreen> {
       final bytes = await _capture();
       if (bytes == null) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('تعذّر إنشاء صورة رمز QR')),
-          );
+          AppSnackbar.showError(context, 'تعذّر إنشاء صورة رمز QR');
         }
         return;
       }

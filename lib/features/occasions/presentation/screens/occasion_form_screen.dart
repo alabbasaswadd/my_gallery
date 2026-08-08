@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:my_gallery/core/components/app_snackbar.dart';
 import 'package:my_gallery/core/network/api_exception.dart';
 import 'package:my_gallery/features/occasions/data/models/occasion_models.dart';
 import 'package:my_gallery/features/occasions/domain/occasion_form_cubit.dart';
@@ -107,16 +108,13 @@ class _OccasionFormScreenState extends State<OccasionFormScreen> {
       listener: (context, state) {
         switch (state) {
           case OccasionFormSuccess():
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content:
-                  Text(_isEditing ? 'تم تحديث المناسبة' : 'تم إنشاء المناسبة'),
-            ));
+            AppSnackbar.showSuccess(
+              context,
+              _isEditing ? 'تم تحديث المناسبة' : 'تم إنشاء المناسبة',
+            );
             context.pop();
           case OccasionFormError(:final message):
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: Text(message),
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ));
+            AppSnackbar.showError(context, message);
           default:
             break;
         }

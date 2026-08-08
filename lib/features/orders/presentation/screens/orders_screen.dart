@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:my_gallery/core/components/app_snackbar.dart';
 import 'package:my_gallery/features/orders/data/models/order_models.dart';
 import 'package:my_gallery/features/orders/domain/orders_list_cubit.dart';
 import 'package:my_gallery/features/orders/presentation/widgets/order_status_pill.dart';
@@ -56,12 +57,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
       body: BlocConsumer<OrdersListCubit, OrdersListState>(
         listener: (context, state) {
           if (state is OrdersListError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Theme.of(context).colorScheme.error,
-              ),
-            );
+            AppSnackbar.showError(context, state.message);
           }
         },
         builder: (context, state) {

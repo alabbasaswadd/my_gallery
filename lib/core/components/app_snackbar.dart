@@ -125,7 +125,7 @@ class AppSnackbar {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: snackbarData.backgroundColor.withOpacity(0.3),
+                color: snackbarData.backgroundColor.withValues(alpha: 0.3),
                 blurRadius: 20,
                 spreadRadius: 2,
                 offset: const Offset(0, 8),
@@ -136,7 +136,7 @@ class AppSnackbar {
               end: Alignment.centerRight,
               colors: [
                 snackbarData.backgroundColor,
-                snackbarData.backgroundColor.withOpacity(0.9),
+                snackbarData.backgroundColor.withValues(alpha: 0.9),
               ],
             ),
           ),
@@ -147,7 +147,7 @@ class AppSnackbar {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(snackbarData.icon, color: Colors.white, size: 22),
@@ -181,7 +181,7 @@ class AppSnackbar {
                     // الرسالة
                     AppText(
                       message,
-                      color: Colors.white.withOpacity(0.9),
+                      color: Colors.white.withValues(alpha: 0.9),
                       fontSize: 12,
                       fontWeight: FontWeight.w400,
                       maxLines: 3,
@@ -219,7 +219,7 @@ class AppSnackbar {
         width: 28,
         height: 28,
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.2),
+          color: Colors.white.withValues(alpha: 0.2),
           shape: BoxShape.circle,
         ),
         child: const Icon(Icons.close_rounded, color: Colors.white, size: 16),
@@ -237,7 +237,7 @@ class AppSnackbar {
           width: 40,
           height: 3,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.5),
+            color: Colors.white.withValues(alpha: 0.5),
             borderRadius: BorderRadius.circular(2),
           ),
           child: Row(
@@ -400,7 +400,7 @@ class _TopSnackbarWidgetState extends State<_TopSnackbarWidget>
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: widget.snackbarData.backgroundColor.withOpacity(0.3),
+                    color: widget.snackbarData.backgroundColor.withValues(alpha: 0.3),
                     blurRadius: 20,
                     spreadRadius: 2,
                     offset: const Offset(0, 8),
@@ -411,7 +411,7 @@ class _TopSnackbarWidgetState extends State<_TopSnackbarWidget>
                   end: Alignment.centerRight,
                   colors: [
                     widget.snackbarData.backgroundColor,
-                    widget.snackbarData.backgroundColor.withOpacity(0.9),
+                    widget.snackbarData.backgroundColor.withValues(alpha: 0.9),
                   ],
                 ),
               ),
@@ -422,7 +422,7 @@ class _TopSnackbarWidgetState extends State<_TopSnackbarWidget>
                     width: 40,
                     height: 40,
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withValues(alpha: 0.2),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
@@ -460,7 +460,7 @@ class _TopSnackbarWidgetState extends State<_TopSnackbarWidget>
                         // الرسالة
                         AppText(
                           widget.message,
-                          color: Colors.white.withOpacity(0.9),
+                          color: Colors.white.withValues(alpha: 0.9),
                           fontSize: 12,
                           fontWeight: FontWeight.w400,
                           maxLines: 3,
@@ -478,7 +478,7 @@ class _TopSnackbarWidgetState extends State<_TopSnackbarWidget>
                       width: 28,
                       height: 28,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
+                        color: Colors.white.withValues(alpha: 0.2),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
@@ -506,7 +506,7 @@ class _TopSnackbarWidgetState extends State<_TopSnackbarWidget>
           width: 40,
           height: 3,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.5),
+            color: Colors.white.withValues(alpha: 0.5),
             borderRadius: BorderRadius.circular(2),
           ),
           child: Row(

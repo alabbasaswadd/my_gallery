@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:my_gallery/core/components/app_snackbar.dart';
 import 'package:my_gallery/core/network/api_exception.dart';
 import 'package:my_gallery/features/categories/data/models/category_models.dart';
 import 'package:my_gallery/features/categories/domain/category_form_cubit.dart';
@@ -87,15 +88,13 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
       listener: (context, state) {
         switch (state) {
           case CategoryFormSuccess():
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: Text(_isEditing ? 'تم تحديث الفئة' : 'تم إنشاء الفئة'),
-            ));
+            AppSnackbar.showSuccess(
+              context,
+              _isEditing ? 'تم تحديث الفئة' : 'تم إنشاء الفئة',
+            );
             context.pop();
           case CategoryFormError(:final message):
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: Text(message),
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ));
+            AppSnackbar.showError(context, message);
           default:
             break;
         }

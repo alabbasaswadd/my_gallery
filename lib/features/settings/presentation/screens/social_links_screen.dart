@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:my_gallery/core/components/app_snackbar.dart';
 import 'package:my_gallery/features/settings/data/models/settings_models.dart';
 import 'package:my_gallery/features/settings/domain/social_links_cubit.dart';
 import 'package:shimmer/shimmer.dart';
@@ -96,16 +97,11 @@ class _SocialLinksScreenState extends State<SocialLinksScreen> {
             _populate(links);
           case SocialLinksSaved(:final links):
             _populate(links);
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('تم حفظ روابط التواصل')),
-            );
+            AppSnackbar.showSuccess(context, 'تم حفظ روابط التواصل');
             context.pop();
           case SocialLinksError(:final message, :final links):
             if (links != null) _populate(links);
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: Text(message),
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ));
+            AppSnackbar.showError(context, message);
           default:
             break;
         }

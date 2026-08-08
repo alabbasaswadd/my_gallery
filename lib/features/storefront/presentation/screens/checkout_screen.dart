@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:my_gallery/core/components/app_snackbar.dart';
 import 'package:my_gallery/features/cart/domain/cart_cubit.dart';
 import 'package:my_gallery/features/storefront/domain/checkout_cubit.dart';
 
@@ -29,9 +30,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     if (!_formKey.currentState!.validate()) return;
     final cartItems = context.read<CartCubit>().items;
     if (cartItems.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('السلة فارغة')),
-      );
+      AppSnackbar.showInfo(context, 'السلة فارغة');
       return;
     }
     context.read<CheckoutCubit>().placeOrder(
@@ -51,12 +50,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             context.read<CartCubit>().clear();
             context.go('/storefront/success', extra: result);
           case CheckoutError(:final message):
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(message),
-                backgroundColor: Theme.of(context).colorScheme.error,
-              ),
-            );
+            AppSnackbar.showError(context, message);
           default:
             break;
         }
