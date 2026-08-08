@@ -11,6 +11,7 @@ import 'package:my_gallery/features/occasions/domain/occasions_cubit.dart';
 import 'package:my_gallery/features/products/data/image_rules.dart';
 import 'package:my_gallery/features/products/data/models/product_models.dart';
 import 'package:my_gallery/features/products/domain/product_form_cubit.dart';
+import 'package:my_gallery/shared/widgets/network_image.dart';
 
 class ProductFormScreen extends StatefulWidget {
   final ProductDetail? existing;
@@ -449,13 +450,12 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
             borderRadius: BorderRadius.circular(8),
             child: replacement != null
                 ? Image.file(replacement, fit: BoxFit.cover)
-                : Image.network(img.url, fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .surfaceContainerHighest,
-                          child: const Icon(Icons.broken_image_outlined),
-                        )),
+                : AppNetworkImage(
+                    imagePath: img.url,
+                    width: 90,
+                    height: 90,
+                    fit: BoxFit.cover,
+                  ),
           ),
           if (isDeleted)
             Container(
