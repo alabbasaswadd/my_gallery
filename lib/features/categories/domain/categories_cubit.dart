@@ -33,7 +33,18 @@ class CategoriesCubit extends Cubit<CategoriesState> {
     }
   }
 
-  Future<void> refresh() => load();
+  /// Fetches fresh data without emitting [CategoriesLoading], so the
+  /// existing list stays visible during pull-to-refresh and post-form refreshes.
+  Future<void> refresh() async {
+    try {
+      _categories = await _service.getCategories();
+      emit(CategoriesState.loaded(_categories));
+    } on ApiException catch (e) {
+      emit(CategoriesState.error(e.message));
+    } catch (_) {
+      emit(const CategoriesState.error('فشل تحميل الفئات'));
+    }
+  }
 
   Future<void> toggleActive(int id, bool currentlyActive) async {
     try {

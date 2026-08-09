@@ -43,21 +43,36 @@ import 'package:my_gallery/features/onboarding/presentation/screens/onboarding_s
 
 final _authCubit = AuthCubit(sl<AuthService>());
 
-// Cached onboarding flag — once true it stays true for the session lifetime
-// (onboarding can only go from not-done → done, never the reverse).
+// Onboarding flag — once true it stays true (cannot revert to false).
 bool _onboardingDone = false;
+
+// Startup session result pre-resolved in main() before runApp(). Consumed
+// once on the first redirect evaluation so no async I/O blocks that call.
+// Null after the first evaluation — subsequent calls do a live storage read.
+bool? _startupSession;
+
+/// Call this from main() in parallel with other init work (ThemeCubit,
+/// SettingsCubit) so both routing decisions are cached before the widget tree
+/// builds. This eliminates the blank/dark Flutter frame that would otherwise
+/// appear while GoRouter awaits its first async redirect resolution.
+Future<void> primeRouterStartupState() async {
+  _onboardingDone = await OnboardingRepository().isCompleted();
+  _startupSession = await SecureStorage.hasValidSession();
+}
 
 final router = GoRouter(
   initialLocation: '/',
   refreshListenable: SessionNotifier.instance,
   redirect: (context, state) async {
     final location = state.matchedLocation;
-    // Only read storage when we haven't confirmed completion yet.
     if (!_onboardingDone) {
       _onboardingDone = await OnboardingRepository().isCompleted();
     }
     if (!_onboardingDone && location != '/onboarding') return '/onboarding';
-    final hasSession = await SecureStorage.hasValidSession();
+    // Use the startup-primed value once (no I/O on the first-frame redirect),
+    // then fall back to live storage for every subsequent navigation event.
+    final hasSession = _startupSession ?? await SecureStorage.hasValidSession();
+    _startupSession = null;
     final isPublic = location == '/' ||
         location.startsWith('/storefront') ||
         location == '/onboarding';

@@ -15,8 +15,13 @@
          Flutter UI initializes, as well as behind your Flutter UI while its
          running.
 
+         windowBackground matches the splash colour so there is no visible
+         colour flash between the native splash and the first Flutter frame.
+         NOTE: flutter_native_splash:create resets this to ?android:colorBackground
+         — restore @color/splashBg here whenever the generator is re-run.
+
          This Theme is only used starting with V2 of Flutter's Android embedding. -->
     <style name="NormalTheme" parent="@android:style/Theme.Light.NoTitleBar">
-        <item name="android:windowBackground">?android:colorBackground</item>
+        <item name="android:windowBackground">@color/splashBg</item>
     </style>
 </resources>

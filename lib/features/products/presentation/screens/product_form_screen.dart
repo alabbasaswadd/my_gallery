@@ -12,7 +12,6 @@ import 'package:my_gallery/features/occasions/domain/occasions_cubit.dart';
 import 'package:my_gallery/features/products/data/image_rules.dart';
 import 'package:my_gallery/features/products/data/models/product_models.dart';
 import 'package:my_gallery/features/products/domain/product_form_cubit.dart';
-import 'package:my_gallery/shared/widgets/network_image.dart';
 
 class ProductFormScreen extends StatefulWidget {
   final ProductDetail? existing;
@@ -57,8 +56,9 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     _desc = TextEditingController(text: p?.description ?? '');
     _sku = TextEditingController(text: p?.sku ?? '');
     _stock = TextEditingController(text: p?.stockQuantity.toString() ?? '0');
-    _discount =
-        TextEditingController(text: p?.discountPrice?.toStringAsFixed(0) ?? '');
+    _discount = TextEditingController(
+      text: p?.discountPrice?.toStringAsFixed(0) ?? '',
+    );
     _categoryId = p?.categoryId;
     _isFeatured = p?.isFeatured ?? false;
     _isNew = p?.isNew ?? false;
@@ -72,7 +72,15 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
 
   @override
   void dispose() {
-    for (final c in [_name, _price, _shortDesc, _desc, _sku, _stock, _discount]) {
+    for (final c in [
+      _name,
+      _price,
+      _shortDesc,
+      _desc,
+      _sku,
+      _stock,
+      _discount,
+    ]) {
       c.dispose();
     }
     super.dispose();
@@ -90,13 +98,15 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
       name: _name.text.trim(),
       categoryId: _categoryId!,
       price: double.tryParse(_price.text.trim()) ?? 0,
-      shortDescription:
-          _shortDesc.text.trim().isEmpty ? null : _shortDesc.text.trim(),
+      shortDescription: _shortDesc.text.trim().isEmpty
+          ? null
+          : _shortDesc.text.trim(),
       description: _desc.text.trim().isEmpty ? null : _desc.text.trim(),
       sku: _sku.text.trim().isEmpty ? null : _sku.text.trim(),
       stockQuantity: int.tryParse(_stock.text) ?? 0,
-      discountPrice:
-          _discount.text.isEmpty ? null : double.tryParse(_discount.text),
+      discountPrice: _discount.text.isEmpty
+          ? null
+          : double.tryParse(_discount.text),
       isFeatured: _isFeatured,
       isNew: _isNew,
       isAvailable: _isAvailable,
@@ -106,11 +116,11 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
       coverImageId: _isEditing ? _coverId : null,
     );
     context.read<ProductFormCubit>().submit(
-          request: request,
-          existingId: _isEditing ? widget.existing!.id : null,
-          newImages: _newImages,
-          replacements: _replacements,
-        );
+      request: request,
+      existingId: _isEditing ? widget.existing!.id : null,
+      newImages: _newImages,
+      replacements: _replacements,
+    );
   }
 
   Future<void> _pickNewImages() async {
@@ -138,17 +148,22 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
 
     if (!mounted) return;
     if (warnedType) {
-      AppSnackbar.showWarning(context, 'تم تجاهل بعض الملفات: نوع الملف غير مدعوم');
+      AppSnackbar.showWarning(
+        context,
+        'تم تجاهل بعض الملفات: نوع الملف غير مدعوم',
+      );
     }
     if (warnedSize) {
-      AppSnackbar.showWarning(context, 'تم تجاهل بعض الملفات: الحجم يتجاوز 5 ميجابايت');
+      AppSnackbar.showWarning(
+        context,
+        'تم تجاهل بعض الملفات: الحجم يتجاوز 5 ميجابايت',
+      );
     }
     if (valid.isNotEmpty) setState(() => _newImages.addAll(valid));
   }
 
   Future<void> _pickReplacementFor(int imageId) async {
-    final picked =
-        await ImagePicker().pickImage(source: ImageSource.gallery);
+    final picked = await ImagePicker().pickImage(source: ImageSource.gallery);
     if (picked == null || !mounted) return;
     final file = File(picked.path);
     final ext = file.path.split('.').last.toLowerCase();
@@ -216,9 +231,12 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                   const SizedBox(height: 12),
                   TextFormField(
                     controller: _price,
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
-                    decoration: const InputDecoration(labelText: 'السعر (س.ل) *'),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    decoration: const InputDecoration(
+                      labelText: 'السعر (س.ل) *',
+                    ),
                     validator: (v) {
                       final t = v?.trim() ?? '';
                       if (t.isEmpty) return 'هذا الحقل مطلوب';
@@ -229,11 +247,17 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                     },
                   ),
                   const SizedBox(height: 12),
-                  _field(_stock, 'الكمية في المخزون',
-                      type: TextInputType.number),
+                  _field(
+                    _stock,
+                    'الكمية في المخزون',
+                    type: TextInputType.number,
+                  ),
                   const SizedBox(height: 12),
-                  _field(_discount, 'سعر الخصم (س.ل)  — اختياري',
-                      type: TextInputType.number),
+                  _field(
+                    _discount,
+                    'سعر الخصم (س.ل)  — اختياري',
+                    type: TextInputType.number,
+                  ),
                   const SizedBox(height: 12),
                   _field(_sku, 'رمز SKU — اختياري'),
                   const SizedBox(height: 12),
@@ -245,17 +269,27 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                   const SizedBox(height: 20),
                   _buildImagesSection(context),
                   const SizedBox(height: 20),
-                  Text('الخيارات',
-                      style: Theme.of(context).textTheme.titleMedium),
+                  Text(
+                    'الخيارات',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
                   const SizedBox(height: 8),
-                  _switch('مميز', _isFeatured,
-                      (v) => setState(() => _isFeatured = v)),
                   _switch(
-                      'جديد', _isNew, (v) => setState(() => _isNew = v)),
-                  _switch('متاح', _isAvailable,
-                      (v) => setState(() => _isAvailable = v)),
-                  _switch('نشط', _isActive,
-                      (v) => setState(() => _isActive = v)),
+                    'مميز',
+                    _isFeatured,
+                    (v) => setState(() => _isFeatured = v),
+                  ),
+                  _switch('جديد', _isNew, (v) => setState(() => _isNew = v)),
+                  _switch(
+                    'متاح',
+                    _isAvailable,
+                    (v) => setState(() => _isAvailable = v),
+                  ),
+                  _switch(
+                    'نشط',
+                    _isActive,
+                    (v) => setState(() => _isActive = v),
+                  ),
                   const SizedBox(height: 24),
                 ],
               ),
@@ -281,8 +315,10 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
           builder: (context, state) {
             if (state is OccasionsLoaded) {
               if (state.occasions.isEmpty) {
-                return Text('لا توجد مناسبات',
-                    style: Theme.of(context).textTheme.bodySmall);
+                return Text(
+                  'لا توجد مناسبات',
+                  style: Theme.of(context).textTheme.bodySmall,
+                );
               }
               return Wrap(
                 spacing: 8,
@@ -310,7 +346,8 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                     child: Text(
                       state.message,
                       style: TextStyle(
-                          color: Theme.of(context).colorScheme.error),
+                        color: Theme.of(context).colorScheme.error,
+                      ),
                     ),
                   ),
                   TextButton(
@@ -362,8 +399,9 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                 Expanded(
                   child: Text(
                     state.message,
-                    style:
-                        TextStyle(color: Theme.of(context).colorScheme.error),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
                   ),
                 ),
                 TextButton(
@@ -413,11 +451,10 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
         Text(
           'الأنواع المسموحة: JPG, PNG, WebP, GIF — الحد الأقصى 5 ميجابايت للصورة.',
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context)
-                    .colorScheme
-                    .onSurface
-                    .withValues(alpha: 0.55),
-              ),
+            color: Theme.of(
+              context,
+            ).colorScheme.onSurface.withValues(alpha: 0.55),
+          ),
         ),
       ],
     );
@@ -438,11 +475,15 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
             borderRadius: BorderRadius.circular(8),
             child: replacement != null
                 ? Image.file(replacement, fit: BoxFit.cover)
-                : AppNetworkImage(
-                    imagePath: img.url,
-                    width: 90,
-                    height: 90,
+                : Image.network(
+                    img.url,
                     fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Container(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.surfaceContainerHighest,
+                      child: const Icon(Icons.broken_image_outlined),
+                    ),
                   ),
           ),
           if (isDeleted)
@@ -453,11 +494,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
               ),
             ),
           if (isCover && !isDeleted)
-            Positioned(
-              top: 4,
-              right: 4,
-              child: _coverBadge(context),
-            ),
+            Positioned(top: 4, right: 4, child: _coverBadge(context)),
           if (isDeleted)
             Center(
               child: IconButton(
@@ -487,7 +524,10 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
       child: const Text(
         'الغلاف',
         style: TextStyle(
-            color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold),
+          color: Colors.white,
+          fontSize: 9,
+          fontWeight: FontWeight.bold,
+        ),
       ),
     );
   }
@@ -520,36 +560,46 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
       itemBuilder: (menuCtx) => [
         PopupMenuItem(
           value: 'cover',
-          child: Row(children: [
-            Icon(
-              img.id == _coverId
-                  ? Icons.star_rounded
-                  : Icons.star_outline_rounded,
-              size: 18,
-              color: Theme.of(menuCtx).colorScheme.primary,
-            ),
-            const SizedBox(width: 8),
-            const Text('تعيين كغلاف'),
-          ]),
+          child: Row(
+            children: [
+              Icon(
+                img.id == _coverId
+                    ? Icons.star_rounded
+                    : Icons.star_outline_rounded,
+                size: 18,
+                color: Theme.of(menuCtx).colorScheme.primary,
+              ),
+              const SizedBox(width: 8),
+              const Text('تعيين كغلاف'),
+            ],
+          ),
         ),
         const PopupMenuItem(
           value: 'replace',
-          child: Row(children: [
-            Icon(Icons.swap_horiz_rounded, size: 18),
-            SizedBox(width: 8),
-            Text('استبدال الصورة'),
-          ]),
+          child: Row(
+            children: [
+              Icon(Icons.swap_horiz_rounded, size: 18),
+              SizedBox(width: 8),
+              Text('استبدال الصورة'),
+            ],
+          ),
         ),
         PopupMenuItem(
           value: 'delete',
-          child: Row(children: [
-            Icon(Icons.delete_outline_rounded,
-                size: 18, color: Theme.of(menuCtx).colorScheme.error),
-            const SizedBox(width: 8),
-            Text('حذف',
-                style:
-                    TextStyle(color: Theme.of(menuCtx).colorScheme.error)),
-          ]),
+          child: Row(
+            children: [
+              Icon(
+                Icons.delete_outline_rounded,
+                size: 18,
+                color: Theme.of(menuCtx).colorScheme.error,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'حذف',
+                style: TextStyle(color: Theme.of(menuCtx).colorScheme.error),
+              ),
+            ],
+          ),
         ),
       ],
     );
@@ -598,24 +648,27 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
         height: 90,
         decoration: BoxDecoration(
           border: Border.all(
-            color:
-                Theme.of(context).colorScheme.primary.withValues(alpha: 0.4),
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.4),
             width: 1.5,
           ),
           borderRadius: BorderRadius.circular(8),
-          color:
-              Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
+          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.add_photo_alternate_outlined,
-                color: Theme.of(context).colorScheme.primary, size: 28),
+            Icon(
+              Icons.add_photo_alternate_outlined,
+              color: Theme.of(context).colorScheme.primary,
+              size: 28,
+            ),
             const SizedBox(height: 4),
             Text(
               'إضافة صور',
               style: TextStyle(
-                  color: Theme.of(context).colorScheme.primary, fontSize: 10),
+                color: Theme.of(context).colorScheme.primary,
+                fontSize: 10,
+              ),
             ),
           ],
         ),

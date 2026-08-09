@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'app_text.dart';
 
-/// Position where the snackbar should be displayed
 enum SnackbarPosition { top, bottom }
 
 class AppSnackbar {
@@ -67,7 +66,6 @@ class AppSnackbar {
   }) {
     final snackbarData = _getSnackbarData(type);
 
-    // Use overlay for top position, regular SnackBar for bottom
     if (position == SnackbarPosition.top) {
       _showTopSnackbar(context, message, snackbarData);
     } else {
@@ -80,7 +78,6 @@ class AppSnackbar {
     String message,
     SnackbarData snackbarData,
   ) {
-    // Remove any existing overlay
     _currentOverlay?.remove();
     _currentOverlay = null;
 
@@ -112,14 +109,12 @@ class AppSnackbar {
     SnackbarData snackbarData,
   ) {
     final scaffold = ScaffoldMessenger.of(context);
-
-    // إغلاق أي Snackbar سابق
     scaffold.hideCurrentSnackBar();
 
     scaffold.showSnackBar(
       SnackBar(
         content: Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
             color: snackbarData.backgroundColor,
             borderRadius: BorderRadius.circular(16),
@@ -136,13 +131,12 @@ class AppSnackbar {
               end: Alignment.centerRight,
               colors: [
                 snackbarData.backgroundColor,
-                snackbarData.backgroundColor.withValues(alpha: 0.9),
+                snackbarData.backgroundColor.withValues(alpha: 0.88),
               ],
             ),
           ),
           child: Row(
             children: [
-              // أيقونة مع خلفية دائرية
               Container(
                 width: 40,
                 height: 40,
@@ -152,48 +146,26 @@ class AppSnackbar {
                 ),
                 child: Icon(snackbarData.icon, color: Colors.white, size: 22),
               ),
-
-              const SizedBox(width: 16),
-
-              // المحتوى النصي
+              const SizedBox(width: 12),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // العنوان
-                    Row(
-                      children: [
-                        AppText(
-                          snackbarData.title,
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        const Spacer(),
-                        // مؤشر التقدم
-                        _buildProgressIndicator(snackbarData.backgroundColor),
-                      ],
-                    ),
-
-                    const SizedBox(height: 6),
-
-                    // الرسالة
-                    AppText(
-                      message,
-                      color: Colors.white.withValues(alpha: 0.9),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w400,
-                      maxLines: 3,
-                    ),
-                  ],
+                child: AppText(
+                  message,
+                  color: Colors.white,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  maxLines: 3,
                 ),
               ),
-
-              const SizedBox(width: 12),
-
-              // زر الإغلاق
-              _buildCloseButton(scaffold, snackbarData),
+              const SizedBox(width: 8),
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  _buildCloseButton(scaffold),
+                  const SizedBox(height: 5),
+                  _buildProgressIndicator(),
+                ],
+              ),
             ],
           ),
         ),
@@ -208,11 +180,7 @@ class AppSnackbar {
     );
   }
 
-  // زر الإغلاق مع تصميم جميل
-  static Widget _buildCloseButton(
-    ScaffoldMessengerState scaffold,
-    SnackbarData data,
-  ) {
+  static Widget _buildCloseButton(ScaffoldMessengerState scaffold) {
     return GestureDetector(
       onTap: () => scaffold.hideCurrentSnackBar(),
       child: Container(
@@ -227,85 +195,65 @@ class AppSnackbar {
     );
   }
 
-  // مؤشر التقدم
-  static Widget _buildProgressIndicator(Color baseColor) {
+  static Widget _buildProgressIndicator() {
     return TweenAnimationBuilder(
       duration: const Duration(seconds: 4),
       tween: Tween<double>(begin: 1.0, end: 0.0),
       builder: (context, value, child) {
         return Container(
-          width: 40,
+          width: 28,
           height: 3,
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.5),
+            color: Colors.white.withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(2),
           ),
-          child: Row(
-            children: [
-              Expanded(
-                flex: (value * 100).round(),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
+          child: Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: FractionallySizedBox(
+              widthFactor: value,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.85),
+                  borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              Expanded(
-                flex: 100 - (value * 100).round(),
-                child: const SizedBox(),
-              ),
-            ],
+            ),
           ),
         );
       },
     );
   }
 
-  // بيانات الـ Snackbar حسب النوع
   static SnackbarData _getSnackbarData(SnackbarType type) {
     switch (type) {
       case SnackbarType.error:
         return SnackbarData(
-          backgroundColor: const Color(0xFFBA1A1A),
+          backgroundColor: const Color(0xFFC62828),
           icon: Icons.error_outline_rounded,
-          title: 'خطأ',
+          title: '',
         );
       case SnackbarType.success:
         return SnackbarData(
-          backgroundColor: _getSuccessColor(),
+          backgroundColor: const Color(0xFF388E3C),
           icon: Icons.check_circle_outline_rounded,
-          title: 'نجح',
+          title: '',
         );
       case SnackbarType.info:
         return SnackbarData(
-          backgroundColor: _getInfoColor(),
+          backgroundColor: const Color(0xFF3B82F6),
           icon: Icons.info_outline_rounded,
-          title: 'معلومة',
+          title: '',
         );
       case SnackbarType.warning:
         return SnackbarData(
-          backgroundColor: _getWarningColor(),
+          backgroundColor: const Color(0xFFE65100),
           icon: Icons.warning_amber_outlined,
-          title: 'تحذير',
+          title: '',
         );
     }
   }
-
-  static Color _getSuccessColor() {
-    return Colors.green; // لون أخضر جميل
-  }
-
-  static Color _getInfoColor() {
-    return const Color(0xFF3B82F6); // لون أزرق جميل
-  }
-
-  static Color _getWarningColor() {
-    return Colors.orange; // لون أزرق جميل
-  }
 }
 
-// كلاس مساعد لحفظ بيانات الـ Snackbar
 class SnackbarData {
   final Color backgroundColor;
   final IconData icon;
@@ -320,7 +268,6 @@ class SnackbarData {
 
 enum SnackbarType { error, success, info, warning }
 
-/// Widget for displaying snackbar at the top of the screen
 class _TopSnackbarWidget extends StatefulWidget {
   final String message;
   final SnackbarData snackbarData;
@@ -361,18 +308,13 @@ class _TopSnackbarWidgetState extends State<_TopSnackbarWidget>
 
     _controller.forward();
 
-    // Auto dismiss after 4 seconds
     Future.delayed(const Duration(seconds: 4), () {
-      if (mounted) {
-        _dismiss();
-      }
+      if (mounted) _dismiss();
     });
   }
 
   void _dismiss() {
-    _controller.reverse().then((_) {
-      widget.onDismiss();
-    });
+    _controller.reverse().then((_) => widget.onDismiss());
   }
 
   @override
@@ -394,7 +336,7 @@ class _TopSnackbarWidgetState extends State<_TopSnackbarWidget>
           child: Material(
             color: Colors.transparent,
             child: Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
                 color: widget.snackbarData.backgroundColor,
                 borderRadius: BorderRadius.circular(16),
@@ -411,13 +353,12 @@ class _TopSnackbarWidgetState extends State<_TopSnackbarWidget>
                   end: Alignment.centerRight,
                   colors: [
                     widget.snackbarData.backgroundColor,
-                    widget.snackbarData.backgroundColor.withValues(alpha: 0.9),
+                    widget.snackbarData.backgroundColor.withValues(alpha: 0.88),
                   ],
                 ),
               ),
               child: Row(
                 children: [
-                  // أيقونة مع خلفية دائرية
                   Container(
                     width: 40,
                     height: 40,
@@ -431,62 +372,40 @@ class _TopSnackbarWidgetState extends State<_TopSnackbarWidget>
                       size: 22,
                     ),
                   ),
-
-                  const SizedBox(width: 16),
-
-                  // المحتوى النصي
+                  const SizedBox(width: 12),
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // العنوان
-                        Row(
-                          children: [
-                            AppText(
-                              widget.snackbarData.title,
-                              color: Colors.white,
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            const Spacer(),
-                            // مؤشر التقدم
-                            _buildProgressIndicator(),
-                          ],
-                        ),
-
-                        const SizedBox(height: 6),
-
-                        // الرسالة
-                        AppText(
-                          widget.message,
-                          color: Colors.white.withValues(alpha: 0.9),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w400,
-                          maxLines: 3,
-                        ),
-                      ],
+                    child: AppText(
+                      widget.message,
+                      color: Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      maxLines: 3,
                     ),
                   ),
-
-                  const SizedBox(width: 12),
-
-                  // زر الإغلاق
-                  GestureDetector(
-                    onTap: _dismiss,
-                    child: Container(
-                      width: 28,
-                      height: 28,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
-                        shape: BoxShape.circle,
+                  const SizedBox(width: 8),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      GestureDetector(
+                        onTap: _dismiss,
+                        child: Container(
+                          width: 28,
+                          height: 28,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.2),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.close_rounded,
+                            color: Colors.white,
+                            size: 16,
+                          ),
+                        ),
                       ),
-                      child: const Icon(
-                        Icons.close_rounded,
-                        color: Colors.white,
-                        size: 16,
-                      ),
-                    ),
+                      const SizedBox(height: 5),
+                      _buildProgressIndicator(),
+                    ],
                   ),
                 ],
               ),
@@ -503,28 +422,23 @@ class _TopSnackbarWidgetState extends State<_TopSnackbarWidget>
       tween: Tween<double>(begin: 1.0, end: 0.0),
       builder: (context, value, child) {
         return Container(
-          width: 40,
+          width: 28,
           height: 3,
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.5),
+            color: Colors.white.withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(2),
           ),
-          child: Row(
-            children: [
-              Expanded(
-                flex: (value * 100).round(),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
+          child: Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: FractionallySizedBox(
+              widthFactor: value,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.85),
+                  borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              Expanded(
-                flex: 100 - (value * 100).round(),
-                child: const SizedBox(),
-              ),
-            ],
+            ),
           ),
         );
       },

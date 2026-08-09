@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart' show debugPrint, kDebugMode;
+import 'package:http_parser/http_parser.dart' show MediaType;
 import 'package:my_gallery/core/network/api_client.dart';
 import 'package:my_gallery/core/network/api_exception.dart';
 import 'package:my_gallery/features/products/data/image_rules.dart';
@@ -39,26 +41,43 @@ class SettingsService {
   /// first (jpeg/png/webp/gif, ≤ 5 MB) to mirror the server.
   Future<String> uploadImage(File file) async {
     await assertValidImages([file]);
+    final filename = file.uri.pathSegments.last;
+    final ext = filename.split('.').last.toLowerCase();
+    final mimeType = _imageMimeType(ext);
+    if (kDebugMode) {
+      debugPrint('[SettingsImage] → POST /settings/images  field=file  filename=$filename  mime=$mimeType');
+    }
     try {
       final form = FormData()
         ..files.add(MapEntry(
           'file',
           await MultipartFile.fromFile(
             file.path,
-            filename: file.uri.pathSegments.last,
+            filename: filename,
+            contentType: MediaType.parse(mimeType),
           ),
         ));
-      final resp = await _dio.post(
-        '/settings/images',
-        data: form,
-        options: Options(contentType: 'multipart/form-data'),
-      );
+      final resp = await _dio.post('/settings/images', data: form);
+      if (kDebugMode) {
+        debugPrint('[SettingsImage] ← status=${resp.statusCode}  body=${resp.data}');
+      }
       _assertOk(resp);
       return resp.data['data']['url'] as String;
     } on DioException catch (e) {
+      if (kDebugMode) {
+        debugPrint('[SettingsImage] ✗ status=${e.response?.statusCode}  body=${e.response?.data}');
+      }
       throw exceptionFromDio(e);
     }
   }
+
+  static String _imageMimeType(String ext) => switch (ext) {
+        'jpg' || 'jpeg' => 'image/jpeg',
+        'png' => 'image/png',
+        'webp' => 'image/webp',
+        'gif' => 'image/gif',
+        _ => 'application/octet-stream',
+      };
 
   /// Full replace of the shop settings. Builds the exact JSON the API expects:
   /// hex color strings, a CSS `borderRadius` string ("16px"), nested social.

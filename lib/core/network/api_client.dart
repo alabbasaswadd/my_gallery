@@ -2,7 +2,6 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:my_gallery/core/config/app_config.dart';
 import 'package:my_gallery/core/network/api_exception.dart';
-import 'package:my_gallery/core/network/session_notifier.dart';
 import 'package:my_gallery/core/storage/secure_storage.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
@@ -63,11 +62,9 @@ class _AuthInterceptor extends Interceptor {
       return;
     }
 
-    if (status == 401) {
-      await SecureStorage.clearAll();
-      SessionNotifier.instance.invalidate();
-    }
-
+    // Non-2xx responses are mapped to ApiException and rejected.
+    // Session management (logout, redirect) is handled only by explicit
+    // user action — never triggered automatically by the network layer.
     final exception = ApiException.fromDio(DioException(
       requestOptions: response.requestOptions,
       response: response,

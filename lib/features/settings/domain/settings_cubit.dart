@@ -37,8 +37,11 @@ class SettingsCubit extends Cubit<SettingsState> {
 
     try {
       final fresh = await _service.getSettings(shopId);
-      await _saveCache(fresh);
-      emit(SettingsState.loaded(fresh));
+      // The public storefront endpoint omits admin-only fields (e.g. website).
+      // Preserve those from the cache so they are never overwritten with blanks.
+      final toSave = _mergeWithCache(fresh, cached);
+      await _saveCache(toSave);
+      emit(SettingsState.loaded(toSave));
     } on ApiException catch (e) {
       if (state is! SettingsLoaded) {
         emit(SettingsState.error(e.message));
@@ -48,6 +51,19 @@ class SettingsCubit extends Cubit<SettingsState> {
         emit(const SettingsState.error('فشل تحميل إعدادات المعرض'));
       }
     }
+  }
+
+  /// Merges [fresh] (from the public storefront endpoint) with [cached] (from a
+  /// previous admin save) so that admin-only fields never get blanked out by the
+  /// public endpoint, which doesn't return them.
+  StorefrontSettings _mergeWithCache(
+    StorefrontSettings fresh,
+    StorefrontSettings? cached,
+  ) {
+    if (cached == null) return fresh;
+    return fresh.copyWith(
+      website: fresh.website.isEmpty ? cached.website : fresh.website,
+    );
   }
 
   Future<StorefrontSettings?> _loadCache() async {

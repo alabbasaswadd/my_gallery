@@ -1,13 +1,17 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:my_gallery/core/components/app_snackbar.dart';
 import 'package:my_gallery/core/network/api_exception.dart';
 import 'package:my_gallery/features/categories/data/models/category_models.dart';
 import 'package:my_gallery/features/categories/domain/category_form_cubit.dart';
+import 'package:my_gallery/features/products/data/image_rules.dart';
+import 'package:my_gallery/shared/widgets/network_image.dart';
 
 class CategoryFormScreen extends StatefulWidget {
-  /// When non-null the screen is in edit mode and loads the category by id.
   final int? editId;
 
   const CategoryFormScreen({super.key, this.editId});
@@ -22,7 +26,11 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
   final _desc = TextEditingController();
   final _order = TextEditingController(text: '0');
   bool _isActive = true;
-  int? _parentId; // preserved across edit so an update never re-roots the tree
+  int? _parentId;
+  File? _imageFile;
+
+  String? _existingImageUrl;
+  bool _removeExistingImage = false;
 
   bool _loadingDetail = false;
   String? _loadError;
@@ -56,6 +64,7 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
       _order.text = c.displayOrder.toString();
       _isActive = c.isActive;
       _parentId = c.parentId;
+      _existingImageUrl = c.imageUrl;
     } on ApiException catch (e) {
       _loadError = e.message;
     } catch (_) {
@@ -63,6 +72,40 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
     } finally {
       if (mounted) setState(() => _loadingDetail = false);
     }
+  }
+
+  Future<void> _pickImage() async {
+    final picked = await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (picked == null || !mounted) return;
+
+    final file = File(picked.path);
+    final ext = file.path.split('.').last.toLowerCase();
+    if (!allowedImageExts.contains(ext)) {
+      if (mounted) {
+        AppSnackbar.showWarning(
+          context,
+          'نوع الملف غير مدعوم. يُسمح فقط بـ: jpeg، png، webp، gif',
+        );
+      }
+      return;
+    }
+    final size = await file.length();
+    if (!mounted) return;
+    if (size > maxImageBytes) {
+      AppSnackbar.showWarning(context, 'حجم الملف يتجاوز 5 ميجابايت');
+      return;
+    }
+    setState(() {
+      _imageFile = file;
+      _removeExistingImage = false;
+    });
+  }
+
+  void _removeImage() {
+    setState(() {
+      _imageFile = null;
+      _removeExistingImage = true;
+    });
   }
 
   void _submit() {
@@ -73,12 +116,13 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
       parentId: _parentId,
       displayOrder: int.tryParse(_order.text) ?? 0,
       isActive: _isActive,
+      removeImage: _isEditing && _removeExistingImage && _imageFile == null,
     );
     final cubit = context.read<CategoryFormCubit>();
     if (_isEditing) {
-      cubit.update(widget.editId!, request);
+      cubit.update(widget.editId!, request, image: _imageFile);
     } else {
-      cubit.create(request);
+      cubit.create(request, image: _imageFile);
     }
   }
 
@@ -91,6 +135,14 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
             AppSnackbar.showSuccess(
               context,
               _isEditing ? 'تم تحديث الفئة' : 'تم إنشاء الفئة',
+            );
+            context.pop();
+          case CategoryFormSuccessWithImageWarning():
+            AppSnackbar.showError(
+              context,
+              _isEditing
+                  ? 'تم تحديث الفئة، لكن فشل رفع الصورة. يمكنك المحاولة لاحقاً.'
+                  : 'تم إنشاء الفئة، لكن فشل رفع الصورة. يمكنك المحاولة لاحقاً.',
             );
             context.pop();
           case CategoryFormError(:final message):
@@ -188,10 +240,139 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
               onChanged: (v) => setState(() => _isActive = v),
               activeColor: Theme.of(context).colorScheme.primary,
             ),
+            const SizedBox(height: 16),
+            _buildImagePicker(context),
             const SizedBox(height: 24),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildImagePicker(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+
+    final bool hasNewFile = _imageFile != null;
+    final bool hasExisting =
+        !hasNewFile && !_removeExistingImage && (_existingImageUrl?.isNotEmpty ?? false);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('صورة الفئة', style: theme.textTheme.titleMedium),
+        const SizedBox(height: 8),
+        if (hasNewFile) ...[
+          Stack(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.file(
+                  _imageFile!,
+                  width: double.infinity,
+                  height: 180,
+                  fit: BoxFit.cover,
+                ),
+              ),
+              Positioned(
+                top: 8,
+                left: 8,
+                child: GestureDetector(
+                  onTap: () => setState(() => _imageFile = null),
+                  child: Container(
+                    width: 32,
+                    height: 32,
+                    decoration: const BoxDecoration(
+                      color: Colors.black54,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.close, color: Colors.white, size: 18),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          TextButton.icon(
+            onPressed: _pickImage,
+            icon: const Icon(Icons.swap_horiz_rounded),
+            label: const Text('تغيير الصورة'),
+          ),
+        ] else if (hasExisting) ...[
+          Stack(
+            children: [
+              AppNetworkImage(
+                imagePath: _existingImageUrl,
+                width: double.infinity,
+                height: 180,
+                fit: BoxFit.cover,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              Positioned(
+                top: 8,
+                left: 8,
+                child: GestureDetector(
+                  onTap: _removeImage,
+                  child: Container(
+                    width: 32,
+                    height: 32,
+                    decoration: const BoxDecoration(
+                      color: Colors.black54,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.close, color: Colors.white, size: 18),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          TextButton.icon(
+            onPressed: _pickImage,
+            icon: const Icon(Icons.swap_horiz_rounded),
+            label: const Text('تغيير الصورة'),
+          ),
+        ] else
+          InkWell(
+            onTap: _pickImage,
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              width: double.infinity,
+              height: 120,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: cs.outlineVariant,
+                  width: 1.5,
+                ),
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.add_photo_alternate_outlined,
+                    size: 36,
+                    color: cs.primary,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'اضغط لاختيار صورة',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: cs.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        const SizedBox(height: 6),
+        Text(
+          'اختياري — JPG، PNG، WebP، GIF — الحد الأقصى 5 ميجابايت',
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: cs.onSurfaceVariant,
+          ),
+        ),
+      ],
     );
   }
 }

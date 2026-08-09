@@ -55,13 +55,14 @@ extension CategoryFormStatePatterns on CategoryFormState {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( CategoryFormInitial value)?  initial,TResult Function( CategoryFormLoading value)?  loading,TResult Function( CategoryFormSuccess value)?  success,TResult Function( CategoryFormError value)?  error,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( CategoryFormInitial value)?  initial,TResult Function( CategoryFormLoading value)?  loading,TResult Function( CategoryFormSuccess value)?  success,TResult Function( CategoryFormSuccessWithImageWarning value)?  successWithImageWarning,TResult Function( CategoryFormError value)?  error,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case CategoryFormInitial() when initial != null:
 return initial(_that);case CategoryFormLoading() when loading != null:
 return loading(_that);case CategoryFormSuccess() when success != null:
-return success(_that);case CategoryFormError() when error != null:
+return success(_that);case CategoryFormSuccessWithImageWarning() when successWithImageWarning != null:
+return successWithImageWarning(_that);case CategoryFormError() when error != null:
 return error(_that);case _:
   return orElse();
 
@@ -80,13 +81,14 @@ return error(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( CategoryFormInitial value)  initial,required TResult Function( CategoryFormLoading value)  loading,required TResult Function( CategoryFormSuccess value)  success,required TResult Function( CategoryFormError value)  error,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( CategoryFormInitial value)  initial,required TResult Function( CategoryFormLoading value)  loading,required TResult Function( CategoryFormSuccess value)  success,required TResult Function( CategoryFormSuccessWithImageWarning value)  successWithImageWarning,required TResult Function( CategoryFormError value)  error,}){
 final _that = this;
 switch (_that) {
 case CategoryFormInitial():
 return initial(_that);case CategoryFormLoading():
 return loading(_that);case CategoryFormSuccess():
-return success(_that);case CategoryFormError():
+return success(_that);case CategoryFormSuccessWithImageWarning():
+return successWithImageWarning(_that);case CategoryFormError():
 return error(_that);}
 }
 /// A variant of `map` that fallback to returning `null`.
@@ -101,13 +103,14 @@ return error(_that);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( CategoryFormInitial value)?  initial,TResult? Function( CategoryFormLoading value)?  loading,TResult? Function( CategoryFormSuccess value)?  success,TResult? Function( CategoryFormError value)?  error,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( CategoryFormInitial value)?  initial,TResult? Function( CategoryFormLoading value)?  loading,TResult? Function( CategoryFormSuccess value)?  success,TResult? Function( CategoryFormSuccessWithImageWarning value)?  successWithImageWarning,TResult? Function( CategoryFormError value)?  error,}){
 final _that = this;
 switch (_that) {
 case CategoryFormInitial() when initial != null:
 return initial(_that);case CategoryFormLoading() when loading != null:
 return loading(_that);case CategoryFormSuccess() when success != null:
-return success(_that);case CategoryFormError() when error != null:
+return success(_that);case CategoryFormSuccessWithImageWarning() when successWithImageWarning != null:
+return successWithImageWarning(_that);case CategoryFormError() when error != null:
 return error(_that);case _:
   return null;
 
@@ -125,12 +128,13 @@ return error(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function( int categoryId)?  success,TResult Function( String message)?  error,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function( int categoryId)?  success,TResult Function( int categoryId)?  successWithImageWarning,TResult Function( String message)?  error,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case CategoryFormInitial() when initial != null:
 return initial();case CategoryFormLoading() when loading != null:
 return loading();case CategoryFormSuccess() when success != null:
-return success(_that.categoryId);case CategoryFormError() when error != null:
+return success(_that.categoryId);case CategoryFormSuccessWithImageWarning() when successWithImageWarning != null:
+return successWithImageWarning(_that.categoryId);case CategoryFormError() when error != null:
 return error(_that.message);case _:
   return orElse();
 
@@ -149,12 +153,13 @@ return error(_that.message);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function( int categoryId)  success,required TResult Function( String message)  error,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function( int categoryId)  success,required TResult Function( int categoryId)  successWithImageWarning,required TResult Function( String message)  error,}) {final _that = this;
 switch (_that) {
 case CategoryFormInitial():
 return initial();case CategoryFormLoading():
 return loading();case CategoryFormSuccess():
-return success(_that.categoryId);case CategoryFormError():
+return success(_that.categoryId);case CategoryFormSuccessWithImageWarning():
+return successWithImageWarning(_that.categoryId);case CategoryFormError():
 return error(_that.message);}
 }
 /// A variant of `when` that fallback to returning `null`
@@ -169,12 +174,13 @@ return error(_that.message);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function( int categoryId)?  success,TResult? Function( String message)?  error,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function( int categoryId)?  success,TResult? Function( int categoryId)?  successWithImageWarning,TResult? Function( String message)?  error,}) {final _that = this;
 switch (_that) {
 case CategoryFormInitial() when initial != null:
 return initial();case CategoryFormLoading() when loading != null:
 return loading();case CategoryFormSuccess() when success != null:
-return success(_that.categoryId);case CategoryFormError() when error != null:
+return success(_that.categoryId);case CategoryFormSuccessWithImageWarning() when successWithImageWarning != null:
+return successWithImageWarning(_that.categoryId);case CategoryFormError() when error != null:
 return error(_that.message);case _:
   return null;
 
@@ -305,6 +311,72 @@ class _$CategoryFormSuccessCopyWithImpl<$Res>
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') $Res call({Object? categoryId = null,}) {
   return _then(CategoryFormSuccess(
+null == categoryId ? _self.categoryId : categoryId // ignore: cast_nullable_to_non_nullable
+as int,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class CategoryFormSuccessWithImageWarning implements CategoryFormState {
+  const CategoryFormSuccessWithImageWarning(this.categoryId);
+  
+
+ final  int categoryId;
+
+/// Create a copy of CategoryFormState
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$CategoryFormSuccessWithImageWarningCopyWith<CategoryFormSuccessWithImageWarning> get copyWith => _$CategoryFormSuccessWithImageWarningCopyWithImpl<CategoryFormSuccessWithImageWarning>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CategoryFormSuccessWithImageWarning&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,categoryId);
+
+@override
+String toString() {
+  return 'CategoryFormState.successWithImageWarning(categoryId: $categoryId)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $CategoryFormSuccessWithImageWarningCopyWith<$Res> implements $CategoryFormStateCopyWith<$Res> {
+  factory $CategoryFormSuccessWithImageWarningCopyWith(CategoryFormSuccessWithImageWarning value, $Res Function(CategoryFormSuccessWithImageWarning) _then) = _$CategoryFormSuccessWithImageWarningCopyWithImpl;
+@useResult
+$Res call({
+ int categoryId
+});
+
+
+
+
+}
+/// @nodoc
+class _$CategoryFormSuccessWithImageWarningCopyWithImpl<$Res>
+    implements $CategoryFormSuccessWithImageWarningCopyWith<$Res> {
+  _$CategoryFormSuccessWithImageWarningCopyWithImpl(this._self, this._then);
+
+  final CategoryFormSuccessWithImageWarning _self;
+  final $Res Function(CategoryFormSuccessWithImageWarning) _then;
+
+/// Create a copy of CategoryFormState
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? categoryId = null,}) {
+  return _then(CategoryFormSuccessWithImageWarning(
 null == categoryId ? _self.categoryId : categoryId // ignore: cast_nullable_to_non_nullable
 as int,
   ));

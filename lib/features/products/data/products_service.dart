@@ -1,5 +1,7 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart' show debugPrint, kDebugMode;
+import 'package:http_parser/http_parser.dart' show MediaType;
 import 'package:my_gallery/core/network/api_client.dart';
 import 'package:my_gallery/core/network/api_exception.dart';
 import 'package:my_gallery/core/network/api_response.dart';
@@ -138,18 +140,29 @@ class ProductsService {
     try {
       final formData = FormData();
       for (final file in files) {
-        final filename = file.path.split('/').last;
+        final filename = file.uri.pathSegments.last;
+        final ext = filename.split('.').last.toLowerCase();
+        final mimeType = _imageMimeType(ext);
+        if (kDebugMode) {
+          debugPrint('[ProductImage] → POST /products/$id/images  field=files  filename=$filename  mime=$mimeType');
+        }
         formData.files.add(MapEntry(
           'files',
-          await MultipartFile.fromFile(file.path, filename: filename),
+          await MultipartFile.fromFile(
+            file.path,
+            filename: filename,
+            contentType: MediaType.parse(mimeType),
+          ),
         ));
       }
-      await _dio.post(
-        '/products/$id/images',
-        data: formData,
-        options: Options(contentType: 'multipart/form-data'),
-      );
+      final resp = await _dio.post('/products/$id/images', data: formData);
+      if (kDebugMode) {
+        debugPrint('[ProductImage] ← status=${resp.statusCode}  body=${resp.data}');
+      }
     } on DioException catch (e) {
+      if (kDebugMode) {
+        debugPrint('[ProductImage] ✗ status=${e.response?.statusCode}  body=${e.response?.data}');
+      }
       throw exceptionFromDio(e);
     }
   }
@@ -185,25 +198,44 @@ class ProductsService {
         message: 'حجم الملف يتجاوز 5 ميجابايت',
       );
     }
+    final filename = file.uri.pathSegments.last;
+    final mimeType = _imageMimeType(ext);
+    if (kDebugMode) {
+      debugPrint('[ProductImage] → PUT /products/$productId/images/$imageId  field=file  filename=$filename  mime=$mimeType');
+    }
     try {
       final form = FormData()
         ..files.add(MapEntry(
           'file',
           await MultipartFile.fromFile(
             file.path,
-            filename: file.path.split('/').last,
+            filename: filename,
+            contentType: MediaType.parse(mimeType),
           ),
         ));
       final resp = await _dio.put(
         '/products/$productId/images/$imageId',
         data: form,
-        options: Options(contentType: 'multipart/form-data'),
       );
+      if (kDebugMode) {
+        debugPrint('[ProductImage] ← status=${resp.statusCode}  body=${resp.data}');
+      }
       _assertOk(resp);
     } on DioException catch (e) {
+      if (kDebugMode) {
+        debugPrint('[ProductImage] ✗ status=${e.response?.statusCode}  body=${e.response?.data}');
+      }
       throw exceptionFromDio(e);
     }
   }
+
+  static String _imageMimeType(String ext) => switch (ext) {
+        'jpg' || 'jpeg' => 'image/jpeg',
+        'png' => 'image/png',
+        'webp' => 'image/webp',
+        'gif' => 'image/gif',
+        _ => 'application/octet-stream',
+      };
 
   void _assertOk(Response resp) {
     final status = resp.statusCode ?? 0;

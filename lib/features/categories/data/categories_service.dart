@@ -1,7 +1,12 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart' show debugPrint, kDebugMode;
+import 'package:http_parser/http_parser.dart' show MediaType;
 import 'package:my_gallery/core/network/api_client.dart';
 import 'package:my_gallery/core/network/api_exception.dart';
 import 'package:my_gallery/features/categories/data/models/category_models.dart';
+import 'package:my_gallery/features/products/data/image_rules.dart';
 
 class CategoriesService {
   final Dio _dio;
@@ -58,6 +63,65 @@ class CategoriesService {
       throw exceptionFromDio(e);
     }
   }
+
+  Future<void> uploadCategoryImage(int id, File file) async {
+    final ext = file.path.split('.').last.toLowerCase();
+    if (!allowedImageExts.contains(ext)) {
+      throw const ApiException(
+        kind: ApiErrorKind.validation,
+        message: 'نوع الملف غير مدعوم. يُسمح فقط بـ: jpeg، png، webp، gif',
+      );
+    }
+    final fileSize = await file.length();
+    if (fileSize > maxImageBytes) {
+      throw const ApiException(
+        kind: ApiErrorKind.validation,
+        message: 'حجم الملف يتجاوز 5 ميجابايت',
+      );
+    }
+
+    final filename = file.uri.pathSegments.last;
+    final mimeType = _imageMimeType(ext);
+
+    if (kDebugMode) {
+      debugPrint('[CategoryImage] → POST /categories/$id/images');
+      debugPrint('[CategoryImage]   field=image  filename=$filename  mime=$mimeType  size=${fileSize}B');
+    }
+
+    try {
+      final form = FormData()
+        ..files.add(MapEntry(
+          'image',
+          await MultipartFile.fromFile(
+            file.path,
+            filename: filename,
+            contentType: MediaType.parse(mimeType),
+          ),
+        ));
+      final resp = await _dio.post('/categories/$id/images', data: form);
+
+      if (kDebugMode) {
+        debugPrint('[CategoryImage] ← status=${resp.statusCode}  body=${resp.data}');
+      }
+
+      _assertOk(resp);
+    } on DioException catch (e) {
+      if (kDebugMode) {
+        debugPrint('[CategoryImage] ✗ status=${e.response?.statusCode}');
+        debugPrint('[CategoryImage] ✗ body=${e.response?.data}');
+        debugPrint('[CategoryImage] ✗ type=${e.type}  message=${e.message}');
+      }
+      throw exceptionFromDio(e);
+    }
+  }
+
+  static String _imageMimeType(String ext) => switch (ext) {
+        'jpg' || 'jpeg' => 'image/jpeg',
+        'png' => 'image/png',
+        'webp' => 'image/webp',
+        'gif' => 'image/gif',
+        _ => 'application/octet-stream',
+      };
 
   Future<void> reorderCategories(List<int> orderedIds) async {
     try {

@@ -31,7 +31,13 @@ class StoreLinks {
     }
     final uri = Uri.tryParse(raw);
     if (uri == null || uri.host.isEmpty) return null;
-    return raw;
+    // Strip any hash fragment the owner may have accidentally included in the
+    // website URL (e.g. "example.com/#featured-products").
+    var clean = uri.removeFragment().toString();
+    while (clean.endsWith('/')) {
+      clean = clean.substring(0, clean.length - 1);
+    }
+    return clean;
   }
 
   /// The public store/home URL, or `null` when no website is configured.

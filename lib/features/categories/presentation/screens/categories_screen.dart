@@ -46,7 +46,10 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
           if (canManage)
             IconButton(
               icon: const Icon(Icons.add),
-              onPressed: () => context.push('/categories/create'),
+              onPressed: () async {
+                await context.push('/categories/create');
+                if (context.mounted) context.read<CategoriesCubit>().refresh();
+              },
             ),
         ],
       ),
@@ -65,7 +68,10 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     icon: Icons.category_outlined,
                     actionLabel: canManage ? 'إضافة فئة' : null,
                     onAction: canManage
-                        ? () => context.push('/categories/create')
+                        ? () async {
+                            await context.push('/categories/create');
+                            if (context.mounted) context.read<CategoriesCubit>().refresh();
+                          }
                         : null,
                   )
                 : RefreshIndicator(
@@ -92,9 +98,10 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           onToggleActive: () => context
                               .read<CategoriesCubit>()
                               .toggleActive(cat.id, cat.isActive),
-                          onEdit: () => context.push(
-                            '/categories/${cat.id}/edit',
-                          ),
+                          onEdit: () async {
+                            await context.push('/categories/${cat.id}/edit');
+                            if (context.mounted) context.read<CategoriesCubit>().refresh();
+                          },
                           onDelete: () => _confirmDelete(context, cat),
                         );
                       },

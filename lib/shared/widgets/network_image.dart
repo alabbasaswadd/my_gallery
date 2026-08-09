@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart' show debugPrint, kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:my_gallery/core/config/app_config.dart';
 import 'package:shimmer/shimmer.dart';
@@ -22,12 +23,21 @@ class AppNetworkImage extends StatelessWidget {
   String? get _fullUrl {
     final path = imagePath;
     if (path == null || path.isEmpty) return null;
-    // Legacy full URL (old MinIO links) or any external image → use directly.
-    if (path.startsWith('http')) return path;
-    // Legacy local static path (/uploads/…) served straight from the host.
-    if (path.startsWith('/')) return '${AppConfig.baseUrl}$path';
-    // New relative storage key (uploads/shop-x/…) → served by the image endpoint.
-    return '${AppConfig.apiBaseUrl}/images/$path';
+    final String resolved;
+    // Absolute URL (MinIO / CDN / any http/https link) — use directly.
+    if (path.startsWith('http')) {
+      resolved = path;
+    } else if (path.startsWith('/')) {
+      // Root-relative path (/uploads/…) — prepend the base host.
+      resolved = '${AppConfig.baseUrl}$path';
+    } else {
+      // Relative storage key (uploads/shop-x/…) — served by the image endpoint.
+      resolved = '${AppConfig.apiBaseUrl}/images/$path';
+    }
+    if (kDebugMode) {
+      debugPrint('[AppNetworkImage] "$path" → "$resolved"');
+    }
+    return resolved;
   }
 
   @override
@@ -47,7 +57,12 @@ class AppNetworkImage extends StatelessWidget {
           highlightColor: Colors.grey[100]!,
           child: Container(color: Colors.white, width: width, height: height),
         ),
-        errorWidget: (_, __, ___) => _placeholder(),
+        errorWidget: (_, url, error) {
+          if (kDebugMode) {
+            debugPrint('[AppNetworkImage] failed to load "$url": $error');
+          }
+          return _placeholder();
+        },
       ),
     );
   }

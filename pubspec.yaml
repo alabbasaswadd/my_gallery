@@ -31,6 +31,7 @@ dependencies:
 
   # Networking
   dio: ^5.7.0
+  http_parser: ^4.0.2
   retrofit: ^4.9.2
   pretty_dio_logger: ^1.4.0
 
@@ -65,15 +66,15 @@ dev_dependencies:
   flutter_launcher_icons: ^0.14.1
 
 flutter_native_splash:
-  color: "#4338CA"
+  color: "#C0446A"
   image: assets/images/app_icon.png
-  color_dark: "#1E1B4B"
+  color_dark: "#6D1A38"
   image_dark: assets/images/app_icon.png
   android_12:
     image: assets/images/app_icon_fg.png
-    icon_background_color: "#4338CA"
+    icon_background_color: "#C0446A"
     image_dark: assets/images/app_icon_fg.png
-    icon_background_color_dark: "#1E1B4B"
+    icon_background_color_dark: "#6D1A38"
   web: false
 
 flutter_launcher_icons:
@@ -81,7 +82,7 @@ flutter_launcher_icons:
   ios: true
   remove_alpha_ios: true
   image_path: "assets/images/app_icon.png"
-  adaptive_icon_background: "#4338CA"
+  adaptive_icon_background: "#C0446A"
   adaptive_icon_foreground: "assets/images/app_icon_fg.png"
   min_sdk_android: 21
 

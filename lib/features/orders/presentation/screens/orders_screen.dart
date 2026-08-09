@@ -71,16 +71,24 @@ class _OrdersScreenState extends State<OrdersScreen> {
                 child: switch (state) {
                   OrdersListLoading() => _buildShimmer(),
                   OrdersListLoaded(:final orders, :final pagination) =>
-                    orders.isEmpty
-                        ? const EmptyState(
-                            message: 'لا توجد طلبات',
-                            icon: Icons.receipt_long_outlined,
-                          )
-                        : RefreshIndicator(
-                            onRefresh: () =>
-                                context.read<OrdersListCubit>().refresh(),
-                            child: ListView.builder(
+                    RefreshIndicator(
+                      onRefresh: () =>
+                          context.read<OrdersListCubit>().refresh(),
+                      child: orders.isEmpty
+                          ? ListView(
+                              physics:
+                                  const AlwaysScrollableScrollPhysics(),
+                              children: const [
+                                EmptyState(
+                                  message: 'لا توجد طلبات',
+                                  icon: Icons.receipt_long_outlined,
+                                ),
+                              ],
+                            )
+                          : ListView.builder(
                               controller: _scrollCtrl,
+                              physics:
+                                  const AlwaysScrollableScrollPhysics(),
                               padding:
                                   const EdgeInsets.symmetric(vertical: 8),
                               itemCount: orders.length +
@@ -93,13 +101,22 @@ class _OrdersScreenState extends State<OrdersScreen> {
                                         child: CircularProgressIndicator()),
                                   );
                                 }
+                                final order = orders[i];
                                 return _OrderTile(
-                                  order: orders[i],
+                                  order: order,
                                   index: i,
+                                  onTap: () async {
+                                    await context.push('/orders/${order.id}');
+                                    if (context.mounted) {
+                                      context
+                                          .read<OrdersListCubit>()
+                                          .refresh();
+                                    }
+                                  },
                                 );
                               },
                             ),
-                          ),
+                    ),
                   _ => const SizedBox.shrink(),
                 },
               ),
@@ -143,8 +160,13 @@ class _OrdersScreenState extends State<OrdersScreen> {
 class _OrderTile extends StatelessWidget {
   final OrderListItem order;
   final int index;
+  final VoidCallback onTap;
 
-  const _OrderTile({required this.order, required this.index});
+  const _OrderTile({
+    required this.order,
+    required this.index,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -155,7 +177,7 @@ class _OrderTile extends StatelessWidget {
         child: ListTile(
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          onTap: () => context.push('/orders/${order.id}'),
+          onTap: onTap,
           title: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [

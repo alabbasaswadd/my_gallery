@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:my_gallery/core/components/app_snackbar.dart';
-import 'package:my_gallery/core/config/app_config.dart';
 import 'package:my_gallery/features/auth/domain/auth_cubit.dart';
 import 'package:my_gallery/features/categories/data/models/category_models.dart';
 import 'package:my_gallery/features/categories/domain/categories_cubit.dart';
@@ -26,20 +25,25 @@ class ProductsScreen extends StatefulWidget {
 class _ProductsScreenState extends State<ProductsScreen> {
   final _searchCtrl = TextEditingController();
   final _scrollCtrl = ScrollController();
+  final _searchFocus = FocusNode();
 
   @override
   void initState() {
     super.initState();
     context.read<ProductsListCubit>().load();
     _scrollCtrl.addListener(_onScroll);
+    _searchCtrl.addListener(_onSearchTextChanged);
   }
 
   @override
   void dispose() {
     _searchCtrl.dispose();
     _scrollCtrl.dispose();
+    _searchFocus.dispose();
     super.dispose();
   }
+
+  void _onSearchTextChanged() => setState(() {});
 
   void _onScroll() {
     if (_scrollCtrl.position.pixels >=
@@ -48,14 +52,26 @@ class _ProductsScreenState extends State<ProductsScreen> {
     }
   }
 
-  void _refreshAll() {
-    context.read<ProductsListCubit>().refresh();
-    context.read<CategoriesCubit>().load();
-  }
-
   void _onSearch(String query) {
     final cubit = context.read<ProductsListCubit>();
-    cubit.applyFilter(cubit.currentFilter.copyWith(search: query, page: 1));
+    final trimmed = query.trim();
+    final current = cubit.currentFilter;
+    cubit.applyFilter(ProductFilter(
+      search: trimmed.isEmpty ? null : trimmed,
+      categoryId: current.categoryId,
+      minPrice: current.minPrice,
+      maxPrice: current.maxPrice,
+      isActive: current.isActive,
+      sort: current.sort,
+      page: 1,
+      pageSize: current.pageSize,
+    ));
+  }
+
+  void _clearSearch() {
+    _searchCtrl.clear();
+    _searchFocus.unfocus();
+    _onSearch('');
   }
 
   Future<void> _openCreate() async {
@@ -79,7 +95,11 @@ class _ProductsScreenState extends State<ProductsScreen> {
       builder: (_) => ProductsFilterSheet(
         currentFilter: current,
         categories: categories,
-        onApply: (f) => context.read<ProductsListCubit>().applyFilter(f),
+        onApply: (f) {
+          // Sync search field text with filter
+          _searchCtrl.text = f.search ?? '';
+          context.read<ProductsListCubit>().applyFilter(f);
+        },
       ),
     );
   }
@@ -115,31 +135,25 @@ class _ProductsScreenState extends State<ProductsScreen> {
         ),
         actions: [
           const ThemeToggleButton(),
-          IconButton(
-            icon: const Icon(Icons.refresh_rounded),
-            tooltip: 'تحديث',
-            onPressed: () => _refreshAll(),
-          ),
           if (website.isNotEmpty)
             IconButton(
               icon: const Icon(Icons.public_rounded),
               tooltip: 'زيارة الموقع',
               onPressed: () => _launchWebsite(context, website),
             ),
-          IconButton(
-            icon: const Icon(Icons.storefront_outlined),
-            tooltip: 'المتجر',
-            onPressed: () => context.push('/storefront'),
-          ),
           if (canManage)
             IconButton(icon: const Icon(Icons.add), onPressed: _openCreate),
         ],
       ),
-      body: Column(
-        children: [
-          _buildSearchBar(context),
-          Expanded(child: _buildBody()),
-        ],
+      body: GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: Column(
+          children: [
+            _buildSearchBar(context),
+            Expanded(child: _buildBody()),
+          ],
+        ),
       ),
     );
   }
@@ -157,11 +171,19 @@ class _ProductsScreenState extends State<ProductsScreen> {
               Expanded(
                 child: TextField(
                   controller: _searchCtrl,
+                  focusNode: _searchFocus,
                   onSubmitted: _onSearch,
                   textInputAction: TextInputAction.search,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     hintText: 'بحث عن منتج...',
-                    prefixIcon: Icon(Icons.search),
+                    prefixIcon: const Icon(Icons.search),
+                    suffixIcon: _searchCtrl.text.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear),
+                            onPressed: _clearSearch,
+                            tooltip: 'مسح البحث',
+                          )
+                        : null,
                   ),
                 ),
               ),

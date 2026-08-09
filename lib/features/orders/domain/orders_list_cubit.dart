@@ -43,7 +43,32 @@ class OrdersListCubit extends Cubit<OrdersListState> {
     await _fetch();
   }
 
-  Future<void> refresh() => load(status: _status);
+  /// Fetches page 1 without emitting [OrdersListLoading], so the existing list
+  /// stays visible during pull-to-refresh and after returning from detail.
+  Future<void> refresh() async {
+    if (_fetching) return;
+    try {
+      final resp = await _service.getOrders(
+        status: _status == 'All' ? null : _status,
+        page: 1,
+      );
+      _orders = resp.data ?? [];
+      _page = 1;
+      _pagination = resp.pagination ?? const PaginationMeta();
+      if (!isClosed) {
+        emit(OrdersListState.loaded(
+          orders: _orders,
+          pagination: _pagination,
+          statusFilter: _status,
+        ));
+        _startPolling();
+      }
+    } on ApiException catch (e) {
+      emit(OrdersListState.error(e.message));
+    } catch (_) {
+      emit(const OrdersListState.error('فشل تحميل الطلبات'));
+    }
+  }
 
   Future<void> loadMore() async {
     if (_fetching || !_pagination.hasNext) return;

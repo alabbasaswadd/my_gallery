@@ -17,14 +17,19 @@ void main() async {
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
   await setupServiceLocator();
-  // Load persisted theme and cached settings before the first frame.
+  // Run all startup I/O in parallel: theme, settings, and routing decisions.
+  // primeRouterStartupState() caches onboarding + session so the first
+  // GoRouter redirect evaluation has no async I/O, preventing a blank Flutter
+  // frame between the native splash and the home screen.
   await Future.wait([
     sl<ThemeCubit>().load(),
     sl<SettingsCubit>().load(AppConfig.shopId),
+    primeRouterStartupState(),
   ]);
 
-  // Remove the splash now that initialization is complete.
-  FlutterNativeSplash.remove();
+  // Remove the splash only after Flutter has painted its first frame, so
+  // there is no visible gap between the native splash and the Flutter UI.
+  widgetsBinding.addPostFrameCallback((_) => FlutterNativeSplash.remove());
 
   runApp(const MyGalleryApp());
 }
