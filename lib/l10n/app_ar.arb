@@ -25,5 +25,22 @@
     "error_conflict": "تعارض في البيانات",
     "error_rate_limited": "الرجاء الانتظار قبل المحاولة مجددًا",
     "error_server": "خطأ في الخادم، يرجى المحاولة لاحقاً",
-    "error_unknown": "حدث خطأ غير متوقع"
+    "error_unknown": "حدث خطأ غير متوقع",
+
+    "noInternet": "لا يوجد اتصال بالإنترنت",
+    "noInternetDescription": "تحقق من اتصال هاتفك بالإنترنت ثم حاول مرة أخرى.",
+    "unstableNetwork": "الاتصال بالإنترنت غير مستقر",
+    "connectionRestored": "تم استعادة الاتصال بالإنترنت",
+    "serverErrorTitle": "حدث خطأ أثناء معالجة الطلب",
+    "serverErrorDescription": "الفريق التقني يقوم بمتابعة الخطأ، يرجى المحاولة مرة أخرى لاحقًا.",
+    "requestTimeoutMessage": "تعذر الاتصال بالخادم، يرجى المحاولة مرة أخرى.",
+
+    "loginWelcome": "مرحبًا بك 👋",
+    "loginSubtitle": "سجّل الدخول للمتابعة إلى حسابك",
+    "emailHint": "أدخل بريدك الإلكتروني",
+    "passwordHint": "أدخل كلمة المرور",
+    "emailRequired": "يرجى إدخال البريد الإلكتروني",
+    "invalidEmail": "يرجى إدخال بريد إلكتروني صحيح",
+    "invalidCredentials": "البريد الإلكتروني أو كلمة المرور غير صحيحة",
+    "loggingIn": "جارٍ تسجيل الدخول..."
 }

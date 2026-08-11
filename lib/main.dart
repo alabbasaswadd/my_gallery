@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:my_gallery/core/config/app_config.dart';
@@ -8,7 +7,9 @@ import 'package:my_gallery/core/di/service_locator.dart';
 import 'package:my_gallery/features/settings/data/models/settings_models.dart';
 import 'package:my_gallery/features/settings/domain/settings_cubit.dart';
 import 'package:my_gallery/features/settings/domain/theme_cubit.dart';
+import 'package:my_gallery/l10n/app_localizations.dart';
 import 'package:my_gallery/routes.dart';
+import 'package:my_gallery/shared/widgets/network_status_listener.dart';
 import 'package:my_gallery/theme.dart' show AppTheme, activePalette;
 
 void main() async {
@@ -65,15 +66,15 @@ class MyGalleryApp extends StatelessWidget {
                   themeMode: themeSettings.mode,
                   routerConfig: router,
                   locale: const Locale('ar'),
-                  supportedLocales: const [Locale('ar'), Locale('en')],
-                  localizationsDelegates: const [
-                    GlobalMaterialLocalizations.delegate,
-                    GlobalWidgetsLocalizations.delegate,
-                    GlobalCupertinoLocalizations.delegate,
-                  ],
+                  supportedLocales: AppLocalizations.supportedLocales,
+                  localizationsDelegates: AppLocalizations.localizationsDelegates,
                   builder: (context, child) => Directionality(
                     textDirection: TextDirection.rtl,
-                    child: child!,
+                    // Surfaces throttled unstable/restored connectivity banners
+                    // app-wide, without blocking any screen.
+                    child: NetworkStatusListener(
+                      child: child ?? const SizedBox.shrink(),
+                    ),
                   ),
                 );
               },

@@ -25,5 +25,22 @@
     "error_conflict": "Data conflict",
     "error_rate_limited": "Please wait before trying again",
     "error_server": "Server error, please try again later",
-    "error_unknown": "An unexpected error occurred"
+    "error_unknown": "An unexpected error occurred",
+
+    "noInternet": "No internet connection",
+    "noInternetDescription": "Check your device's internet connection and try again.",
+    "unstableNetwork": "Your internet connection is unstable",
+    "connectionRestored": "Internet connection restored",
+    "serverErrorTitle": "Something went wrong while processing your request",
+    "serverErrorDescription": "Our technical team is looking into it. Please try again later.",
+    "requestTimeoutMessage": "Couldn't reach the server. Please try again.",
+
+    "loginWelcome": "Welcome 👋",
+    "loginSubtitle": "Sign in to continue to your account",
+    "emailHint": "Enter your email",
+    "passwordHint": "Enter your password",
+    "emailRequired": "Please enter your email",
+    "invalidEmail": "Please enter a valid email",
+    "invalidCredentials": "Incorrect email or password",
+    "loggingIn": "Signing in..."
 }

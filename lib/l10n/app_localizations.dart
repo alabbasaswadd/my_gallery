@@ -529,6 +529,37 @@ abstract class AppLocalizations {
   String get payment_successful;
   String get balance_recharged;
   String get done;
+
+  // Network / API error messages (kind-based)
+  String get error_network;
+  String get error_timeout;
+  String get error_unauthorized;
+  String get error_forbidden;
+  String get error_not_found;
+  String get error_validation;
+  String get error_conflict;
+  String get error_rate_limited;
+  String get error_server;
+  String get error_unknown;
+
+  // Network states & reusable views
+  String get noInternet;
+  String get noInternetDescription;
+  String get unstableNetwork;
+  String get connectionRestored;
+  String get serverErrorTitle;
+  String get serverErrorDescription;
+  String get requestTimeoutMessage;
+
+  // Login
+  String get loginWelcome;
+  String get loginSubtitle;
+  String get emailHint;
+  String get passwordHint;
+  String get emailRequired;
+  String get invalidEmail;
+  String get invalidCredentials;
+  String get loggingIn;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
