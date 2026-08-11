@@ -10,21 +10,18 @@ import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:my_gallery/core/components/app_snackbar.dart';
-import 'package:my_gallery/core/config/app_config.dart';
 import 'package:my_gallery/features/settings/data/models/settings_models.dart';
 import 'package:my_gallery/features/settings/domain/site_customization_cubit.dart';
 import 'package:my_gallery/features/settings/domain/theme_cubit.dart';
+import 'package:my_gallery/shared/widgets/network_image.dart';
 import 'package:my_gallery/theme.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-/// Resolves a server image path (`/uploads/x.png`) or absolute URL into a full
-/// URL for previews.
-String _resolveImageUrl(String path) {
-  if (path.isEmpty) return path;
-  if (path.startsWith('http')) return path;
-  return '${AppConfig.baseUrl}$path';
-}
+/// Resolves a stored image path (logo / favicon / hero) into a full preview URL.
+/// Delegates to the shared [resolveImageUrl] so these images load through the
+/// same route (`/api/v1/images/{key}`) used everywhere else in the app.
+String _resolveImageUrl(String path) => resolveImageUrl(path) ?? path;
 
 String colorToHex(Color c) =>
     '#${(c.toARGB32() & 0xFFFFFF).toRadixString(16).padLeft(6, '0').toUpperCase()}';

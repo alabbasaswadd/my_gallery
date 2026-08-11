@@ -42,7 +42,11 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
   final List<File> _newImages = [];
   final Map<int, File> _replacements = {};
   final Set<int> _removeIds = {};
+  // The cover is exactly one image, chosen from EITHER an existing image
+  // (`_coverId`) OR a newly-picked one (`_coverNewIndex`, index into
+  // `_newImages`). At most one of the two is non-null at a time.
   int? _coverId;
+  int? _coverNewIndex;
 
   bool get _isEditing => widget.existing != null;
 
@@ -113,13 +117,18 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
       isActive: _isActive,
       occasionIds: _occasionIds.toList(),
       removeImageIds: _removeIds.toList(),
-      coverImageId: _isEditing ? _coverId : null,
+      // The cover is applied authoritatively via PATCH /cover-image after saving
+      // (see ProductFormCubit.submit). Only pass an existing-image cover as the
+      // PUT hint; a newly-picked cover is resolved post-upload.
+      coverImageId: _isEditing ? (_coverNewIndex == null ? _coverId : null) : null,
     );
     context.read<ProductFormCubit>().submit(
       request: request,
       existingId: _isEditing ? widget.existing!.id : null,
       newImages: _newImages,
       replacements: _replacements,
+      coverImageId: _coverNewIndex == null ? _coverId : null,
+      coverNewImageIndex: _coverNewIndex,
     );
   }
 
@@ -547,7 +556,10 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
       ),
       onSelected: (value) {
         if (value == 'cover') {
-          setState(() => _coverId = img.id);
+          setState(() {
+            _coverId = img.id;
+            _coverNewIndex = null;
+          });
         } else if (value == 'replace') {
           _pickReplacementFor(img.id);
         } else if (value == 'delete') {
@@ -606,7 +618,14 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
   }
 
   Widget _buildNewImageTile(BuildContext context, int index) {
-    final isFirstInCreate = !_isEditing && index == 0;
+    // This new image is the cover when explicitly chosen, or — with nothing
+    // chosen yet — as the create-mode default (the first uploaded image, which
+    // the server also marks as cover when the product has none).
+    final isCover = _coverNewIndex == index ||
+        (_coverNewIndex == null &&
+            _coverId == null &&
+            !_isEditing &&
+            index == 0);
     return SizedBox(
       width: 90,
       height: 90,
@@ -617,13 +636,44 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
             borderRadius: BorderRadius.circular(8),
             child: Image.file(_newImages[index], fit: BoxFit.cover),
           ),
-          if (isFirstInCreate)
-            Positioned(top: 4, right: 4, child: _coverBadge(context)),
+          if (isCover)
+            Positioned(top: 4, right: 4, child: _coverBadge(context))
+          else
+            Positioned(
+              top: 4,
+              right: 4,
+              child: GestureDetector(
+                onTap: () => setState(() {
+                  _coverNewIndex = index;
+                  _coverId = null;
+                }),
+                child: Container(
+                  width: 22,
+                  height: 22,
+                  decoration: BoxDecoration(
+                    color: Colors.black54,
+                    borderRadius: BorderRadius.circular(11),
+                  ),
+                  child: const Icon(Icons.star_outline_rounded,
+                      color: Colors.white, size: 14),
+                ),
+              ),
+            ),
           Positioned(
             top: 4,
             left: 4,
             child: GestureDetector(
-              onTap: () => setState(() => _newImages.removeAt(index)),
+              onTap: () => setState(() {
+                _newImages.removeAt(index);
+                // Keep the new-image cover pointer aligned after the removal.
+                if (_coverNewIndex != null) {
+                  if (_coverNewIndex == index) {
+                    _coverNewIndex = null;
+                  } else if (_coverNewIndex! > index) {
+                    _coverNewIndex = _coverNewIndex! - 1;
+                  }
+                }
+              }),
               child: Container(
                 width: 22,
                 height: 22,

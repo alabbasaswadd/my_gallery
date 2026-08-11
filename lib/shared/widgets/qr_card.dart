@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:my_gallery/core/config/app_config.dart';
 import 'package:my_gallery/core/utils/store_links.dart';
+import 'package:my_gallery/shared/widgets/network_image.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 /// A professional, printable QR card showing the store identity, an optional
@@ -150,12 +150,8 @@ class _Logo extends StatelessWidget {
     required this.accent,
   });
 
-  String? get _fullUrl {
-    final path = logoUrl;
-    if (path == null || path.isEmpty) return null;
-    if (path.startsWith('http')) return path;
-    return '${AppConfig.baseUrl}$path';
-  }
+  // Resolve the store logo through the shared route used across the app.
+  String? get _fullUrl => resolveImageUrl(logoUrl);
 
   @override
   Widget build(BuildContext context) {

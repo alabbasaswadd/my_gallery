@@ -4,6 +4,22 @@ import 'package:flutter/material.dart';
 import 'package:my_gallery/core/config/app_config.dart';
 import 'package:shimmer/shimmer.dart';
 
+/// Resolves a stored image reference to a fully-qualified URL, mirroring the
+/// backend storage layout. Single source of truth — use this everywhere instead
+/// of re-deriving the base URL locally.
+///
+/// - `http…` / `data:` → used as-is (legacy full URL, external image, inline URI).
+/// - `/…` absolute path → served straight from the host (legacy `/uploads/…`).
+/// - relative storage key (`uploads/shop-x/…`) → the `/api/v1/images/{key}` endpoint.
+///
+/// Returns null for a null/empty reference.
+String? resolveImageUrl(String? path) {
+  if (path == null || path.isEmpty) return null;
+  if (path.startsWith('http') || path.startsWith('data:')) return path;
+  if (path.startsWith('/')) return '${AppConfig.baseUrl}$path';
+  return '${AppConfig.apiBaseUrl}/images/$path';
+}
+
 class AppNetworkImage extends StatelessWidget {
   final String? imagePath;
   final double? width;
@@ -21,21 +37,9 @@ class AppNetworkImage extends StatelessWidget {
   });
 
   String? get _fullUrl {
-    final path = imagePath;
-    if (path == null || path.isEmpty) return null;
-    final String resolved;
-    // Absolute URL (MinIO / CDN / any http/https link) — use directly.
-    if (path.startsWith('http')) {
-      resolved = path;
-    } else if (path.startsWith('/')) {
-      // Root-relative path (/uploads/…) — prepend the base host.
-      resolved = '${AppConfig.baseUrl}$path';
-    } else {
-      // Relative storage key (uploads/shop-x/…) — served by the image endpoint.
-      resolved = '${AppConfig.apiBaseUrl}/images/$path';
-    }
+    final resolved = resolveImageUrl(imagePath);
     if (kDebugMode) {
-      debugPrint('[AppNetworkImage] "$path" → "$resolved"');
+      debugPrint('[AppNetworkImage] "$imagePath" → "$resolved"');
     }
     return resolved;
   }

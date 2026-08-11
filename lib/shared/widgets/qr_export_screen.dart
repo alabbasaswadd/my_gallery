@@ -5,8 +5,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:my_gallery/core/components/app_snackbar.dart';
-import 'package:my_gallery/core/config/app_config.dart';
 import 'package:my_gallery/shared/services/share_service.dart';
+import 'package:my_gallery/shared/widgets/network_image.dart';
 import 'package:my_gallery/shared/widgets/qr_card.dart';
 
 /// Full-screen QR preview + export surface, shared by both product QR and store
@@ -50,9 +50,8 @@ class _QrExportScreenState extends State<QrExportScreen> {
   Future<void> _precacheLogo() async {
     if (_logoPrecached) return;
     _logoPrecached = true;
-    final path = widget.logoUrl;
-    if (path == null || path.isEmpty) return;
-    final url = path.startsWith('http') ? path : '${AppConfig.baseUrl}$path';
+    final url = resolveImageUrl(widget.logoUrl);
+    if (url == null) return;
     try {
       await precacheImage(CachedNetworkImageProvider(url), context);
       // Give the freshly-cached logo a frame to paint before any capture.
