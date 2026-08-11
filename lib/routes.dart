@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:my_gallery/core/di/service_locator.dart';
 import 'package:my_gallery/core/network/session_notifier.dart';
+import 'package:my_gallery/core/session/session_manager.dart';
 import 'package:my_gallery/core/storage/secure_storage.dart';
 import 'package:my_gallery/features/auth/data/auth_service.dart';
 import 'package:my_gallery/features/auth/domain/auth_cubit.dart';
@@ -56,6 +57,10 @@ bool? _startupSession;
 /// builds. This eliminates the blank/dark Flutter frame that would otherwise
 /// appear while GoRouter awaits its first async redirect resolution.
 Future<void> primeRouterStartupState() async {
+  // When the network layer invalidates the session (repeated genuine failures),
+  // reset the root auth cubit so the login screen doesn't bounce back to /home.
+  // The router redirect (below) does the actual navigation off SessionNotifier.
+  SessionManager.instance.bindOnInvalidate(_authCubit.forceUnauthenticated);
   _onboardingDone = await OnboardingRepository().isCompleted();
   _startupSession = await SecureStorage.hasValidSession();
 }

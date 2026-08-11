@@ -380,4 +380,84 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get done => 'تم';
+
+  // Network / API error messages (kind-based)
+  @override
+  String get error_network => 'تعذّر الاتصال بالإنترنت';
+
+  @override
+  String get error_timeout => 'انتهت مهلة الاتصال، يرجى المحاولة مجددًا';
+
+  @override
+  String get error_unauthorized => 'انتهت الجلسة، يرجى تسجيل الدخول مجدداً';
+
+  @override
+  String get error_forbidden => 'ليس لديك صلاحية للوصول';
+
+  @override
+  String get error_not_found => 'المورد غير موجود';
+
+  @override
+  String get error_validation => 'بيانات غير صالحة';
+
+  @override
+  String get error_conflict => 'تعارض في البيانات';
+
+  @override
+  String get error_rate_limited => 'الرجاء الانتظار قبل المحاولة مجددًا';
+
+  @override
+  String get error_server => 'خطأ في الخادم، يرجى المحاولة لاحقاً';
+
+  @override
+  String get error_unknown => 'حدث خطأ غير متوقع';
+
+  // Network states & reusable views
+  @override
+  String get noInternet => 'لا يوجد اتصال بالإنترنت';
+
+  @override
+  String get noInternetDescription =>
+      'تحقق من اتصال هاتفك بالإنترنت ثم حاول مرة أخرى.';
+
+  @override
+  String get unstableNetwork => 'الاتصال بالإنترنت غير مستقر';
+
+  @override
+  String get connectionRestored => 'تم استعادة الاتصال بالإنترنت';
+
+  @override
+  String get serverErrorTitle => 'حدث خطأ أثناء معالجة الطلب';
+
+  @override
+  String get serverErrorDescription =>
+      'الفريق التقني يقوم بمتابعة الخطأ، يرجى المحاولة مرة أخرى لاحقًا.';
+
+  @override
+  String get requestTimeoutMessage => 'تعذر الاتصال بالخادم، يرجى المحاولة مرة أخرى.';
+
+  // Login
+  @override
+  String get loginWelcome => 'مرحبًا بك 👋';
+
+  @override
+  String get loginSubtitle => 'سجّل الدخول للمتابعة إلى حسابك';
+
+  @override
+  String get emailHint => 'أدخل بريدك الإلكتروني';
+
+  @override
+  String get passwordHint => 'أدخل كلمة المرور';
+
+  @override
+  String get emailRequired => 'يرجى إدخال البريد الإلكتروني';
+
+  @override
+  String get invalidEmail => 'يرجى إدخال بريد إلكتروني صحيح';
+
+  @override
+  String get invalidCredentials => 'البريد الإلكتروني أو كلمة المرور غير صحيحة';
+
+  @override
+  String get loggingIn => 'جارٍ تسجيل الدخول...';
 }

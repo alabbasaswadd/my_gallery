@@ -380,4 +380,84 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get done => 'Done';
+
+  // Network / API error messages (kind-based)
+  @override
+  String get error_network => 'Unable to connect to the internet';
+
+  @override
+  String get error_timeout => 'Connection timed out, please try again';
+
+  @override
+  String get error_unauthorized => 'Session expired, please sign in again';
+
+  @override
+  String get error_forbidden => 'You do not have permission to access this';
+
+  @override
+  String get error_not_found => 'Resource not found';
+
+  @override
+  String get error_validation => 'Invalid data';
+
+  @override
+  String get error_conflict => 'Data conflict';
+
+  @override
+  String get error_rate_limited => 'Please wait before trying again';
+
+  @override
+  String get error_server => 'Server error, please try again later';
+
+  @override
+  String get error_unknown => 'An unexpected error occurred';
+
+  // Network states & reusable views
+  @override
+  String get noInternet => 'No internet connection';
+
+  @override
+  String get noInternetDescription =>
+      "Check your device's internet connection and try again.";
+
+  @override
+  String get unstableNetwork => 'Your internet connection is unstable';
+
+  @override
+  String get connectionRestored => 'Internet connection restored';
+
+  @override
+  String get serverErrorTitle => 'Something went wrong while processing your request';
+
+  @override
+  String get serverErrorDescription =>
+      'Our technical team is looking into it. Please try again later.';
+
+  @override
+  String get requestTimeoutMessage => "Couldn't reach the server. Please try again.";
+
+  // Login
+  @override
+  String get loginWelcome => 'Welcome 👋';
+
+  @override
+  String get loginSubtitle => 'Sign in to continue to your account';
+
+  @override
+  String get emailHint => 'Enter your email';
+
+  @override
+  String get passwordHint => 'Enter your password';
+
+  @override
+  String get emailRequired => 'Please enter your email';
+
+  @override
+  String get invalidEmail => 'Please enter a valid email';
+
+  @override
+  String get invalidCredentials => 'Incorrect email or password';
+
+  @override
+  String get loggingIn => 'Signing in...';
 }

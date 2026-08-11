@@ -30,6 +30,11 @@ class AuthCubit extends Cubit<AuthState> {
   AuthUser? _currentUser;
   AuthUser? get currentUser => _currentUser;
 
+  /// The most recent login failure, kept so the login screen can tailor the UX
+  /// (offline view vs. timeout / server / invalid-credentials message) by
+  /// [ApiException.kind] without changing the freezed state shape.
+  ApiException? lastLoginError;
+
   /// Verifies the local session on startup.
   ///
   /// If the server check fails for any reason (network error, timeout, 401, or
@@ -73,6 +78,7 @@ class AuthCubit extends Cubit<AuthState> {
 
   Future<void> login(String email, String password) async {
     emit(const AuthState.loading());
+    lastLoginError = null;
     try {
       final result = await _authService.login(email: email, password: password);
       await SecureStorage.saveTokens(
@@ -83,10 +89,21 @@ class AuthCubit extends Cubit<AuthState> {
       await _cacheUser(result.user);
       emit(AuthState.authenticated(result.user));
     } on ApiException catch (e) {
+      lastLoginError = e;
       emit(AuthState.error(e.message));
     } catch (_) {
+      lastLoginError = const ApiException(message: 'حدث خطأ غير متوقع');
       emit(const AuthState.error('حدث خطأ غير متوقع'));
     }
+  }
+
+  /// Resets in-memory auth state to unauthenticated WITHOUT calling the logout
+  /// endpoint. Invoked by [SessionManager] after the network layer invalidates
+  /// the session (credentials are cleared there); the router then redirects to
+  /// login. Distinct from [logout], which is the explicit user action.
+  void forceUnauthenticated() {
+    _currentUser = null;
+    if (!isClosed) emit(const AuthState.unauthenticated());
   }
 
   /// The ONLY path that clears the session — called by an explicit user action.

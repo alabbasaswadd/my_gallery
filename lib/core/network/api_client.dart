@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:my_gallery/core/config/app_config.dart';
 import 'package:my_gallery/core/network/api_exception.dart';
+import 'package:my_gallery/core/network/retry_policy.dart';
 import 'package:my_gallery/core/storage/secure_storage.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
@@ -24,6 +25,10 @@ class ApiClient {
       ),
     );
 
+    // Order matters: the retry/connectivity interceptor runs FIRST so its
+    // onError sees genuine transport failures before the auth interceptor maps
+    // and rejects them, allowing a clean re-dispatch.
+    dio.interceptors.add(NetworkRetryInterceptor(dio));
     dio.interceptors.add(_AuthInterceptor());
     if (kDebugMode) {
       dio.interceptors.add(
@@ -35,6 +40,20 @@ class ApiClient {
       );
     }
     return dio;
+  }
+
+  /// Marks a request as safe to auto-retry on transient network failures (see
+  /// [NetworkRetryInterceptor]). Use ONLY for idempotent reads (GET/HEAD);
+  /// never for create/update/delete/upload, to avoid duplicate side effects.
+  ///
+  /// ```dart
+  /// _dio.get('/products', options: ApiClient.retryable());
+  /// ```
+  static Options retryable([Options? base]) {
+    final options = base ?? Options();
+    final extra = Map<String, dynamic>.from(options.extra ?? const {});
+    extra[kRetryableExtra] = true;
+    return options.copyWith(extra: extra);
   }
 }
 
