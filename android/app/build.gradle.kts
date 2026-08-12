@@ -18,10 +18,7 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.example.my_gallery"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
@@ -30,9 +27,25 @@ android {
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
+
+            // R8 full-mode: shrinks, obfuscates, and optimises Kotlin/Java from plugins.
+            isMinifyEnabled = true
+            // Removes unused Android resources (drawables, layouts, strings, etc.).
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+
+            // Exclude x86_64 (emulator-only) and keep only real-device ABIs.
+            // For Play Store, use `flutter build appbundle` instead — Play delivers
+            // the right ABI automatically without any filter needed here.
+            // For a direct-download APK, pass --target-platform android-arm64 to
+            // flutter build apk to get the smallest single-ABI APK (~31 MB).
+            ndk {
+                abiFilters += setOf("arm64-v8a", "armeabi-v7a")
+            }
         }
     }
 }

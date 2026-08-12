@@ -32,7 +32,6 @@ dependencies:
   # Networking
   dio: ^5.7.0
   http_parser: ^4.0.2
-  retrofit: ^4.9.2
   pretty_dio_logger: ^1.4.0
 
   # Storage
@@ -62,7 +61,6 @@ dev_dependencies:
   flutter_lints: ^4.0.0
   json_serializable: ^6.9.5
   freezed: ^3.0.6
-  retrofit_generator: ^10.2.5
   build_runner: ^2.4.15
   flutter_launcher_icons: ^0.14.1
 
