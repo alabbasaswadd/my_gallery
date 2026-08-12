@@ -41,6 +41,8 @@ import 'package:my_gallery/features/settings/presentation/screens/social_links_s
 import 'package:my_gallery/features/storefront/presentation/screens/storefront_screen.dart';
 import 'package:my_gallery/features/onboarding/data/onboarding_repository.dart';
 import 'package:my_gallery/features/onboarding/presentation/screens/onboarding_screen.dart';
+import 'package:my_gallery/features/store_registration/domain/store_registration_cubit.dart';
+import 'package:my_gallery/features/store_registration/presentation/screens/create_store_wizard_screen.dart';
 
 final _authCubit = AuthCubit(sl<AuthService>());
 
@@ -80,7 +82,8 @@ final router = GoRouter(
     _startupSession = null;
     final isPublic = location == '/' ||
         location.startsWith('/storefront') ||
-        location == '/onboarding';
+        location == '/onboarding' ||
+        location == '/register';
     if (!hasSession && !isPublic) return '/';
     if (hasSession && location == '/') return '/home';
     return null;
@@ -99,6 +102,18 @@ final router = GoRouter(
       path: '/home',
       builder: (context, state) =>
           BlocProvider.value(value: _authCubit, child: const HomeScreen()),
+    ),
+    // Self-service store creation (public). Shares the root AuthCubit so a
+    // successful sign-up can adopt the returned session and land on /home.
+    GoRoute(
+      path: '/register',
+      builder: (context, state) => MultiBlocProvider(
+        providers: [
+          BlocProvider.value(value: _authCubit),
+          BlocProvider(create: (_) => sl<StoreRegistrationCubit>()),
+        ],
+        child: const CreateStoreWizardScreen(),
+      ),
     ),
     // Static product routes must come before /:id to avoid "create" being parsed as an id
     GoRoute(

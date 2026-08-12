@@ -98,6 +98,19 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
+  /// Adopts an already-issued session (e.g. right after self-service store
+  /// creation, which returns the same [AuthResult] shape as login). Persists the
+  /// token, caches the user, and emits authenticated — no extra login round-trip.
+  Future<void> signInWithResult(AuthResult result) async {
+    await SecureStorage.saveTokens(
+      accessToken: result.accessToken,
+      expiresAt: result.expiresAt,
+    );
+    _currentUser = result.user;
+    await _cacheUser(result.user);
+    emit(AuthState.authenticated(result.user));
+  }
+
   /// Resets in-memory auth state to unauthenticated WITHOUT calling the logout
   /// endpoint. Invoked by [SessionManager] after the network layer invalidates
   /// the session (credentials are cleared there); the router then redirects to

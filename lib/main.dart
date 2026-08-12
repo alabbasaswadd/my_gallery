@@ -5,6 +5,7 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:my_gallery/core/config/app_config.dart';
 import 'package:my_gallery/core/di/service_locator.dart';
+import 'package:my_gallery/core/network/api_host.dart';
 import 'package:my_gallery/features/settings/data/models/settings_models.dart';
 import 'package:my_gallery/features/settings/domain/settings_cubit.dart';
 import 'package:my_gallery/features/settings/domain/theme_cubit.dart';
@@ -23,6 +24,9 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   await setupServiceLocator();
+  // Point the API client at the signed-in shop's domain (if any) before any
+  // startup request runs, so a restored session resumes on the right host.
+  await ApiHost.instance.restore();
   // Run all startup I/O in parallel: theme, settings, and routing decisions.
   // primeRouterStartupState() caches onboarding + session so the first
   // GoRouter redirect evaluation has no async I/O, preventing a blank Flutter

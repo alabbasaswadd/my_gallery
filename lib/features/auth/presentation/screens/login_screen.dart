@@ -171,6 +171,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         _buildFields(context, isLoading),
                         const SizedBox(height: 28),
                         _buildButton(context, isLoading),
+                        const SizedBox(height: 16),
+                        _buildCreateStoreLink(context, isLoading),
                         const SizedBox(height: 24),
                       ],
                     ),
@@ -396,6 +398,30 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       ),
     ).animate().fadeIn(delay: 350.ms, duration: 400.ms);
+  }
+
+  Widget _buildCreateStoreLink(BuildContext context, bool isLoading) {
+    final cs = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          'ليس لديك متجر؟',
+          style: textTheme.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
+        ),
+        TextButton(
+          onPressed: isLoading ? null : () => context.push('/register'),
+          child: Text(
+            'أنشئ متجرك الآن',
+            style: textTheme.bodyMedium?.copyWith(
+              color: cs.primary,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ],
+    ).animate().fadeIn(delay: 400.ms, duration: 400.ms);
   }
 }
 
