@@ -26,6 +26,9 @@ class AppNetworkImage extends StatelessWidget {
   final double? height;
   final BoxFit fit;
   final BorderRadius? borderRadius;
+  /// Shown when the URL is null/empty or the image fails to load.
+  /// Defaults to [_placeholder] when omitted.
+  final Widget? errorWidget;
 
   const AppNetworkImage({
     super.key,
@@ -34,6 +37,7 @@ class AppNetworkImage extends StatelessWidget {
     this.height,
     this.fit = BoxFit.cover,
     this.borderRadius,
+    this.errorWidget,
   });
 
   String? get _fullUrl {
@@ -47,7 +51,7 @@ class AppNetworkImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final url = _fullUrl;
-    if (url == null) return _placeholder();
+    if (url == null) return _fallback();
 
     return ClipRRect(
       borderRadius: borderRadius ?? BorderRadius.zero,
@@ -65,10 +69,21 @@ class AppNetworkImage extends StatelessWidget {
           if (kDebugMode) {
             debugPrint('[AppNetworkImage] failed to load "$url": $error');
           }
-          return _placeholder();
+          return _fallback();
         },
       ),
     );
+  }
+
+  Widget _fallback() {
+    if (errorWidget != null) {
+      return SizedBox(
+        width: width,
+        height: height,
+        child: Center(child: errorWidget),
+      );
+    }
+    return _placeholder();
   }
 
   Widget _placeholder() {

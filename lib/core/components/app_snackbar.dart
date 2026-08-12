@@ -9,11 +9,13 @@ class AppSnackbar {
   static void showError(
     BuildContext context,
     String message, {
+    List<String>? errors,
     SnackbarPosition position = SnackbarPosition.bottom,
   }) {
     _showSnackbar(
       context: context,
       message: message,
+      errors: errors,
       type: SnackbarType.error,
       position: position,
     );
@@ -61,23 +63,25 @@ class AppSnackbar {
   static void _showSnackbar({
     required BuildContext context,
     required String message,
+    List<String>? errors,
     required SnackbarType type,
     SnackbarPosition position = SnackbarPosition.bottom,
   }) {
     final snackbarData = _getSnackbarData(type);
 
     if (position == SnackbarPosition.top) {
-      _showTopSnackbar(context, message, snackbarData);
+      _showTopSnackbar(context, message, snackbarData, errors: errors);
     } else {
-      _showBottomSnackbar(context, message, snackbarData);
+      _showBottomSnackbar(context, message, snackbarData, errors: errors);
     }
   }
 
   static void _showTopSnackbar(
     BuildContext context,
     String message,
-    SnackbarData snackbarData,
-  ) {
+    SnackbarData snackbarData, {
+    List<String>? errors,
+  }) {
     _currentOverlay?.remove();
     _currentOverlay = null;
 
@@ -88,6 +92,7 @@ class AppSnackbar {
     overlayEntry = OverlayEntry(
       builder: (context) => _TopSnackbarWidget(
         message: message,
+        errors: errors,
         snackbarData: snackbarData,
         topPadding: mediaQuery.padding.top,
         onDismiss: () {
@@ -106,8 +111,9 @@ class AppSnackbar {
   static void _showBottomSnackbar(
     BuildContext context,
     String message,
-    SnackbarData snackbarData,
-  ) {
+    SnackbarData snackbarData, {
+    List<String>? errors,
+  }) {
     final scaffold = ScaffoldMessenger.of(context);
     scaffold.hideCurrentSnackBar();
 
@@ -136,6 +142,7 @@ class AppSnackbar {
             ),
           ),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
                 width: 40,
@@ -148,13 +155,7 @@ class AppSnackbar {
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: AppText(
-                  message,
-                  color: Colors.white,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  maxLines: 3,
-                ),
+                child: _SnackbarContent(message: message, errors: errors),
               ),
               const SizedBox(width: 8),
               Column(
@@ -268,14 +269,67 @@ class SnackbarData {
 
 enum SnackbarType { error, success, info, warning }
 
+/// Message + optional detail bullets, used by both snackbar variants.
+class _SnackbarContent extends StatelessWidget {
+  final String message;
+  final List<String>? errors;
+
+  const _SnackbarContent({required this.message, this.errors});
+
+  @override
+  Widget build(BuildContext context) {
+    final hasErrors = errors != null && errors!.isNotEmpty;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        AppText(
+          message,
+          color: Colors.white,
+          fontSize: 13,
+          fontWeight: FontWeight.w500,
+          maxLines: hasErrors ? 2 : 3,
+        ),
+        if (hasErrors) ...[
+          const SizedBox(height: 5),
+          Container(
+            width: double.infinity,
+            height: 0.5,
+            color: Colors.white.withValues(alpha: 0.35),
+          ),
+          const SizedBox(height: 4),
+          ...errors!.map(
+            (e) => Padding(
+              padding: const EdgeInsets.only(bottom: 2),
+              child: Text(
+                e,
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w400,
+                  height: 1.4,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
 class _TopSnackbarWidget extends StatefulWidget {
   final String message;
+  final List<String>? errors;
   final SnackbarData snackbarData;
   final double topPadding;
   final VoidCallback onDismiss;
 
   const _TopSnackbarWidget({
     required this.message,
+    this.errors,
     required this.snackbarData,
     required this.topPadding,
     required this.onDismiss,
@@ -358,6 +412,7 @@ class _TopSnackbarWidgetState extends State<_TopSnackbarWidget>
                 ),
               ),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
                     width: 40,
@@ -374,12 +429,9 @@ class _TopSnackbarWidgetState extends State<_TopSnackbarWidget>
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: AppText(
-                      widget.message,
-                      color: Colors.white,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                      maxLines: 3,
+                    child: _SnackbarContent(
+                      message: widget.message,
+                      errors: widget.errors,
                     ),
                   ),
                   const SizedBox(width: 8),

@@ -41,9 +41,9 @@ class NetworkRetryInterceptor extends Interceptor {
     NetworkMonitor? monitor,
     SessionInvalidator? onInvalidate,
     math.Random? random,
-  })  : _monitor = monitor ?? NetworkMonitor.instance,
-        _onInvalidate = onInvalidate ?? SessionManager.instance.invalidate,
-        _random = random ?? math.Random();
+  }) : _monitor = monitor ?? NetworkMonitor.instance,
+       _onInvalidate = onInvalidate ?? SessionManager.instance.invalidate,
+       _random = random ?? math.Random();
 
   final Dio _dio;
   final RetryConfig config;
@@ -60,7 +60,9 @@ class NetworkRetryInterceptor extends Interceptor {
 
   @override
   Future<void> onError(
-      DioException err, ErrorInterceptorHandler handler) async {
+    DioException err,
+    ErrorInterceptorHandler handler,
+  ) async {
     if (!_isTransportFailure(err)) {
       // HTTP status error or non-network problem: connectivity is fine — the
       // server answered. Pass through so the auth interceptor maps it.
@@ -77,8 +79,10 @@ class NetworkRetryInterceptor extends Interceptor {
       final nextAttempt = attempt + 1;
       final delay = config.delayFor(nextAttempt, random: _random);
       if (kDebugMode) {
-        debugPrint('[Retry] ${options.method} ${options.path} — '
-            'attempt $nextAttempt/${config.maxRetries} in ${delay.inMilliseconds}ms');
+        debugPrint(
+          '[Retry] ${options.method} ${options.path} — '
+          'attempt $nextAttempt/${config.maxRetries} in ${delay.inMilliseconds}ms',
+        );
       }
       await Future<void>.delayed(delay);
       options.extra[kRetryAttemptExtra] = nextAttempt;
@@ -98,8 +102,10 @@ class NetworkRetryInterceptor extends Interceptor {
       // A genuinely retryable request has exhausted all attempts against a real
       // network failure → tear the session down (routes back to login).
       if (kDebugMode) {
-        debugPrint('[Retry] network failure threshold reached for '
-            '${options.path} — invalidating session');
+        debugPrint(
+          '[Retry] network failure threshold reached for '
+          '${options.path} — invalidating session',
+        );
       }
       await _onInvalidate(
         reason: 'network failure after ${config.maxRetries} retries',
@@ -115,6 +121,7 @@ class NetworkRetryInterceptor extends Interceptor {
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.sendTimeout:
       case DioExceptionType.receiveTimeout:
+      case DioExceptionType.transformTimeout:
       case DioExceptionType.connectionError:
         return true;
       case DioExceptionType.unknown:

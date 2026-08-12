@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:my_gallery/core/components/app_snackbar.dart';
 import 'package:my_gallery/core/network/api_error_localizer.dart';
 import 'package:my_gallery/core/network/api_exception.dart';
+import 'package:my_gallery/core/network/session_notifier.dart';
 import 'package:my_gallery/features/auth/domain/auth_cubit.dart';
 import 'package:my_gallery/features/settings/data/models/settings_models.dart';
 import 'package:my_gallery/features/settings/domain/settings_cubit.dart';
@@ -35,12 +36,18 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _obscure = true;
   bool _autoValidate = false;
   bool _showNoInternet = false;
+  bool _showSessionExpiredBanner = false;
 
   static final _emailRegExp = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
 
   @override
   void initState() {
     super.initState();
+    // Consume the flag synchronously so a rapid double-mount doesn't show twice.
+    if (SessionNotifier.instance.sessionExpiredPending) {
+      SessionNotifier.instance.sessionExpiredPending = false;
+      _showSessionExpiredBanner = true;
+    }
     Future.microtask(() {
       if (mounted) context.read<AuthCubit>().checkSession();
     });
@@ -88,6 +95,17 @@ class _LoginScreenState extends State<LoginScreen> {
         switch (state) {
           case AuthAuthenticated():
             context.go('/home');
+          case AuthUnauthenticated():
+            // Show the session-expired banner the first time the login form
+            // becomes visible after an automatic session invalidation (401).
+            // Not shown after a manual logout (_showSessionExpiredBanner stays false).
+            if (_showSessionExpiredBanner) {
+              _showSessionExpiredBanner = false;
+              AppSnackbar.showError(
+                context,
+                'انتهت صلاحية الجلسة، يرجى تسجيل الدخول مجدداً',
+              );
+            }
           case AuthError():
             final err = context.read<AuthCubit>().lastLoginError;
             if (err?.kind == ApiErrorKind.network) {
@@ -115,9 +133,7 @@ class _LoginScreenState extends State<LoginScreen> {
         return Scaffold(
           body: SafeArea(
             child: _showNoInternet
-                ? NoInternetView(
-                    onRetry: isLoading ? null : _submit,
-                  )
+                ? NoInternetView(onRetry: isLoading ? null : _submit)
                 : _buildForm(context, isLoading, settings),
           ),
         );
@@ -178,29 +194,40 @@ class _LoginScreenState extends State<LoginScreen> {
     return Column(
       children: [
         Container(
-          width: 96,
-          height: 96,
-          clipBehavior: Clip.antiAlias,
-          decoration: BoxDecoration(
-            color: hasLogo ? cs.surfaceContainerHighest : cs.primary,
-            borderRadius: BorderRadius.circular(24),
-            boxShadow: [
-              BoxShadow(
-                color: cs.primary.withValues(alpha: 0.22),
-                blurRadius: 24,
-                offset: const Offset(0, 10),
+              width: 96,
+              height: 96,
+              clipBehavior: Clip.antiAlias,
+              decoration: BoxDecoration(
+                // Always primary so the fallback icon is readable whether the
+                // logo loaded, failed, or was never configured on the server.
+                color: cs.primary,
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: cs.primary.withValues(alpha: 0.22),
+                    blurRadius: 24,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
               ),
-            ],
-          ),
-          child: hasLogo
-              ? AppNetworkImage(
-                  imagePath: logo,
-                  width: 96,
-                  height: 96,
-                  fit: BoxFit.cover,
-                )
-              : Icon(Icons.storefront_rounded, color: cs.onPrimary, size: 44),
-        )
+              child: hasLogo
+                  ? AppNetworkImage(
+                      imagePath: logo,
+                      width: 96,
+                      height: 96,
+                      fit: BoxFit.cover,
+                      errorWidget: Icon(
+                        Icons.storefront_rounded,
+                        color: cs.onPrimary,
+                        size: 44,
+                      ),
+                    )
+                  : Icon(
+                      Icons.storefront_rounded,
+                      color: cs.onPrimary,
+                      size: 44,
+                    ),
+            )
             .animate()
             .fadeIn(duration: 450.ms)
             .scale(begin: const Offset(0.85, 0.85), curve: Curves.easeOutBack),
@@ -217,7 +244,9 @@ class _LoginScreenState extends State<LoginScreen> {
         Text(
           l10n?.loginWelcome ?? 'مرحبًا بك 👋',
           textAlign: TextAlign.center,
-          style: textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
+          style: textTheme.headlineMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
         ).animate().fadeIn(delay: 150.ms, duration: 400.ms),
         const SizedBox(height: 8),
         Text(
@@ -237,29 +266,34 @@ class _LoginScreenState extends State<LoginScreen> {
         _FieldLabel(l10n?.email ?? 'البريد الإلكتروني'),
         const SizedBox(height: 8),
         TextFormField(
-          controller: _emailCtrl,
-          enabled: !isLoading,
-          keyboardType: TextInputType.emailAddress,
-          textInputAction: TextInputAction.next,
-          autofillHints: const [AutofillHints.username, AutofillHints.email],
-          inputFormatters: [FilteringTextInputFormatter.deny(RegExp(r'\s'))],
-          onFieldSubmitted: (_) => _passFocus.requestFocus(),
-          decoration: _fieldDecoration(
-            context,
-            hint: l10n?.emailHint ?? 'أدخل بريدك الإلكتروني',
-            icon: Icons.alternate_email_rounded,
-          ),
-          validator: (v) {
-            final value = v?.trim() ?? '';
-            if (value.isEmpty) {
-              return l10n?.emailRequired ?? 'يرجى إدخال البريد الإلكتروني';
-            }
-            if (!_emailRegExp.hasMatch(value)) {
-              return l10n?.invalidEmail ?? 'يرجى إدخال بريد إلكتروني صحيح';
-            }
-            return null;
-          },
-        )
+              controller: _emailCtrl,
+              enabled: !isLoading,
+              keyboardType: TextInputType.emailAddress,
+              textInputAction: TextInputAction.next,
+              autofillHints: const [
+                AutofillHints.username,
+                AutofillHints.email,
+              ],
+              inputFormatters: [
+                FilteringTextInputFormatter.deny(RegExp(r'\s')),
+              ],
+              onFieldSubmitted: (_) => _passFocus.requestFocus(),
+              decoration: _fieldDecoration(
+                context,
+                hint: l10n?.emailHint ?? 'أدخل بريدك الإلكتروني',
+                icon: Icons.alternate_email_rounded,
+              ),
+              validator: (v) {
+                final value = v?.trim() ?? '';
+                if (value.isEmpty) {
+                  return l10n?.emailRequired ?? 'يرجى إدخال البريد الإلكتروني';
+                }
+                if (!_emailRegExp.hasMatch(value)) {
+                  return l10n?.invalidEmail ?? 'يرجى إدخال بريد إلكتروني صحيح';
+                }
+                return null;
+              },
+            )
             .animate()
             .fadeIn(delay: 250.ms, duration: 400.ms)
             .slideY(begin: 0.1, end: 0),
@@ -267,35 +301,35 @@ class _LoginScreenState extends State<LoginScreen> {
         _FieldLabel(l10n?.password ?? 'كلمة المرور'),
         const SizedBox(height: 8),
         TextFormField(
-          controller: _passCtrl,
-          focusNode: _passFocus,
-          enabled: !isLoading,
-          obscureText: _obscure,
-          textInputAction: TextInputAction.done,
-          autofillHints: const [AutofillHints.password],
-          onFieldSubmitted: (_) => _submit(),
-          decoration: _fieldDecoration(
-            context,
-            hint: l10n?.passwordHint ?? 'أدخل كلمة المرور',
-            icon: Icons.lock_outline_rounded,
-            suffix: IconButton(
-              onPressed: isLoading
-                  ? null
-                  : () => setState(() => _obscure = !_obscure),
-              icon: Icon(
-                _obscure
-                    ? Icons.visibility_outlined
-                    : Icons.visibility_off_outlined,
+              controller: _passCtrl,
+              focusNode: _passFocus,
+              enabled: !isLoading,
+              obscureText: _obscure,
+              textInputAction: TextInputAction.done,
+              autofillHints: const [AutofillHints.password],
+              onFieldSubmitted: (_) => _submit(),
+              decoration: _fieldDecoration(
+                context,
+                hint: l10n?.passwordHint ?? 'أدخل كلمة المرور',
+                icon: Icons.lock_outline_rounded,
+                suffix: IconButton(
+                  onPressed: isLoading
+                      ? null
+                      : () => setState(() => _obscure = !_obscure),
+                  icon: Icon(
+                    _obscure
+                        ? Icons.visibility_outlined
+                        : Icons.visibility_off_outlined,
+                  ),
+                ),
               ),
-            ),
-          ),
-          validator: (v) {
-            if (v == null || v.isEmpty) {
-              return l10n?.password_required ?? 'يرجى إدخال كلمة المرور';
-            }
-            return null;
-          },
-        )
+              validator: (v) {
+                if (v == null || v.isEmpty) {
+                  return l10n?.password_required ?? 'يرجى إدخال كلمة المرور';
+                }
+                return null;
+              },
+            )
             .animate()
             .fadeIn(delay: 300.ms, duration: 400.ms)
             .slideY(begin: 0.1, end: 0),
@@ -321,8 +355,7 @@ class _LoginScreenState extends State<LoginScreen> {
       suffixIcon: suffix,
       filled: true,
       fillColor: cs.surfaceContainerHighest.withValues(alpha: 0.5),
-      contentPadding:
-          const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       enabledBorder: border(cs.outlineVariant),
       focusedBorder: border(cs.primary, 1.6),
       errorBorder: border(cs.error),
@@ -376,9 +409,9 @@ class _FieldLabel extends StatelessWidget {
       padding: const EdgeInsetsDirectional.only(start: 4),
       child: Text(
         text,
-        style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+        style: Theme.of(
+          context,
+        ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600),
       ),
     );
   }

@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
@@ -7,6 +8,7 @@ import 'package:my_gallery/core/di/service_locator.dart';
 import 'package:my_gallery/features/settings/data/models/settings_models.dart';
 import 'package:my_gallery/features/settings/domain/settings_cubit.dart';
 import 'package:my_gallery/features/settings/domain/theme_cubit.dart';
+import 'package:my_gallery/firebase_options.dart';
 import 'package:my_gallery/l10n/app_localizations.dart';
 import 'package:my_gallery/routes.dart';
 import 'package:my_gallery/shared/widgets/network_status_listener.dart';
@@ -16,6 +18,9 @@ void main() async {
   final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   // Keep the native splash visible while the app initializes.
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   await setupServiceLocator();
   // Run all startup I/O in parallel: theme, settings, and routing decisions.
@@ -67,7 +72,8 @@ class MyGalleryApp extends StatelessWidget {
                   routerConfig: router,
                   locale: const Locale('ar'),
                   supportedLocales: AppLocalizations.supportedLocales,
-                  localizationsDelegates: AppLocalizations.localizationsDelegates,
+                  localizationsDelegates:
+                      AppLocalizations.localizationsDelegates,
                   builder: (context, child) => Directionality(
                     textDirection: TextDirection.rtl,
                     // Surfaces throttled unstable/restored connectivity banners

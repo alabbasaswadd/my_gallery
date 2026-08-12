@@ -84,9 +84,11 @@ class ApiException implements Exception {
     return switch (status) {
       400 || 422 => ApiException(
           kind: ApiErrorKind.validation,
-          message: rawErrors.isNotEmpty
-              ? rawErrors.join('، ')
-              : (serverMessage ?? 'بيانات غير صالحة'),
+          // Preserve the server's general message as the title; individual
+          // errors stay in errors[] for separate bullet-point display.
+          // Fall back to joined errors only when no top-level message exists.
+          message: serverMessage ??
+              (rawErrors.isNotEmpty ? rawErrors.join('، ') : 'بيانات غير صالحة'),
           statusCode: status,
           traceId: traceId,
           errors: rawErrors,

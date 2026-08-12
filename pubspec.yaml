@@ -54,6 +54,7 @@ dependencies:
   qr_flutter: ^4.1.0
   path_provider: ^2.1.6
   gal: ^2.3.3
+  firebase_core: ^4.13.0
 
 dev_dependencies:
   flutter_test:

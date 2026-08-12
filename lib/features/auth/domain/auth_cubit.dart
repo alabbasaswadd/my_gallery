@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:my_gallery/core/network/api_exception.dart';
+import 'package:my_gallery/core/network/session_notifier.dart';
 import 'package:my_gallery/core/storage/secure_storage.dart';
 import 'package:my_gallery/features/auth/data/auth_service.dart';
 import 'package:my_gallery/features/auth/data/models/auth_models.dart';
@@ -112,6 +113,9 @@ class AuthCubit extends Cubit<AuthState> {
     _currentUser = null;
     await _clearCachedUser();
     emit(const AuthState.unauthenticated());
+    // Notify GoRouter so its redirect re-evaluates and navigates to login,
+    // clearing the back-stack. No sessionExpiredPending — this is intentional.
+    SessionNotifier.instance.invalidate();
   }
 
   Future<void> _cacheUser(AuthUser user) async {
