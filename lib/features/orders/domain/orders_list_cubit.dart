@@ -86,6 +86,7 @@ class OrdersListCubit extends Cubit<OrdersListState> {
         status: _status == 'All' ? null : _status,
         page: _page,
       );
+      if (isClosed) return;
       if (append) {
         _orders = [..._orders, ...?resp.data];
       } else {
@@ -100,9 +101,9 @@ class OrdersListCubit extends Cubit<OrdersListState> {
       // Start/restart the background poll after every fresh (non-append) load
       if (!append) _startPolling();
     } on ApiException catch (e) {
-      emit(OrdersListState.error(e.message));
+      if (!isClosed) emit(OrdersListState.error(e.message));
     } catch (_) {
-      emit(const OrdersListState.error('فشل تحميل الطلبات'));
+      if (!isClosed) emit(const OrdersListState.error('فشل تحميل الطلبات'));
     }
   }
 
