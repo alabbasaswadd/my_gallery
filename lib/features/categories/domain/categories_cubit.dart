@@ -27,10 +27,9 @@ class CategoriesCubit extends Cubit<CategoriesState> {
     try {
       _categories = await _service.getCategories();
       emit(CategoriesState.loaded(_categories));
-    } on ApiException catch (e) {
-      emit(CategoriesState.error(e.message, e.kind));
-    } catch (_) {
-      emit(const CategoriesState.error('فشل تحميل الفئات'));
+    } catch (e) {
+      final ex = toApiException(e, fallback: 'فشل تحميل الفئات');
+      emit(CategoriesState.error(ex.message, ex.kind));
     }
   }
 
@@ -40,10 +39,9 @@ class CategoriesCubit extends Cubit<CategoriesState> {
     try {
       _categories = await _service.getCategories();
       emit(CategoriesState.loaded(_categories));
-    } on ApiException catch (e) {
-      emit(CategoriesState.error(e.message, e.kind));
-    } catch (_) {
-      emit(const CategoriesState.error('فشل تحميل الفئات'));
+    } catch (e) {
+      final ex = toApiException(e, fallback: 'فشل تحميل الفئات');
+      emit(CategoriesState.error(ex.message, ex.kind));
     }
   }
 

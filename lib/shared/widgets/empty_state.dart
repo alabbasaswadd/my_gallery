@@ -82,7 +82,8 @@ class ErrorState extends StatelessWidget {
         effectiveKind == ApiErrorKind.timeout) {
       return NoInternetView(onRetry: onRetry);
     }
-    if (effectiveKind == ApiErrorKind.server) {
+    if (effectiveKind == ApiErrorKind.serviceUnavailable ||
+        effectiveKind == ApiErrorKind.server) {
       return ServiceUnavailableView(onRetry: onRetry);
     }
 

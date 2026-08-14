@@ -64,10 +64,9 @@ class OrdersListCubit extends Cubit<OrdersListState> {
         ));
         _startPolling();
       }
-    } on ApiException catch (e) {
-      emit(OrdersListState.error(e.message, e.kind));
-    } catch (_) {
-      emit(const OrdersListState.error('فشل تحميل الطلبات'));
+    } catch (e) {
+      final ex = toApiException(e, fallback: 'فشل تحميل الطلبات');
+      emit(OrdersListState.error(ex.message, ex.kind));
     }
   }
 

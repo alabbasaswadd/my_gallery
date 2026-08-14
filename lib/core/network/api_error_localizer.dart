@@ -24,10 +24,16 @@ extension ApiErrorLocalization on ApiException {
         // Validation text is produced by the server field validators and is
         // safe/useful to show; fall back to a generic label if empty.
         return message.trim().isNotEmpty ? message : l10n.error_validation;
+      case ApiErrorKind.business:
+        // A business-rule refusal — the server's message explains exactly what
+        // and is safe to show; fall back to a neutral label.
+        return message.trim().isNotEmpty ? message : 'تعذّر إتمام العملية';
       case ApiErrorKind.conflict:
         return l10n.error_conflict;
       case ApiErrorKind.rateLimited:
         return l10n.error_rate_limited;
+      case ApiErrorKind.serviceUnavailable:
+        return 'الخدمة غير متاحة مؤقتاً، يرجى المحاولة بعد قليل';
       case ApiErrorKind.server:
         return l10n.serverErrorTitle;
       case ApiErrorKind.unknown:

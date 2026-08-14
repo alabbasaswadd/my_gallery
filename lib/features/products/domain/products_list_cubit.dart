@@ -68,10 +68,9 @@ class ProductsListCubit extends Cubit<ProductsListState> {
         pagination: _pagination,
         filter: _filter,
       ));
-    } on ApiException catch (e) {
-      emit(ProductsListState.error(e.message, e.kind));
-    } catch (_) {
-      emit(const ProductsListState.error('فشل تحميل المنتجات'));
+    } catch (e) {
+      final ex = toApiException(e, fallback: 'فشل تحميل المنتجات');
+      emit(ProductsListState.error(ex.message, ex.kind));
     }
   }
 
