@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:my_gallery/core/components/app_snackbar.dart';
+import 'package:my_gallery/core/logging/error_logger.dart';
 import 'package:my_gallery/core/utils/store_links.dart';
 import 'package:my_gallery/features/auth/domain/auth_cubit.dart';
 import 'package:my_gallery/features/settings/data/models/settings_models.dart';
@@ -10,6 +11,61 @@ import 'package:my_gallery/features/settings/domain/settings_cubit.dart';
 import 'package:my_gallery/shared/widgets/qr_export_screen.dart';
 import 'package:my_gallery/shared/widgets/theme_toggle_button.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+/// Card entry that navigates to the Error Logs developer screen.
+/// Shows the current error count as a badge.
+class _ErrorLogsEntry extends StatefulWidget {
+  const _ErrorLogsEntry();
+
+  @override
+  State<_ErrorLogsEntry> createState() => _ErrorLogsEntryState();
+}
+
+class _ErrorLogsEntryState extends State<_ErrorLogsEntry> {
+  int _count = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _count = ErrorLogger.instance.count;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Card(
+      child: ListTile(
+        leading: Icon(Icons.bug_report_outlined, color: cs.error),
+        title: const Text('سجل الأخطاء'),
+        subtitle: const Text('أخطاء الشبكة والاستثناءات غير المعالجة'),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (_count > 0)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: cs.errorContainer,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  '$_count',
+                  style: TextStyle(
+                    color: cs.onErrorContainer,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            const SizedBox(width: 4),
+            const Icon(Icons.chevron_right),
+          ],
+        ),
+        onTap: () => context.push('/error-logs'),
+      ),
+    );
+  }
+}
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -101,6 +157,8 @@ class ProfileScreen extends StatelessWidget {
                     ),
                   ).animate().fadeIn(delay: 400.ms, duration: 250.ms),
                 ],
+                const SizedBox(height: 16),
+                _ErrorLogsEntry().animate().fadeIn(delay: 420.ms, duration: 250.ms),
                 const SizedBox(height: 32),
                 OutlinedButton.icon(
                   onPressed: () => _confirmLogout(context),

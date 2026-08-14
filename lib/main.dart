@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -5,6 +7,7 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:my_gallery/core/config/app_config.dart';
 import 'package:my_gallery/core/di/service_locator.dart';
+import 'package:my_gallery/core/logging/error_logger.dart';
 import 'package:my_gallery/core/network/api_host.dart';
 import 'package:my_gallery/features/settings/data/models/settings_models.dart';
 import 'package:my_gallery/features/settings/domain/settings_cubit.dart';
@@ -21,20 +24,33 @@ void main() async {
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Capture Flutter framework errors (widget build failures, assertion errors).
+  // Preserve the existing onError chain so debugPrint/Firebase still work.
+  final originalFlutterError = FlutterError.onError;
+  FlutterError.onError = (details) {
+    ErrorLogger.instance.logFlutterError(details);
+    originalFlutterError?.call(details);
+  };
+
+  // Capture uncaught Dart/platform errors that escape the Flutter framework.
+  PlatformDispatcher.instance.onError = (error, stack) {
+    ErrorLogger.instance.logUncaughtError(error, stack);
+    return false; // false = let the platform handle it (don't swallow)
+  };
+
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   await setupServiceLocator();
   // Point the API client at the signed-in shop's domain (if any) before any
   // startup request runs, so a restored session resumes on the right host.
   await ApiHost.instance.restore();
-  // Run all startup I/O in parallel: theme, settings, and routing decisions.
-  // primeRouterStartupState() caches onboarding + session so the first
-  // GoRouter redirect evaluation has no async I/O, preventing a blank Flutter
-  // frame between the native splash and the home screen.
+  // Run all startup I/O in parallel: theme, settings, routing decisions, and
+  // error log initialization.
   await Future.wait([
     sl<ThemeCubit>().load(),
     sl<SettingsCubit>().load(AppConfig.shopId),
     primeRouterStartupState(),
+    ErrorLogger.instance.initialize(),
   ]);
 
   // Remove the splash only after Flutter has painted its first frame, so

@@ -199,13 +199,22 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 ),
                 items: product.images.map((img) {
                   final isCover = img.isCover;
+                  // Guard: only the first cover image gets the shared Hero tag
+                  // so duplicate isCover entries from the server never produce
+                  // two Heroes with the same tag within this carousel.
+                  final heroTag = (isCover &&
+                          img.id ==
+                              product.images
+                                  .firstWhere((i) => i.isCover,
+                                      orElse: () => img)
+                                  .id)
+                      ? 'product-image-${product.id}'
+                      : 'img-${img.id}';
                   return Stack(
                     fit: StackFit.expand,
                     children: [
                       Hero(
-                        tag: isCover
-                            ? 'product-image-${product.id}'
-                            : 'img-${img.id}',
+                        tag: heroTag,
                         child: AppNetworkImage(
                           imagePath: img.url,
                           height: 300,

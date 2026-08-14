@@ -55,7 +55,9 @@ class ProductsListCubit extends Cubit<ProductsListState> {
     try {
       final resp = await _service.getProducts(_filter);
       if (append) {
-        _items = [..._items, ...?resp.data];
+        final existingIds = _items.map((p) => p.id).toSet();
+        final newItems = resp.data?.where((p) => !existingIds.contains(p.id)) ?? [];
+        _items = [..._items, ...newItems];
       } else {
         _items = resp.data ?? [];
       }

@@ -36,6 +36,10 @@ import 'package:my_gallery/features/storefront/presentation/screens/occasion_pro
 import 'package:my_gallery/features/storefront/presentation/screens/storefront_product_detail_screen.dart';
 import 'package:my_gallery/features/settings/domain/site_customization_cubit.dart';
 import 'package:my_gallery/features/settings/domain/social_links_cubit.dart';
+import 'package:my_gallery/core/logging/error_log_entry.dart';
+import 'package:my_gallery/features/error_logs/domain/error_logs_cubit.dart';
+import 'package:my_gallery/features/error_logs/presentation/screens/error_log_details_screen.dart';
+import 'package:my_gallery/features/error_logs/presentation/screens/error_logs_screen.dart';
 import 'package:my_gallery/features/settings/presentation/screens/site_customization_screen.dart';
 import 'package:my_gallery/features/settings/presentation/screens/social_links_screen.dart';
 import 'package:my_gallery/features/storefront/presentation/screens/storefront_screen.dart';
@@ -303,6 +307,24 @@ final router = GoRouter(
           create: (_) => sl<OrderDetailCubit>(),
           child: OrderDetailScreen(orderId: id),
         );
+      },
+    ),
+
+    // ------------------------------------
+    // Developer: Error Logs
+    // ------------------------------------
+    GoRoute(
+      path: '/error-logs',
+      builder: (context, state) => BlocProvider(
+        create: (_) => sl<ErrorLogsCubit>(),
+        child: const ErrorLogsScreen(),
+      ),
+    ),
+    GoRoute(
+      path: '/error-logs/:id',
+      builder: (context, state) {
+        final entry = state.extra as ErrorLogEntry;
+        return ErrorLogDetailsScreen(entry: entry);
       },
     ),
   ],

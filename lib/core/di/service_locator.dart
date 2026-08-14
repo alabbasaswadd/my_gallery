@@ -1,4 +1,5 @@
 import 'package:get_it/get_it.dart';
+import 'package:my_gallery/core/logging/error_logger.dart';
 import 'package:my_gallery/core/network/api_client.dart';
 import 'package:my_gallery/features/auth/data/auth_service.dart';
 import 'package:my_gallery/features/auth/domain/auth_cubit.dart';
@@ -25,6 +26,7 @@ import 'package:my_gallery/features/storefront/data/storefront_service.dart';
 import 'package:my_gallery/features/storefront/domain/checkout_cubit.dart';
 import 'package:my_gallery/features/storefront/domain/storefront_cubit.dart';
 import 'package:my_gallery/features/store_registration/data/store_registration_service.dart';
+import 'package:my_gallery/features/error_logs/domain/error_logs_cubit.dart';
 import 'package:my_gallery/features/store_registration/domain/store_registration_cubit.dart';
 
 final sl = GetIt.instance;
@@ -63,4 +65,5 @@ Future<void> setupServiceLocator() async {
       settingsCubit: sl<SettingsCubit>()));
   sl.registerFactory(() => SiteCustomizationCubit(sl<SettingsService>(),
       settingsCubit: sl<SettingsCubit>()));
+  sl.registerFactory(() => ErrorLogsCubit(ErrorLogger.instance));
 }

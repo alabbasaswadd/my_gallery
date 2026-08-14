@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart' show debugPrint, kDebugMode;
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:my_gallery/core/config/app_config.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -55,23 +56,43 @@ class AppNetworkImage extends StatelessWidget {
 
     return ClipRRect(
       borderRadius: borderRadius ?? BorderRadius.zero,
-      child: CachedNetworkImage(
-        imageUrl: url,
-        width: width,
-        height: height,
-        fit: fit,
-        placeholder: (_, __) => Shimmer.fromColors(
-          baseColor: Colors.grey[300]!,
-          highlightColor: Colors.grey[100]!,
-          child: Container(color: Colors.white, width: width, height: height),
-        ),
-        errorWidget: (_, url, error) {
-          if (kDebugMode) {
-            debugPrint('[AppNetworkImage] failed to load "$url": $error');
-          }
-          return _fallback();
-        },
+      child: url.toLowerCase().endsWith('.svg')
+          ? _buildSvg(url)
+          : _buildRaster(url),
+    );
+  }
+
+  Widget _buildSvg(String url) {
+    return SvgPicture.network(
+      url,
+      width: width,
+      height: height,
+      fit: fit,
+      placeholderBuilder: (_) => Shimmer.fromColors(
+        baseColor: Colors.grey[300]!,
+        highlightColor: Colors.grey[100]!,
+        child: Container(color: Colors.white, width: width, height: height),
       ),
+    );
+  }
+
+  Widget _buildRaster(String url) {
+    return CachedNetworkImage(
+      imageUrl: url,
+      width: width,
+      height: height,
+      fit: fit,
+      placeholder: (_, __) => Shimmer.fromColors(
+        baseColor: Colors.grey[300]!,
+        highlightColor: Colors.grey[100]!,
+        child: Container(color: Colors.white, width: width, height: height),
+      ),
+      errorWidget: (_, url, error) {
+        if (kDebugMode) {
+          debugPrint('[AppNetworkImage] failed to load "$url": $error');
+        }
+        return _fallback();
+      },
     );
   }
 

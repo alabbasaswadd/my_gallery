@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:my_gallery/core/config/app_config.dart';
+import 'package:my_gallery/core/logging/error_logger.dart';
 import 'package:my_gallery/core/network/api_exception.dart';
 import 'package:my_gallery/core/network/retry_policy.dart';
 import 'package:my_gallery/core/network/session_notifier.dart';
@@ -22,7 +23,10 @@ class ApiClient {
         baseUrl: AppConfig.apiBaseUrl,
         connectTimeout: const Duration(seconds: 30),
         receiveTimeout: const Duration(seconds: 30),
-        contentType: 'application/json',
+        // Do NOT set contentType globally. On web, adding Content-Type to GET
+        // requests makes them non-simple CORS requests and triggers an OPTIONS
+        // preflight. Content-Type is set per-request in _AuthInterceptor only
+        // for methods that carry a body (POST / PUT / PATCH).
         validateStatus: (_) => true,
       ),
     );
@@ -69,6 +73,13 @@ class _AuthInterceptor extends Interceptor {
     if (token != null) {
       options.headers['Authorization'] = 'Bearer $token';
     }
+    // Set Content-Type only for requests that carry a JSON body.
+    // GET / HEAD / DELETE have no body, so omitting Content-Type keeps them as
+    // CORS "simple requests" on web and avoids unnecessary OPTIONS preflights.
+    final method = options.method.toUpperCase();
+    if (method == 'POST' || method == 'PUT' || method == 'PATCH') {
+      options.contentType = 'application/json';
+    }
     handler.next(options);
   }
 
@@ -99,6 +110,13 @@ class _AuthInterceptor extends Interceptor {
       type: DioExceptionType.badResponse,
     ));
 
+    // Log all non-2xx API errors at the single centralized point so individual
+    // cubits never need to call the logger themselves.
+    ErrorLogger.instance.logApiException(
+      exception,
+      requestOptions: response.requestOptions,
+    );
+
     handler.reject(
       DioException(
         requestOptions: response.requestOptions,
@@ -113,6 +131,14 @@ class _AuthInterceptor extends Interceptor {
   void onError(DioException err, ErrorInterceptorHandler handler) {
     final exception =
         err.error is ApiException ? err.error as ApiException : ApiException.fromDio(err);
+
+    // Log transport-level errors (timeout, connection refused, etc.).
+    if (err.error is! ApiException) {
+      ErrorLogger.instance.logApiException(
+        exception,
+        requestOptions: err.requestOptions,
+      );
+    }
 
     handler.reject(
       DioException(
