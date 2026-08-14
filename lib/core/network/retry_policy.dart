@@ -5,7 +5,6 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:my_gallery/core/network/network_monitor.dart';
 import 'package:my_gallery/core/network/retry_config.dart';
-import 'package:my_gallery/core/session/session_manager.dart';
 
 /// `Options.extra` key marking a request as safe to auto-retry.
 /// Opt-in on purpose — see [ApiClient.retryable].
@@ -13,10 +12,6 @@ const String kRetryableExtra = 'retryable';
 
 /// Internal `Options.extra` key tracking how many retries have run.
 const String kRetryAttemptExtra = 'retry_attempt';
-
-/// Tears down the session after retries are exhausted. Injectable for tests;
-/// defaults to [SessionManager].
-typedef SessionInvalidator = Future<void> Function({String reason});
 
 /// Centralized network retry + connectivity-reporting Dio interceptor.
 ///
@@ -26,11 +21,12 @@ typedef SessionInvalidator = Future<void> Function({String reason});
 ///    and ONLY for requests explicitly marked retryable via [kRetryableExtra]
 ///    using a safe (idempotent) HTTP method, with exponential backoff + jitter,
 ///    up to [RetryConfig.maxRetries] retries.
-///  * When a retryable request exhausts its retries, asks [SessionManager] to
-///    invalidate the session — it never navigates itself.
 ///
-/// It NEVER retries HTTP status errors (400/401/403/404/409/422/429/5xx) and
-/// NEVER logs the user out for them; those pass through untouched.
+/// It NEVER logs the user out — not for HTTP status errors (400/401/403/…/5xx),
+/// and not when retries are exhausted on a network failure. A connection problem
+/// must never end the session; the error simply propagates so the UI can show a
+/// retryable offline state while the login stays intact. (Session teardown is
+/// owned solely by the auth interceptor's refresh flow and explicit logout.)
 ///
 /// Placed FIRST in the interceptor chain so its `onError` runs before the auth
 /// interceptor maps/rejects the error, allowing a clean re-dispatch.
@@ -39,16 +35,13 @@ class NetworkRetryInterceptor extends Interceptor {
     this._dio, {
     this.config = RetryConfig.defaults,
     NetworkMonitor? monitor,
-    SessionInvalidator? onInvalidate,
     math.Random? random,
   }) : _monitor = monitor ?? NetworkMonitor.instance,
-       _onInvalidate = onInvalidate ?? SessionManager.instance.invalidate,
        _random = random ?? math.Random();
 
   final Dio _dio;
   final RetryConfig config;
   final NetworkMonitor _monitor;
-  final SessionInvalidator _onInvalidate;
   final math.Random _random;
 
   @override
@@ -98,17 +91,13 @@ class NetworkRetryInterceptor extends Interceptor {
       return;
     }
 
-    if (_isRetryable(options)) {
-      // A genuinely retryable request has exhausted all attempts against a real
-      // network failure → tear the session down (routes back to login).
-      if (kDebugMode) {
-        debugPrint(
-          '[Retry] network failure threshold reached for '
-          '${options.path} — invalidating session',
-        );
-      }
-      await _onInvalidate(
-        reason: 'network failure after ${config.maxRetries} retries',
+    if (_isRetryable(options) && kDebugMode) {
+      // Retries exhausted on a real network failure. We do NOT invalidate the
+      // session — a connection problem must never log the user out. The error
+      // just propagates so the screen can show a retryable offline state.
+      debugPrint(
+        '[Retry] network failure threshold reached for '
+        '${options.path} — propagating error (session preserved)',
       );
     }
 

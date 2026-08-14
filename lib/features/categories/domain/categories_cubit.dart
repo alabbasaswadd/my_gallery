@@ -11,7 +11,8 @@ sealed class CategoriesState with _$CategoriesState {
   const factory CategoriesState.initial() = CategoriesInitial;
   const factory CategoriesState.loading() = CategoriesLoading;
   const factory CategoriesState.loaded(List<CategoryListItem> categories) = CategoriesLoaded;
-  const factory CategoriesState.error(String message) = CategoriesError;
+  const factory CategoriesState.error(String message, [ApiErrorKind? kind]) =
+      CategoriesError;
 }
 
 class CategoriesCubit extends Cubit<CategoriesState> {
@@ -27,7 +28,7 @@ class CategoriesCubit extends Cubit<CategoriesState> {
       _categories = await _service.getCategories();
       emit(CategoriesState.loaded(_categories));
     } on ApiException catch (e) {
-      emit(CategoriesState.error(e.message));
+      emit(CategoriesState.error(e.message, e.kind));
     } catch (_) {
       emit(const CategoriesState.error('فشل تحميل الفئات'));
     }
@@ -40,7 +41,7 @@ class CategoriesCubit extends Cubit<CategoriesState> {
       _categories = await _service.getCategories();
       emit(CategoriesState.loaded(_categories));
     } on ApiException catch (e) {
-      emit(CategoriesState.error(e.message));
+      emit(CategoriesState.error(e.message, e.kind));
     } catch (_) {
       emit(const CategoriesState.error('فشل تحميل الفئات'));
     }
@@ -59,7 +60,7 @@ class CategoriesCubit extends Cubit<CategoriesState> {
       }).toList();
       emit(CategoriesState.loaded(_categories));
     } on ApiException catch (e) {
-      emit(CategoriesState.error(e.message));
+      emit(CategoriesState.error(e.message, e.kind));
     }
   }
 
@@ -69,7 +70,7 @@ class CategoriesCubit extends Cubit<CategoriesState> {
     try {
       await _service.reorderCategories(reordered.map((c) => c.id).toList());
     } on ApiException catch (e) {
-      emit(CategoriesState.error(e.message));
+      emit(CategoriesState.error(e.message, e.kind));
     }
   }
 
@@ -79,7 +80,7 @@ class CategoriesCubit extends Cubit<CategoriesState> {
       _categories = _categories.where((c) => c.id != id).toList();
       emit(CategoriesState.loaded(_categories));
     } on ApiException catch (e) {
-      emit(CategoriesState.error(e.message));
+      emit(CategoriesState.error(e.message, e.kind));
     }
   }
 }

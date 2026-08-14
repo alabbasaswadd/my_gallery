@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:my_gallery/core/network/api_exception.dart';
+import 'package:my_gallery/core/network/network_monitor.dart';
+import 'package:my_gallery/shared/widgets/no_internet_view.dart';
+import 'package:my_gallery/shared/widgets/service_unavailable_view.dart';
 
 class EmptyState extends StatelessWidget {
   final String message;
@@ -51,11 +55,37 @@ class ErrorState extends StatelessWidget {
   final String message;
   final VoidCallback? onRetry;
 
-  const ErrorState({super.key, required this.message, this.onRetry});
+  /// When the failure is a connectivity/server problem, [kind] lets this widget
+  /// show the reassuring illustrated views (no-internet / service-unavailable)
+  /// instead of a bare error line — and never a technical detail. Optional so
+  /// existing call sites keep working; when omitted, live network health is used
+  /// as a fallback so a fully-offline device still gets the friendly view.
+  final ApiErrorKind? kind;
+
+  const ErrorState({
+    super.key,
+    required this.message,
+    this.onRetry,
+    this.kind,
+  });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+
+    final effectiveKind = kind ??
+        (NetworkMonitor.instance.status.value != NetworkStatus.online
+            ? ApiErrorKind.network
+            : null);
+
+    if (effectiveKind == ApiErrorKind.network ||
+        effectiveKind == ApiErrorKind.timeout) {
+      return NoInternetView(onRetry: onRetry);
+    }
+    if (effectiveKind == ApiErrorKind.server) {
+      return ServiceUnavailableView(onRetry: onRetry);
+    }
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),

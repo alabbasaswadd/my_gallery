@@ -85,6 +85,8 @@ class AuthCubit extends Cubit<AuthState> {
       await SecureStorage.saveTokens(
         accessToken: result.accessToken,
         expiresAt: result.expiresAt,
+        refreshToken: result.refreshToken,
+        refreshExpiresAt: result.refreshExpiresAt,
       );
       _currentUser = result.user;
       await _cacheUser(result.user);

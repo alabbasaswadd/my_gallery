@@ -117,6 +117,11 @@ class _OrdersScreenState extends State<OrdersScreen> {
                               },
                             ),
                     ),
+                  OrdersListError(:final message, :final kind) => ErrorState(
+                    message: message,
+                    kind: kind,
+                    onRetry: () => context.read<OrdersListCubit>().load(),
+                  ),
                   _ => const SizedBox.shrink(),
                 },
               ),

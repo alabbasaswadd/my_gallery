@@ -9,6 +9,8 @@ part of 'auth_models.dart';
 _AuthResult _$AuthResultFromJson(Map<String, dynamic> json) => _AuthResult(
   accessToken: json['accessToken'] as String,
   expiresAt: json['expiresAt'] as String,
+  refreshToken: json['refreshToken'] as String?,
+  refreshExpiresAt: json['refreshExpiresAt'] as String?,
   user: AuthUser.fromJson(json['user'] as Map<String, dynamic>),
 );
 
@@ -16,6 +18,8 @@ Map<String, dynamic> _$AuthResultToJson(_AuthResult instance) =>
     <String, dynamic>{
       'accessToken': instance.accessToken,
       'expiresAt': instance.expiresAt,
+      'refreshToken': instance.refreshToken,
+      'refreshExpiresAt': instance.refreshExpiresAt,
       'user': instance.user,
     };
 

@@ -57,10 +57,7 @@ void main() {
     maxJitter: Duration.zero,
   );
 
-  late bool invalidated;
-
   Dio buildDio(_FakeAdapter adapter) {
-    invalidated = false;
     final dio = Dio(BaseOptions(validateStatus: (_) => true));
     dio.httpClientAdapter = adapter;
     dio.interceptors.add(
@@ -68,9 +65,6 @@ void main() {
         dio,
         config: fastConfig,
         monitor: NetworkMonitor.instance,
-        onInvalidate: ({String reason = ''}) async {
-          invalidated = true;
-        },
       ),
     );
     return dio;
@@ -90,7 +84,6 @@ void main() {
 
     expect(resp.statusCode, 200);
     expect(adapter.calls, 1);
-    expect(invalidated, isFalse);
     expect(NetworkMonitor.instance.status.value, NetworkStatus.online);
   });
 
@@ -102,7 +95,6 @@ void main() {
 
     expect(resp.statusCode, 500);
     expect(adapter.calls, 1);
-    expect(invalidated, isFalse);
     expect(NetworkMonitor.instance.status.value, NetworkStatus.online);
   });
 
@@ -117,7 +109,6 @@ void main() {
       throwsA(isA<DioException>()),
     );
     expect(adapter.calls, 1);
-    expect(invalidated, isFalse);
     expect(NetworkMonitor.instance.status.value, NetworkStatus.unstable);
   });
 
@@ -134,23 +125,23 @@ void main() {
 
     expect(resp.statusCode, 200);
     expect(adapter.calls, 3); // 1 original + 2 retries
-    expect(invalidated, isFalse);
     expect(NetworkMonitor.instance.status.value, NetworkStatus.online);
   });
 
-  test('retryable GET exhausts all attempts → session invalidated once',
+  test('retryable GET exhausts all attempts → error propagates, NO logout',
       () async {
     final adapter =
         _FakeAdapter([const _Outcome.fail(DioExceptionType.connectionError)]);
     final dio = buildDio(adapter);
 
+    // The error surfaces to the caller (so the UI can show a retryable offline
+    // state) but the session is never torn down by the retry interceptor.
     await expectLater(
       dio.get<dynamic>('/x', options: ApiClient.retryable()),
       throwsA(isA<DioException>()),
     );
 
     expect(adapter.calls, 3); // 1 original + 2 retries
-    expect(invalidated, isTrue);
     expect(NetworkMonitor.instance.status.value, NetworkStatus.offline);
   });
 
@@ -165,6 +156,5 @@ void main() {
     );
 
     expect(adapter.calls, 1);
-    expect(invalidated, isFalse);
   });
 }

@@ -107,8 +107,9 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                       },
                     ),
                   ),
-            CategoriesError(:final message) => ErrorState(
+            CategoriesError(:final message, :final kind) => ErrorState(
                 message: message,
+                kind: kind,
                 onRetry: () => context.read<CategoriesCubit>().load(),
               ),
             _ => const SizedBox.shrink(),

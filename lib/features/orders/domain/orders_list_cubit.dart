@@ -18,7 +18,8 @@ sealed class OrdersListState with _$OrdersListState {
     required PaginationMeta pagination,
     required String statusFilter,
   }) = OrdersListLoaded;
-  const factory OrdersListState.error(String message) = OrdersListError;
+  const factory OrdersListState.error(String message, [ApiErrorKind? kind]) =
+      OrdersListError;
 }
 
 class OrdersListCubit extends Cubit<OrdersListState> {
@@ -64,7 +65,7 @@ class OrdersListCubit extends Cubit<OrdersListState> {
         _startPolling();
       }
     } on ApiException catch (e) {
-      emit(OrdersListState.error(e.message));
+      emit(OrdersListState.error(e.message, e.kind));
     } catch (_) {
       emit(const OrdersListState.error('فشل تحميل الطلبات'));
     }
@@ -101,7 +102,7 @@ class OrdersListCubit extends Cubit<OrdersListState> {
       // Start/restart the background poll after every fresh (non-append) load
       if (!append) _startPolling();
     } on ApiException catch (e) {
-      if (!isClosed) emit(OrdersListState.error(e.message));
+      if (!isClosed) emit(OrdersListState.error(e.message, e.kind));
     } catch (_) {
       if (!isClosed) emit(const OrdersListState.error('فشل تحميل الطلبات'));
     }

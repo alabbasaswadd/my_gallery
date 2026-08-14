@@ -245,8 +245,9 @@ class _ProductsScreenState extends State<ProductsScreen> {
                         );
                       },
                     ),
-            ProductsListError(:final message) => ErrorState(
+            ProductsListError(:final message, :final kind) => ErrorState(
               message: message,
+              kind: kind,
               onRetry: () => context.read<ProductsListCubit>().load(),
             ),
             _ => const SizedBox.shrink(),

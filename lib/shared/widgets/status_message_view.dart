@@ -17,6 +17,7 @@ class StatusMessageView extends StatelessWidget {
     this.onAction,
     this.iconColor,
     this.pulse = false,
+    this.isBusy = false,
   });
 
   final IconData icon;
@@ -28,6 +29,9 @@ class StatusMessageView extends StatelessWidget {
 
   /// A gentle breathing animation on the icon (used for no-internet).
   final bool pulse;
+
+  /// While true, the action shows a spinner and is disabled (retry in flight).
+  final bool isBusy;
 
   @override
   Widget build(BuildContext context) {
@@ -82,8 +86,18 @@ class StatusMessageView extends StatelessWidget {
                 SizedBox(
                   width: double.infinity,
                   child: FilledButton.icon(
-                    onPressed: onAction,
-                    icon: const Icon(Icons.refresh_rounded),
+                    // Disabled while retrying so the user can't double-fire it.
+                    onPressed: isBusy ? null : onAction,
+                    icon: isBusy
+                        ? SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: cs.onPrimary,
+                            ),
+                          )
+                        : const Icon(Icons.refresh_rounded),
                     label: Text(actionLabel!),
                   ),
                 ),

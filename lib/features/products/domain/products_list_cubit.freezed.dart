@@ -125,13 +125,13 @@ return error(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function( List<ProductListItem> items,  PaginationMeta pagination,  ProductFilter filter)?  loaded,TResult Function( String message)?  error,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function( List<ProductListItem> items,  PaginationMeta pagination,  ProductFilter filter)?  loaded,TResult Function( String message,  ApiErrorKind? kind)?  error,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case ProductsListInitial() when initial != null:
 return initial();case ProductsListLoading() when loading != null:
 return loading();case ProductsListLoaded() when loaded != null:
 return loaded(_that.items,_that.pagination,_that.filter);case ProductsListError() when error != null:
-return error(_that.message);case _:
+return error(_that.message,_that.kind);case _:
   return orElse();
 
 }
@@ -149,13 +149,13 @@ return error(_that.message);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function( List<ProductListItem> items,  PaginationMeta pagination,  ProductFilter filter)  loaded,required TResult Function( String message)  error,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function( List<ProductListItem> items,  PaginationMeta pagination,  ProductFilter filter)  loaded,required TResult Function( String message,  ApiErrorKind? kind)  error,}) {final _that = this;
 switch (_that) {
 case ProductsListInitial():
 return initial();case ProductsListLoading():
 return loading();case ProductsListLoaded():
 return loaded(_that.items,_that.pagination,_that.filter);case ProductsListError():
-return error(_that.message);}
+return error(_that.message,_that.kind);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -169,13 +169,13 @@ return error(_that.message);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function( List<ProductListItem> items,  PaginationMeta pagination,  ProductFilter filter)?  loaded,TResult? Function( String message)?  error,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function( List<ProductListItem> items,  PaginationMeta pagination,  ProductFilter filter)?  loaded,TResult? Function( String message,  ApiErrorKind? kind)?  error,}) {final _that = this;
 switch (_that) {
 case ProductsListInitial() when initial != null:
 return initial();case ProductsListLoading() when loading != null:
 return loading();case ProductsListLoaded() when loaded != null:
 return loaded(_that.items,_that.pagination,_that.filter);case ProductsListError() when error != null:
-return error(_that.message);case _:
+return error(_that.message,_that.kind);case _:
   return null;
 
 }
@@ -345,10 +345,11 @@ $ProductFilterCopyWith<$Res> get filter {
 
 
 class ProductsListError implements ProductsListState {
-  const ProductsListError(this.message);
+  const ProductsListError(this.message, [this.kind]);
   
 
  final  String message;
+ final  ApiErrorKind? kind;
 
 /// Create a copy of ProductsListState
 /// with the given fields replaced by the non-null parameter values.
@@ -360,16 +361,16 @@ $ProductsListErrorCopyWith<ProductsListError> get copyWith => _$ProductsListErro
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProductsListError&&(identical(other.message, message) || other.message == message));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProductsListError&&(identical(other.message, message) || other.message == message)&&(identical(other.kind, kind) || other.kind == kind));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,message);
+int get hashCode => Object.hash(runtimeType,message,kind);
 
 @override
 String toString() {
-  return 'ProductsListState.error(message: $message)';
+  return 'ProductsListState.error(message: $message, kind: $kind)';
 }
 
 
@@ -380,7 +381,7 @@ abstract mixin class $ProductsListErrorCopyWith<$Res> implements $ProductsListSt
   factory $ProductsListErrorCopyWith(ProductsListError value, $Res Function(ProductsListError) _then) = _$ProductsListErrorCopyWithImpl;
 @useResult
 $Res call({
- String message
+ String message, ApiErrorKind? kind
 });
 
 
@@ -397,10 +398,11 @@ class _$ProductsListErrorCopyWithImpl<$Res>
 
 /// Create a copy of ProductsListState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? message = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? message = null,Object? kind = freezed,}) {
   return _then(ProductsListError(
 null == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
-as String,
+as String,freezed == kind ? _self.kind : kind // ignore: cast_nullable_to_non_nullable
+as ApiErrorKind?,
   ));
 }
 

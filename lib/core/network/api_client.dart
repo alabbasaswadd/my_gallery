@@ -5,6 +5,7 @@ import 'package:my_gallery/core/logging/error_logger.dart';
 import 'package:my_gallery/core/network/api_exception.dart';
 import 'package:my_gallery/core/network/retry_policy.dart';
 import 'package:my_gallery/core/network/session_notifier.dart';
+import 'package:my_gallery/core/network/token_refresher.dart';
 import 'package:my_gallery/core/session/session_manager.dart';
 import 'package:my_gallery/core/storage/secure_storage.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
@@ -94,14 +95,65 @@ class _AuthInterceptor extends Interceptor {
       return;
     }
 
-    // A 401 on a request that carried our auth token means the token has
-    // expired. Tear the session down so GoRouter redirects to login.
-    // sessionExpiredPending tells the login screen to show a banner.
-    // Unauthenticated public requests returning 401 are excluded (no header).
+    // A 401 on a request that carried our auth token means the ACCESS token
+    // expired. Instead of logging out immediately, try to silently refresh it and
+    // replay the request. Only a genuinely dead session (refresh token rejected)
+    // logs the user out; a server/network problem during refresh never does.
+    // Unauthenticated public requests returning 401 are excluded (no header), and
+    // the refresh call itself (also 401-capable) never carries our bearer here.
     if (status == 401 &&
         response.requestOptions.headers.containsKey('Authorization')) {
-      SessionNotifier.instance.sessionExpiredPending = true;
-      await SessionManager.instance.invalidate(reason: 'unauthorized (401)');
+      final result = await TokenRefresher.instance.refresh();
+
+      switch (result.kind) {
+        case RefreshResultKind.refreshed:
+          try {
+            final retried = await _retry(
+              response.requestOptions,
+              result.accessToken!,
+            );
+            handler.resolve(retried);
+          } on DioException catch (e) {
+            // A 401 immediately after a successful refresh means the new token is
+            // already rejected — a genuine end of session. Anything else is just a
+            // normal error to surface (mapped downstream), never a logout.
+            if (e.response?.statusCode == 401) {
+              SessionNotifier.instance.sessionExpiredPending = true;
+              await SessionManager.instance.invalidate(reason: 'unauthorized after refresh');
+            }
+            handler.reject(
+              DioException(
+                requestOptions: e.requestOptions,
+                response: e.response,
+                type: e.type,
+                error: exceptionFromDio(e),
+              ),
+            );
+          }
+          return;
+
+        case RefreshResultKind.sessionEnded:
+          // The refresh token is invalid/expired — the session has truly ended.
+          SessionNotifier.instance.sessionExpiredPending = true;
+          await SessionManager.instance.invalidate(reason: 'refresh token rejected (401)');
+          break;
+
+        case RefreshResultKind.unavailable:
+          // Couldn't reach the server to refresh: DO NOT log out. Surface a
+          // connection error so the UI shows the reassuring offline view while
+          // the session (and refresh token) stay intact for the next attempt.
+          handler.reject(
+            DioException(
+              requestOptions: response.requestOptions,
+              type: DioExceptionType.connectionError,
+              error: const ApiException(
+                kind: ApiErrorKind.network,
+                message: 'تعذّر الاتصال بالخادم، يرجى المحاولة لاحقاً',
+              ),
+            ),
+          );
+          return;
+      }
     }
 
     final exception = ApiException.fromDio(DioException(
@@ -123,6 +175,36 @@ class _AuthInterceptor extends Interceptor {
         response: response,
         error: exception,
         type: DioExceptionType.badResponse,
+      ),
+    );
+  }
+
+  /// Replays a request that 401'd, once, with a freshly minted access token.
+  /// Uses a bare Dio (no interceptors) so a second 401 cannot recurse into the
+  /// refresh flow; if it still fails, the error propagates to the caller.
+  Future<Response<dynamic>> _retry(RequestOptions options, String accessToken) {
+    final bare = Dio(
+      BaseOptions(
+        baseUrl: options.baseUrl.isNotEmpty
+            ? options.baseUrl
+            : ApiClient.dio.options.baseUrl,
+        connectTimeout: const Duration(seconds: 30),
+        receiveTimeout: const Duration(seconds: 30),
+        // Default validateStatus: non-2xx throws a DioException the caller maps,
+        // so a failed replay is never mistaken for a successful response.
+      ),
+    );
+    final headers = Map<String, dynamic>.from(options.headers)
+      ..['Authorization'] = 'Bearer $accessToken';
+    return bare.request<dynamic>(
+      options.path,
+      data: options.data,
+      queryParameters: options.queryParameters,
+      options: Options(
+        method: options.method,
+        headers: headers,
+        contentType: options.contentType,
+        responseType: options.responseType,
       ),
     );
   }

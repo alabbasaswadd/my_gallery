@@ -16,7 +16,8 @@ sealed class ProductsListState with _$ProductsListState {
     required PaginationMeta pagination,
     required ProductFilter filter,
   }) = ProductsListLoaded;
-  const factory ProductsListState.error(String message) = ProductsListError;
+  const factory ProductsListState.error(String message, [ApiErrorKind? kind]) =
+      ProductsListError;
 }
 
 class ProductsListCubit extends Cubit<ProductsListState> {
@@ -68,7 +69,7 @@ class ProductsListCubit extends Cubit<ProductsListState> {
         filter: _filter,
       ));
     } on ApiException catch (e) {
-      emit(ProductsListState.error(e.message));
+      emit(ProductsListState.error(e.message, e.kind));
     } catch (_) {
       emit(const ProductsListState.error('فشل تحميل المنتجات'));
     }
@@ -90,7 +91,7 @@ class ProductsListCubit extends Cubit<ProductsListState> {
         emit(current.copyWith(items: _items));
       }
     } on ApiException catch (e) {
-      emit(ProductsListState.error(e.message));
+      emit(ProductsListState.error(e.message, e.kind));
     }
   }
 }

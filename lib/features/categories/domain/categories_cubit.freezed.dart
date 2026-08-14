@@ -125,13 +125,13 @@ return error(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function( List<CategoryListItem> categories)?  loaded,TResult Function( String message)?  error,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function( List<CategoryListItem> categories)?  loaded,TResult Function( String message,  ApiErrorKind? kind)?  error,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case CategoriesInitial() when initial != null:
 return initial();case CategoriesLoading() when loading != null:
 return loading();case CategoriesLoaded() when loaded != null:
 return loaded(_that.categories);case CategoriesError() when error != null:
-return error(_that.message);case _:
+return error(_that.message,_that.kind);case _:
   return orElse();
 
 }
@@ -149,13 +149,13 @@ return error(_that.message);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function( List<CategoryListItem> categories)  loaded,required TResult Function( String message)  error,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function( List<CategoryListItem> categories)  loaded,required TResult Function( String message,  ApiErrorKind? kind)  error,}) {final _that = this;
 switch (_that) {
 case CategoriesInitial():
 return initial();case CategoriesLoading():
 return loading();case CategoriesLoaded():
 return loaded(_that.categories);case CategoriesError():
-return error(_that.message);}
+return error(_that.message,_that.kind);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -169,13 +169,13 @@ return error(_that.message);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function( List<CategoryListItem> categories)?  loaded,TResult? Function( String message)?  error,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function( List<CategoryListItem> categories)?  loaded,TResult? Function( String message,  ApiErrorKind? kind)?  error,}) {final _that = this;
 switch (_that) {
 case CategoriesInitial() when initial != null:
 return initial();case CategoriesLoading() when loading != null:
 return loading();case CategoriesLoaded() when loaded != null:
 return loaded(_that.categories);case CategoriesError() when error != null:
-return error(_that.message);case _:
+return error(_that.message,_that.kind);case _:
   return null;
 
 }
@@ -323,10 +323,11 @@ as List<CategoryListItem>,
 
 
 class CategoriesError implements CategoriesState {
-  const CategoriesError(this.message);
+  const CategoriesError(this.message, [this.kind]);
   
 
  final  String message;
+ final  ApiErrorKind? kind;
 
 /// Create a copy of CategoriesState
 /// with the given fields replaced by the non-null parameter values.
@@ -338,16 +339,16 @@ $CategoriesErrorCopyWith<CategoriesError> get copyWith => _$CategoriesErrorCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is CategoriesError&&(identical(other.message, message) || other.message == message));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CategoriesError&&(identical(other.message, message) || other.message == message)&&(identical(other.kind, kind) || other.kind == kind));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,message);
+int get hashCode => Object.hash(runtimeType,message,kind);
 
 @override
 String toString() {
-  return 'CategoriesState.error(message: $message)';
+  return 'CategoriesState.error(message: $message, kind: $kind)';
 }
 
 
@@ -358,7 +359,7 @@ abstract mixin class $CategoriesErrorCopyWith<$Res> implements $CategoriesStateC
   factory $CategoriesErrorCopyWith(CategoriesError value, $Res Function(CategoriesError) _then) = _$CategoriesErrorCopyWithImpl;
 @useResult
 $Res call({
- String message
+ String message, ApiErrorKind? kind
 });
 
 
@@ -375,10 +376,11 @@ class _$CategoriesErrorCopyWithImpl<$Res>
 
 /// Create a copy of CategoriesState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? message = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? message = null,Object? kind = freezed,}) {
   return _then(CategoriesError(
 null == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
-as String,
+as String,freezed == kind ? _self.kind : kind // ignore: cast_nullable_to_non_nullable
+as ApiErrorKind?,
   ));
 }
 

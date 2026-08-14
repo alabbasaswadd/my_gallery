@@ -125,13 +125,13 @@ return error(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function( List<OrderListItem> orders,  PaginationMeta pagination,  String statusFilter)?  loaded,TResult Function( String message)?  error,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function( List<OrderListItem> orders,  PaginationMeta pagination,  String statusFilter)?  loaded,TResult Function( String message,  ApiErrorKind? kind)?  error,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case OrdersListInitial() when initial != null:
 return initial();case OrdersListLoading() when loading != null:
 return loading();case OrdersListLoaded() when loaded != null:
 return loaded(_that.orders,_that.pagination,_that.statusFilter);case OrdersListError() when error != null:
-return error(_that.message);case _:
+return error(_that.message,_that.kind);case _:
   return orElse();
 
 }
@@ -149,13 +149,13 @@ return error(_that.message);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function( List<OrderListItem> orders,  PaginationMeta pagination,  String statusFilter)  loaded,required TResult Function( String message)  error,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function( List<OrderListItem> orders,  PaginationMeta pagination,  String statusFilter)  loaded,required TResult Function( String message,  ApiErrorKind? kind)  error,}) {final _that = this;
 switch (_that) {
 case OrdersListInitial():
 return initial();case OrdersListLoading():
 return loading();case OrdersListLoaded():
 return loaded(_that.orders,_that.pagination,_that.statusFilter);case OrdersListError():
-return error(_that.message);}
+return error(_that.message,_that.kind);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -169,13 +169,13 @@ return error(_that.message);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function( List<OrderListItem> orders,  PaginationMeta pagination,  String statusFilter)?  loaded,TResult? Function( String message)?  error,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function( List<OrderListItem> orders,  PaginationMeta pagination,  String statusFilter)?  loaded,TResult? Function( String message,  ApiErrorKind? kind)?  error,}) {final _that = this;
 switch (_that) {
 case OrdersListInitial() when initial != null:
 return initial();case OrdersListLoading() when loading != null:
 return loading();case OrdersListLoaded() when loaded != null:
 return loaded(_that.orders,_that.pagination,_that.statusFilter);case OrdersListError() when error != null:
-return error(_that.message);case _:
+return error(_that.message,_that.kind);case _:
   return null;
 
 }
@@ -336,10 +336,11 @@ $PaginationMetaCopyWith<$Res> get pagination {
 
 
 class OrdersListError implements OrdersListState {
-  const OrdersListError(this.message);
+  const OrdersListError(this.message, [this.kind]);
   
 
  final  String message;
+ final  ApiErrorKind? kind;
 
 /// Create a copy of OrdersListState
 /// with the given fields replaced by the non-null parameter values.
@@ -351,16 +352,16 @@ $OrdersListErrorCopyWith<OrdersListError> get copyWith => _$OrdersListErrorCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is OrdersListError&&(identical(other.message, message) || other.message == message));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is OrdersListError&&(identical(other.message, message) || other.message == message)&&(identical(other.kind, kind) || other.kind == kind));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,message);
+int get hashCode => Object.hash(runtimeType,message,kind);
 
 @override
 String toString() {
-  return 'OrdersListState.error(message: $message)';
+  return 'OrdersListState.error(message: $message, kind: $kind)';
 }
 
 
@@ -371,7 +372,7 @@ abstract mixin class $OrdersListErrorCopyWith<$Res> implements $OrdersListStateC
   factory $OrdersListErrorCopyWith(OrdersListError value, $Res Function(OrdersListError) _then) = _$OrdersListErrorCopyWithImpl;
 @useResult
 $Res call({
- String message
+ String message, ApiErrorKind? kind
 });
 
 
@@ -388,10 +389,11 @@ class _$OrdersListErrorCopyWithImpl<$Res>
 
 /// Create a copy of OrdersListState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? message = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? message = null,Object? kind = freezed,}) {
   return _then(OrdersListError(
 null == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
-as String,
+as String,freezed == kind ? _self.kind : kind // ignore: cast_nullable_to_non_nullable
+as ApiErrorKind?,
   ));
 }
 

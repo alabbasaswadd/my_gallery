@@ -8,6 +8,10 @@ sealed class AuthResult with _$AuthResult {
   const factory AuthResult({
     required String accessToken,
     required String expiresAt,
+    // Nullable so the app still works against an older server that doesn't issue
+    // refresh tokens yet; when present, it keeps the user signed in past access expiry.
+    String? refreshToken,
+    String? refreshExpiresAt,
     required AuthUser user,
   }) = _AuthResult;
 
