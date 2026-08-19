@@ -34,6 +34,7 @@ import 'package:my_gallery/features/storefront/presentation/screens/checkout_scr
 import 'package:my_gallery/features/storefront/presentation/screens/order_success_screen.dart';
 import 'package:my_gallery/features/storefront/presentation/screens/occasion_products_screen.dart';
 import 'package:my_gallery/features/storefront/presentation/screens/storefront_product_detail_screen.dart';
+import 'package:my_gallery/features/settings/domain/settings_cubit.dart';
 import 'package:my_gallery/features/settings/domain/site_customization_cubit.dart';
 import 'package:my_gallery/features/settings/domain/social_links_cubit.dart';
 import 'package:my_gallery/core/logging/error_log_entry.dart';
@@ -48,7 +49,13 @@ import 'package:my_gallery/features/onboarding/presentation/screens/onboarding_s
 import 'package:my_gallery/features/store_registration/domain/store_registration_cubit.dart';
 import 'package:my_gallery/features/store_registration/presentation/screens/create_store_wizard_screen.dart';
 
-final _authCubit = AuthCubit(sl<AuthService>());
+final _authCubit = AuthCubit(
+  sl<AuthService>(),
+  onSessionCleared: () {
+    sl<CartCubit>().clear();
+    sl<SettingsCubit>().clearCache();
+  },
+);
 
 // Onboarding flag — once true it stays true (cannot revert to false).
 bool _onboardingDone = false;

@@ -48,7 +48,13 @@ Future<void> setupServiceLocator() async {
   sl.registerLazySingleton(() => ThemeCubit());
 
   // Cubits — factories (fresh instance per widget tree)
-  sl.registerFactory(() => AuthCubit(sl<AuthService>()));
+  sl.registerFactory(() => AuthCubit(
+        sl<AuthService>(),
+        onSessionCleared: () {
+          sl<CartCubit>().clear();
+          sl<SettingsCubit>().clearCache();
+        },
+      ));
   sl.registerFactory(() => StoreRegistrationCubit(sl<StoreRegistrationService>()));
   sl.registerFactory(() => ProductsListCubit(sl<ProductsService>()));
   sl.registerFactory(() => ProductDetailCubit(sl<ProductsService>()));

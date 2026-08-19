@@ -10,7 +10,7 @@ class ThemeSettings {
   final ThemeSource source;
 
   const ThemeSettings({
-    this.mode = ThemeMode.system,
+    this.mode = ThemeMode.light,
     this.source = ThemeSource.identity,
   });
 
@@ -39,10 +39,10 @@ class ThemeCubit extends Cubit<ThemeSettings> {
 
     final savedMode = prefs.getString(_modeKey);
     final mode = savedMode == null
-        ? ThemeMode.system
+        ? ThemeMode.light
         : ThemeMode.values.firstWhere(
             (m) => m.name == savedMode,
-            orElse: () => ThemeMode.system,
+            orElse: () => ThemeMode.light,
           );
 
     final savedSource = prefs.getString(_sourceKey);

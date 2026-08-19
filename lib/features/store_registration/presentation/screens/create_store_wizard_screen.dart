@@ -31,11 +31,15 @@ class _CreateStoreWizardScreenState extends State<CreateStoreWizardScreen> {
   ];
 
   static const _businessTypes = [
-    'محل ورد',
-    'هدايا',
-    'تنسيق مناسبات',
-    'ديكور حفلات',
-    'شوكولاتة وهدايا',
+    'ملابس وأزياء',
+    'إلكترونيات وهواتف',
+    'مجوهرات وإكسسوارات',
+    'أحذية وحقائب',
+    'مستحضرات تجميل وعطور',
+    'أثاث ومستلزمات منزلية',
+    'مواد غذائية ومخبوزات',
+    'هدايا وتذكارات',
+    'لعب أطفال وترفيه',
     'متجر متنوع',
     'أخرى',
   ];
@@ -239,7 +243,7 @@ class _CreateStoreWizardScreenState extends State<CreateStoreWizardScreen> {
         _field(
           controller: _shopName,
           label: 'اسم المتجر *',
-          hint: 'مثال: معرض الورد',
+          hint: 'مثال: متجر الأزياء',
           icon: Icons.store_rounded,
           validator: (v) =>
               (v == null || v.trim().isEmpty) ? 'اسم المتجر مطلوب' : null,

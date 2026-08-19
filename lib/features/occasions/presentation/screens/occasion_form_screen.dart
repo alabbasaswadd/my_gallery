@@ -193,7 +193,7 @@ class _OccasionFormScreenState extends State<OccasionFormScreen> {
               textDirection: TextDirection.ltr,
               decoration: const InputDecoration(
                 labelText: 'المُعرّف (slug) — اختياري',
-                hintText: 'wedding',
+                hintText: 'birthday',
                 helperText: 'يُولّد تلقائياً من الاسم إذا تُرك فارغاً',
               ),
             ),

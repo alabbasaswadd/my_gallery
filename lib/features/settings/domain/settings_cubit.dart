@@ -92,6 +92,17 @@ class SettingsCubit extends Cubit<SettingsState> {
     _saveCache(settings);
   }
 
+  /// Clears all settings state on logout so no previous account's data leaks
+  /// to the next login. Resets in-memory state to [SettingsState.initial] AND
+  /// removes the SharedPreferences cache so the next [load] call always fetches
+  /// a fresh server response for the new account's shop.
+  void clearCache() {
+    if (!isClosed) emit(const SettingsState.initial());
+    SharedPreferences.getInstance()
+        .then((prefs) => prefs.remove(_cacheKey))
+        .ignore();
+  }
+
   Future<void> _saveCache(StorefrontSettings settings) async {
     try {
       final prefs = await SharedPreferences.getInstance();

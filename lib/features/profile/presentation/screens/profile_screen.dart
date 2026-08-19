@@ -141,7 +141,7 @@ class ProfileScreen extends StatelessWidget {
                         color: cs.primary,
                       ),
                       title: const Text('إدارة المناسبات'),
-                      subtitle: const Text('الزفاف، عيد الميلاد، التخرّج…'),
+                      subtitle: const Text('مواسم، أعياد، مناسبات خاصة…'),
                       trailing: const Icon(Icons.chevron_right),
                       onTap: () => context.push('/occasions'),
                     ),

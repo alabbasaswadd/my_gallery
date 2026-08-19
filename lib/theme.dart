@@ -58,12 +58,12 @@ const supportedFonts = ['Tajawal', 'Cairo'];
 /// Curated, brand-neutral default palette. Looks good with no shop identity
 /// loaded — the theme fallback, distinct from [kDefaultSettings].
 const kDefaultPalette = ThemePalette(
-  primary: Color(0xFFC0446A),
-  secondary: Color(0xFF3C2A34),
-  accent: Color(0xFFD4A02A),
-  background: Color(0xFFFBF7F4),
+  primary: Color(0xFF1B7FC4),
+  secondary: Color(0xFF1C4470),
+  accent: Color(0xFFF59E0B),
+  background: Color(0xFFF4F6F9),
   surface: Color(0xFFFFFFFF),
-  text: Color(0xFF2A2024),
+  text: Color(0xFF1A2A3A),
   radius: 16,
   fontFamily: 'Tajawal',
 );

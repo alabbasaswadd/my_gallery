@@ -26,7 +26,14 @@ class AuthCubit extends Cubit<AuthState> {
 
   final AuthService _authService;
 
-  AuthCubit(this._authService) : super(const AuthState.initial());
+  /// Called synchronously whenever the session is cleared — either by an
+  /// explicit [logout] or by [forceUnauthenticated] (network 401). Use this
+  /// to reset singleton cubits (cart, settings cache) so no previous user's
+  /// data leaks to the next login.
+  final void Function()? onSessionCleared;
+
+  AuthCubit(this._authService, {this.onSessionCleared})
+      : super(const AuthState.initial());
 
   AuthUser? _currentUser;
   AuthUser? get currentUser => _currentUser;
@@ -119,6 +126,7 @@ class AuthCubit extends Cubit<AuthState> {
   /// login. Distinct from [logout], which is the explicit user action.
   void forceUnauthenticated() {
     _currentUser = null;
+    onSessionCleared?.call();
     if (!isClosed) emit(const AuthState.unauthenticated());
   }
 
@@ -127,6 +135,7 @@ class AuthCubit extends Cubit<AuthState> {
     await _authService.logout();
     _currentUser = null;
     await _clearCachedUser();
+    onSessionCleared?.call();
     emit(const AuthState.unauthenticated());
     // Notify GoRouter so its redirect re-evaluates and navigates to login,
     // clearing the back-stack. No sessionExpiredPending — this is intentional.

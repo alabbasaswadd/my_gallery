@@ -18,18 +18,18 @@ class _PageData {
 
 const List<_PageData> _pages = [
   _PageData(
-    title: 'استكشف معارض رائعة',
-    subtitle: 'اكتشف معارض مذهلة من حولك\nبتجربة تصفح عصرية وممتعة.',
+    title: 'أضف منتجاتك بسهولة',
+    subtitle: 'أنشئ كتالوج منتجاتك واعرضها لعملائك\nبطريقة احترافية وجذابة.',
   ),
   _PageData(
-    title: 'احجز زيارتك بسهولة',
+    title: 'خصّص هوية متجرك',
     subtitle:
-        'احجز مكانك، اكتشف تفاصيل الفعاليات،\nواستمتع بتجربة معرض سلسة.',
+        'اختر ألوانك وشعارك وأسلوبك البصري\nليعكس متجرك شخصيتك التجارية.',
   ),
   _PageData(
-    title: 'ابدأ رحلتك',
+    title: 'استقبل طلبات عملائك',
     subtitle:
-        'مرحباً بك في معرضي.\nاكتشف المعارض وتصفح الفعاليات،\nولا تفوت تجربة مميزة.',
+        'أنشئ متجرك الرقمي وابدأ بيع منتجاتك\nلعملاء من كل مكان.',
   ),
 ];
 
@@ -218,13 +218,13 @@ class _OnboardingPageContent extends StatelessWidget {
   Widget _illustrationFor(int index) {
     switch (index) {
       case 0:
-        return const GardenIllustration();
+        return const CatalogIllustration();
       case 1:
-        return const HallIllustration();
+        return const StoreIllustration();
       case 2:
-        return const JourneyIllustration();
+        return const SuccessIllustration();
       default:
-        return const GardenIllustration();
+        return const CatalogIllustration();
     }
   }
 

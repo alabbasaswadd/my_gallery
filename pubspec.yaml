@@ -1,5 +1,5 @@
 name: my_gallery
-description: "MyGallery Admin App - إدارة المعرض"
+description: "معرضي - منصة إدارة المتاجر الإلكترونية"
 publish_to: "none"
 version: 1.0.0+1
 
@@ -68,15 +68,15 @@ dev_dependencies:
   flutter_launcher_icons: ^0.14.1
 
 flutter_native_splash:
-  color: "#C0446A"
+  color: "#1B7FC4"
   image: assets/images/app_icon.png
-  color_dark: "#6D1A38"
+  color_dark: "#1C4470"
   image_dark: assets/images/app_icon.png
   android_12:
     image: assets/images/app_icon_fg.png
-    icon_background_color: "#C0446A"
+    icon_background_color: "#1B7FC4"
     image_dark: assets/images/app_icon_fg.png
-    icon_background_color_dark: "#6D1A38"
+    icon_background_color_dark: "#1C4470"
   web: false
 
 flutter_launcher_icons:
@@ -84,7 +84,7 @@ flutter_launcher_icons:
   ios: true
   remove_alpha_ios: true
   image_path: "assets/images/app_icon.png"
-  adaptive_icon_background: "#C0446A"
+  adaptive_icon_background: "#1B7FC4"
   adaptive_icon_foreground: "assets/images/app_icon_fg.png"
   min_sdk_android: 21
 

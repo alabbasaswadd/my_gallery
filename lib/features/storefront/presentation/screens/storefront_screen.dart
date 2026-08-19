@@ -477,7 +477,7 @@ class _PopularOccasionsState extends State<_PopularOccasions> {
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-          child: Text('مناسبات مميّزة', style: theme.textTheme.titleMedium),
+          child: Text('تصفح حسب المناسبة', style: theme.textTheme.titleMedium),
         ),
         SizedBox(
           height: 108,
