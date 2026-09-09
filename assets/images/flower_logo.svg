@@ -1,0 +1,32 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="pg" cx="38%" cy="30%" r="68%" gradientUnits="objectBoundingBox">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#A8D4F5"/>
+    </radialGradient>
+    <radialGradient id="cg" cx="40%" cy="30%" r="70%" gradientUnits="objectBoundingBox">
+      <stop offset="0%" stop-color="#FFE07A"/>
+      <stop offset="100%" stop-color="#F59E0B"/>
+    </radialGradient>
+    <filter id="sh" x="-18%" y="-18%" width="136%" height="136%">
+      <feDropShadow dx="0" dy="3" stdDeviation="6" flood-color="#041830" flood-opacity="0.32"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#sh)">
+    <!-- 6 petals: centers on a radius-44 circle around (100,100), r=28 each -->
+    <!-- top    --> <circle cx="100" cy="56"  r="28" fill="url(#pg)"/>
+    <!-- top-right --> <circle cx="138" cy="78"  r="28" fill="url(#pg)"/>
+    <!-- bot-right --> <circle cx="138" cy="122" r="28" fill="url(#pg)"/>
+    <!-- bottom  --> <circle cx="100" cy="144" r="28" fill="url(#pg)"/>
+    <!-- bot-left --> <circle cx="62"  cy="122" r="28" fill="url(#pg)"/>
+    <!-- top-left --> <circle cx="62"  cy="78"  r="28" fill="url(#pg)"/>
+
+    <!-- Centre -->
+    <circle cx="100" cy="100" r="25" fill="url(#cg)"/>
+  </g>
+
+  <!-- Centre highlight -->
+  <ellipse cx="92" cy="91" rx="8" ry="6" fill="#FFFFFF" opacity="0.40"
+           transform="rotate(-20 92 91)"/>
+</svg>

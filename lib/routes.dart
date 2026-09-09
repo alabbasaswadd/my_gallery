@@ -46,6 +46,7 @@ import 'package:my_gallery/features/settings/presentation/screens/social_links_s
 import 'package:my_gallery/features/storefront/presentation/screens/storefront_screen.dart';
 import 'package:my_gallery/features/onboarding/data/onboarding_repository.dart';
 import 'package:my_gallery/features/onboarding/presentation/screens/onboarding_screen.dart';
+import 'package:my_gallery/features/splash/presentation/screens/splash_screen.dart';
 import 'package:my_gallery/features/store_registration/domain/store_registration_cubit.dart';
 import 'package:my_gallery/features/store_registration/presentation/screens/create_store_wizard_screen.dart';
 
@@ -54,6 +55,11 @@ final _authCubit = AuthCubit(
   onSessionCleared: () {
     sl<CartCubit>().clear();
     sl<SettingsCubit>().clearCache();
+  },
+  onAuthenticated: (user) {
+    // Reload the shop's identity/settings for the newly authenticated user so
+    // that User B never inherits User A's cached brand name, colors, or logo.
+    sl<SettingsCubit>().load(user.shopId);
   },
 );
 
@@ -79,10 +85,16 @@ Future<void> primeRouterStartupState() async {
 }
 
 final router = GoRouter(
-  initialLocation: '/',
+  initialLocation: '/splash',
   refreshListenable: SessionNotifier.instance,
   redirect: (context, state) async {
     final location = state.matchedLocation;
+
+    // The splash screen owns its own navigation — let it through unconditionally.
+    // It drives context.go('/') after its animation and then normal auth routing
+    // takes over from that redirect evaluation.
+    if (location == '/splash') return null;
+
     if (!_onboardingDone) {
       _onboardingDone = await OnboardingRepository().isCompleted();
     }
@@ -100,6 +112,10 @@ final router = GoRouter(
     return null;
   },
   routes: [
+    GoRoute(
+      path: '/splash',
+      builder: (context, state) => const SplashScreen(),
+    ),
     GoRoute(
       path: '/onboarding',
       builder: (context, state) => const OnboardingScreen(),

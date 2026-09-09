@@ -2,7 +2,6 @@ import 'package:get_it/get_it.dart';
 import 'package:my_gallery/core/logging/error_logger.dart';
 import 'package:my_gallery/core/network/api_client.dart';
 import 'package:my_gallery/features/auth/data/auth_service.dart';
-import 'package:my_gallery/features/auth/domain/auth_cubit.dart';
 import 'package:my_gallery/features/cart/domain/cart_cubit.dart';
 import 'package:my_gallery/features/categories/data/categories_service.dart';
 import 'package:my_gallery/features/categories/domain/categories_cubit.dart';
@@ -48,13 +47,9 @@ Future<void> setupServiceLocator() async {
   sl.registerLazySingleton(() => ThemeCubit());
 
   // Cubits — factories (fresh instance per widget tree)
-  sl.registerFactory(() => AuthCubit(
-        sl<AuthService>(),
-        onSessionCleared: () {
-          sl<CartCubit>().clear();
-          sl<SettingsCubit>().clearCache();
-        },
-      ));
+  // Note: AuthCubit is NOT registered here. The single root instance lives in
+  // routes.dart as `_authCubit` so it shares lifecycle with the GoRouter and
+  // holds the onSessionCleared / onAuthenticated callbacks for singleton cleanup.
   sl.registerFactory(() => StoreRegistrationCubit(sl<StoreRegistrationService>()));
   sl.registerFactory(() => ProductsListCubit(sl<ProductsService>()));
   sl.registerFactory(() => ProductDetailCubit(sl<ProductsService>()));

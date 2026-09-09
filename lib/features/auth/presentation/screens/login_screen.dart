@@ -235,15 +235,6 @@ class _LoginScreenState extends State<LoginScreen> {
             .scale(begin: const Offset(0.85, 0.85), curve: Curves.easeOutBack),
         const SizedBox(height: 20),
         Text(
-          settings.brandName,
-          textAlign: TextAlign.center,
-          style: textTheme.titleMedium?.copyWith(
-            color: cs.onSurfaceVariant,
-            fontWeight: FontWeight.w600,
-          ),
-        ).animate().fadeIn(delay: 100.ms, duration: 400.ms),
-        const SizedBox(height: 12),
-        Text(
           l10n?.loginWelcome ?? 'مرحبًا بك 👋',
           textAlign: TextAlign.center,
           style: textTheme.headlineMedium?.copyWith(

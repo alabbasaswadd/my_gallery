@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -32,8 +33,18 @@ class AuthCubit extends Cubit<AuthState> {
   /// data leaks to the next login.
   final void Function()? onSessionCleared;
 
-  AuthCubit(this._authService, {this.onSessionCleared})
-      : super(const AuthState.initial());
+  /// Called after every successful authentication — explicit [login],
+  /// startup session restore via [checkSession], or [signInWithResult].
+  /// Use this to (re)load user-specific singletons such as [SettingsCubit]
+  /// with the newly authenticated user's shop ID, so User B never sees
+  /// User A's stale shop identity after account switch.
+  final void Function(AuthUser user)? onAuthenticated;
+
+  AuthCubit(
+    this._authService, {
+    this.onSessionCleared,
+    this.onAuthenticated,
+  }) : super(const AuthState.initial());
 
   AuthUser? _currentUser;
   AuthUser? get currentUser => _currentUser;
@@ -69,6 +80,7 @@ class AuthCubit extends Cubit<AuthState> {
       );
       await _cacheUser(_currentUser!);
       emit(AuthState.authenticated(_currentUser!));
+      onAuthenticated?.call(_currentUser!);
     } catch (_) {
       // Any error (network, timeout, 401, server error) — restore from cache.
       // The session token is never cleared here.
@@ -76,6 +88,7 @@ class AuthCubit extends Cubit<AuthState> {
       if (cached != null) {
         _currentUser = cached;
         emit(AuthState.authenticated(cached));
+        onAuthenticated?.call(cached);
       } else {
         // No cache yet (before the first successful login completes its cache write).
         // Show an error — the token is still intact, nothing is cleared.
@@ -98,6 +111,7 @@ class AuthCubit extends Cubit<AuthState> {
       _currentUser = result.user;
       await _cacheUser(result.user);
       emit(AuthState.authenticated(result.user));
+      onAuthenticated?.call(result.user);
     } on ApiException catch (e) {
       lastLoginError = e;
       emit(AuthState.error(e.message));
@@ -114,10 +128,13 @@ class AuthCubit extends Cubit<AuthState> {
     await SecureStorage.saveTokens(
       accessToken: result.accessToken,
       expiresAt: result.expiresAt,
+      refreshToken: result.refreshToken,
+      refreshExpiresAt: result.refreshExpiresAt,
     );
     _currentUser = result.user;
     await _cacheUser(result.user);
     emit(AuthState.authenticated(result.user));
+    onAuthenticated?.call(result.user);
   }
 
   /// Resets in-memory auth state to unauthenticated WITHOUT calling the logout
@@ -126,6 +143,9 @@ class AuthCubit extends Cubit<AuthState> {
   /// login. Distinct from [logout], which is the explicit user action.
   void forceUnauthenticated() {
     _currentUser = null;
+    // Clear the user cache so it cannot be replayed if getMe() later fails
+    // during a subsequent checkSession call for a different account.
+    unawaited(_clearCachedUser());
     onSessionCleared?.call();
     if (!isClosed) emit(const AuthState.unauthenticated());
   }
@@ -137,8 +157,10 @@ class AuthCubit extends Cubit<AuthState> {
     await _clearCachedUser();
     onSessionCleared?.call();
     emit(const AuthState.unauthenticated());
+    // Explicit logout — not a session expiry, so clear any pending banner.
+    SessionNotifier.instance.sessionExpiredPending = false;
     // Notify GoRouter so its redirect re-evaluates and navigates to login,
-    // clearing the back-stack. No sessionExpiredPending — this is intentional.
+    // clearing the back-stack.
     SessionNotifier.instance.invalidate();
   }
 
