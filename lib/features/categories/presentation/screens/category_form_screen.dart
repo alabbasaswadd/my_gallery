@@ -238,7 +238,7 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
               title: const Text('نشطة'),
               value: _isActive,
               onChanged: (v) => setState(() => _isActive = v),
-              activeColor: Theme.of(context).colorScheme.primary,
+              activeThumbColor: Theme.of(context).colorScheme.primary,
             ),
             const SizedBox(height: 16),
             _buildImagePicker(context),

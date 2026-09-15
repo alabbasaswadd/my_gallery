@@ -67,7 +67,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           : PreferredSize(
               preferredSize: tabBar!.preferredSize,
               child: Container(
-                color: Colors.white.withOpacity(0.15),
+                color: Colors.white.withValues(alpha: 0.15),
                 child: tabBar!,
               ),
             ),

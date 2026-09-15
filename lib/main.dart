@@ -3,7 +3,6 @@ import 'dart:ui';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:my_gallery/core/config/app_config.dart';
 import 'package:my_gallery/core/di/service_locator.dart';
@@ -19,9 +18,6 @@ import 'package:my_gallery/shared/widgets/network_status_listener.dart';
 import 'package:my_gallery/theme.dart' show AppTheme, activePalette;
 
 void main() async {
-  final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
-  // Keep the native splash visible while the app initializes.
-  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   WidgetsFlutterBinding.ensureInitialized();
 
   // Capture Flutter framework errors (widget build failures, assertion errors).
@@ -52,10 +48,6 @@ void main() async {
     primeRouterStartupState(),
     ErrorLogger.instance.initialize(),
   ]);
-
-  // Remove the splash only after Flutter has painted its first frame, so
-  // there is no visible gap between the native splash and the Flutter UI.
-  widgetsBinding.addPostFrameCallback((_) => FlutterNativeSplash.remove());
 
   runApp(const MyGalleryApp());
 }

@@ -7,6 +7,7 @@ void main() async {
   final bytes = await file.readAsBytes();
   final source = img.decodeImage(bytes)!;
 
+  // ignore: avoid_print
   print('Source: ${source.width}x${source.height}');
 
   // --- Step 1: Find content bounding box (trim whitespace) ---
@@ -27,6 +28,7 @@ void main() async {
     }
   }
 
+  // ignore: avoid_print
   print('Content bounds: ($minX,$minY) to ($maxX,$maxY)');
   final contentW = maxX - minX + 1;
   final contentH = maxY - minY + 1;
@@ -54,7 +56,7 @@ void main() async {
   const bgR = 0x1B, bgG = 0x7F, bgC = 0xC4;
 
   // Scale to 1024 first
-  final iconSz = 1024;
+  const iconSz = 1024;
   final scaled = img.copyResize(squareSrc, width: iconSz, height: iconSz, interpolation: img.Interpolation.cubic);
 
   // For each pixel, blend white areas into the blue background
@@ -97,6 +99,7 @@ void main() async {
   img.compositeImage(iconImg, scaled);
 
   await File('assets/images/app_icon.png').writeAsBytes(img.encodePng(iconImg));
+  // ignore: avoid_print
   print('Wrote app_icon.png');
 
   // --- Step 5: Adaptive foreground = same result (fg also on blue bg) ---
@@ -104,5 +107,6 @@ void main() async {
   // in the fg so it shows the cart on blue in any adaptive-icon shape.
   final fgImg = img.copyResize(iconImg, width: iconSz, height: iconSz);
   await File('assets/images/app_icon_fg.png').writeAsBytes(img.encodePng(fgImg));
+  // ignore: avoid_print
   print('Wrote app_icon_fg.png');
 }

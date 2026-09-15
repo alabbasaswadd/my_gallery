@@ -35,19 +35,19 @@ class ProductCardShimmer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return const Card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           AppShimmer(height: 160, borderRadius: 16),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           Padding(
-            padding: const EdgeInsets.all(12),
+            padding: EdgeInsets.all(12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 AppShimmer(height: 16, width: double.infinity),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 AppShimmer(height: 12, width: 100),
               ],
             ),
@@ -63,18 +63,18 @@ class ListTileShimmer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+    return const Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         children: [
           AppShimmer(width: 56, height: 56, borderRadius: 12),
-          const SizedBox(width: 12),
+          SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 AppShimmer(height: 16, width: double.infinity),
-                const SizedBox(height: 6),
+                SizedBox(height: 6),
                 AppShimmer(height: 12, width: 140),
               ],
             ),

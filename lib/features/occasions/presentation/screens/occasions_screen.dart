@@ -80,11 +80,10 @@ class _OccasionsScreenState extends State<OccasionsScreen> {
                     onRefresh: () => context.read<OccasionsCubit>().refresh(),
                     child: ReorderableListView.builder(
                       padding: const EdgeInsets.symmetric(vertical: 8),
-                      onReorder: canManage
+                      onReorderItem: canManage
                           ? (oldIndex, newIndex) {
                               final list =
                                   List<OccasionListItem>.from(occasions);
-                              if (newIndex > oldIndex) newIndex--;
                               final item = list.removeAt(oldIndex);
                               list.insert(newIndex, item);
                               context.read<OccasionsCubit>().reorder(list);
@@ -195,7 +194,7 @@ class _OccasionTile extends StatelessWidget {
                     Switch.adaptive(
                       value: occasion.isActive,
                       onChanged: (_) => onToggleActive(),
-                      activeColor: theme.colorScheme.primary,
+                      activeThumbColor: theme.colorScheme.primary,
                     ),
                     PopupMenuButton<String>(
                       onSelected: (v) {

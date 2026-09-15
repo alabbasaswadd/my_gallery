@@ -78,10 +78,9 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     onRefresh: () => context.read<CategoriesCubit>().refresh(),
                     child: ReorderableListView.builder(
                       padding: const EdgeInsets.symmetric(vertical: 8),
-                      onReorder: canManage
+                      onReorderItem: canManage
                           ? (oldIndex, newIndex) {
                               final list = List<CategoryListItem>.from(categories);
-                              if (newIndex > oldIndex) newIndex--;
                               final item = list.removeAt(oldIndex);
                               list.insert(newIndex, item);
                               context.read<CategoriesCubit>().reorder(list);
@@ -204,7 +203,7 @@ class _CategoryTile extends StatelessWidget {
                       child: Switch.adaptive(
                         value: category.isActive,
                         onChanged: (_) => onToggleActive(),
-                        activeColor: theme.colorScheme.primary,
+                        activeThumbColor: theme.colorScheme.primary,
                       ),
                     ),
                     PopupMenuButton<String>(

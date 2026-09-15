@@ -77,7 +77,7 @@ class AppTextFormField extends StatelessWidget {
               fontSize: 13,
               color: enabled
                   ? Theme.of(context).colorScheme.onSurface
-                  : Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                  : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
             ),
             onTap: onTap,
             readOnly: readOnly ?? false,

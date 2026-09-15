@@ -57,7 +57,7 @@ class SiteCustomizationCubit extends Cubit<SiteCustomizationState> {
   final SettingsCubit _settingsCubit;
 
   SiteCustomizationCubit(this._service, {required SettingsCubit settingsCubit})
-      : _settingsCubit = settingsCubit,
+      : _settingsCubit = settingsCubit, // ignore: prefer_initializing_formals
         super(const SiteCustomizationState.loading());
 
   StorefrontSettings get _draft =>
@@ -150,7 +150,6 @@ class SiteCustomizationCubit extends Cubit<SiteCustomizationState> {
 
   void reorderHero(int oldIndex, int newIndex) {
     final list = [..._draft.heroSlides];
-    if (newIndex > oldIndex) newIndex -= 1;
     final item = list.removeAt(oldIndex);
     list.insert(newIndex, item);
     _apply(_draft.copyWith(heroSlides: list));

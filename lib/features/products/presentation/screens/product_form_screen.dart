@@ -750,7 +750,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
       title: Text(label),
       value: value,
       onChanged: onChanged,
-      activeColor: Theme.of(context).colorScheme.primary,
+      activeThumbColor: Theme.of(context).colorScheme.primary,
     );
   }
 }

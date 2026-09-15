@@ -224,7 +224,7 @@ class _OccasionFormScreenState extends State<OccasionFormScreen> {
               title: const Text('نشطة'),
               value: _isActive,
               onChanged: (v) => setState(() => _isActive = v),
-              activeColor: Theme.of(context).colorScheme.primary,
+              activeThumbColor: Theme.of(context).colorScheme.primary,
             ),
             const SizedBox(height: 24),
           ],

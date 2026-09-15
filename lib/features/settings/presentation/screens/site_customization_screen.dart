@@ -485,7 +485,7 @@ class _SiteCustomizationScreenState extends State<SiteCustomizationScreen> {
               physics: const NeverScrollableScrollPhysics(),
               buildDefaultDragHandles: false,
               itemCount: slides.length,
-              onReorder: (o, n) => _cubit.reorderHero(o, n),
+              onReorderItem: (o, n) => _cubit.reorderHero(o, n),
               itemBuilder: (context, i) => _HeroCard(
                 key: ValueKey('hero_$i'),
                 index: i,

@@ -158,7 +158,7 @@ class ProfileScreen extends StatelessWidget {
                   ).animate().fadeIn(delay: 400.ms, duration: 250.ms),
                 ],
                 const SizedBox(height: 16),
-                _ErrorLogsEntry().animate().fadeIn(delay: 420.ms, duration: 250.ms),
+                const _ErrorLogsEntry().animate().fadeIn(delay: 420.ms, duration: 250.ms),
                 const SizedBox(height: 32),
                 OutlinedButton.icon(
                   onPressed: () => _confirmLogout(context),

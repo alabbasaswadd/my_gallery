@@ -578,23 +578,23 @@ class SettingsShimmer extends StatelessWidget {
     return Shimmer.fromColors(
       baseColor: _baseColor(context),
       highlightColor: _highlightColor(context),
-      child: SingleChildScrollView(
-        physics: const NeverScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(20),
+      child: const SingleChildScrollView(
+        physics: NeverScrollableScrollPhysics(),
+        padding: EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const _ShimmerBox(width: 180, height: 28),
-            const SizedBox(height: 6),
-            const _ShimmerBox(width: 120, height: 24),
-            const SizedBox(height: 8),
-            const _ShimmerBox(width: 240, height: 14),
-            const SizedBox(height: 32),
-            const _SettingsSectionShimmer(itemCount: 3),
-            const SizedBox(height: 24),
-            const _SettingsSectionShimmer(itemCount: 2),
-            const SizedBox(height: 24),
-            const _SettingsSectionShimmer(itemCount: 3),
+            _ShimmerBox(width: 180, height: 28),
+            SizedBox(height: 6),
+            _ShimmerBox(width: 120, height: 24),
+            SizedBox(height: 8),
+            _ShimmerBox(width: 240, height: 14),
+            SizedBox(height: 32),
+            _SettingsSectionShimmer(itemCount: 3),
+            SizedBox(height: 24),
+            _SettingsSectionShimmer(itemCount: 2),
+            SizedBox(height: 24),
+            _SettingsSectionShimmer(itemCount: 3),
           ],
         ),
       ),
@@ -622,12 +622,12 @@ class _SettingsSectionShimmer extends StatelessWidget {
           ),
           child: Column(
             children: List.generate(itemCount, (i) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(
+              return const Padding(
+                padding: EdgeInsets.symmetric(
                   horizontal: 16,
                   vertical: 14,
                 ),
-                child: const Row(
+                child: Row(
                   children: [
                     _ShimmerBox(width: 38, height: 38, borderRadius: 10),
                     SizedBox(width: 14),

@@ -176,7 +176,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         tag: 'product-image-${product.id}',
         child: ClipRRect(
           borderRadius: radius,
-          child: AppNetworkImage(
+          child: const AppNetworkImage(
             imagePath: null,
             height: 280,
             width: double.infinity,
@@ -334,22 +334,24 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   }
 
   Future<void> _replaceImage(BuildContext context, int imageId) async {
+    final cubit = context.read<ProductDetailCubit>();
     final picked = await ImagePicker().pickImage(
       source: ImageSource.gallery,
       imageQuality: 90,
     );
     if (picked == null || !mounted) return;
-    await context.read<ProductDetailCubit>().replaceImage(
+    await cubit.replaceImage(
       imageId,
       File(picked.path),
     );
   }
 
   Future<void> _addImages(BuildContext context) async {
+    final cubit = context.read<ProductDetailCubit>();
     final picked = await ImagePicker().pickMultiImage(imageQuality: 90);
     if (picked.isEmpty || !mounted) return;
     final files = picked.map((x) => File(x.path)).toList();
-    await context.read<ProductDetailCubit>().uploadImages(files);
+    await cubit.uploadImages(files);
   }
 
   void _confirmDeleteImage(BuildContext context, int imageId) {
@@ -534,7 +536,7 @@ class _HeaderCard extends StatelessWidget {
                 filled: product.isActive,
               ),
               if (product.isNew)
-                _StatusChip(label: 'جديد', color: AppColors.statusNew),
+                const _StatusChip(label: 'جديد', color: AppColors.statusNew),
               if (product.isFeatured)
                 _StatusChip(label: 'مميّز', color: cs.tertiary),
             ],
@@ -681,7 +683,7 @@ class _ManagementCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _CardTitle(icon: Icons.tune_rounded, title: 'إجراءات سريعة'),
+          const _CardTitle(icon: Icons.tune_rounded, title: 'إجراءات سريعة'),
           const SizedBox(height: 12),
           Wrap(
             spacing: 8,
@@ -774,7 +776,7 @@ class _InfoCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _CardTitle(icon: Icons.info_outline_rounded, title: 'معلومات المنتج'),
+          const _CardTitle(icon: Icons.info_outline_rounded, title: 'معلومات المنتج'),
           const SizedBox(height: 4),
           for (var i = 0; i < rows.length; i++) ...[
             _InfoRow(icon: rows[i].$1, label: rows[i].$2, value: rows[i].$3),
@@ -894,7 +896,7 @@ class _TaxonomyCardState extends State<_TaxonomyCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _CardTitle(
+          const _CardTitle(
             icon: Icons.category_outlined,
             title: 'التصنيف والمناسبات',
           ),
@@ -972,7 +974,7 @@ class _DescriptionCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _CardTitle(icon: Icons.description_outlined, title: 'الوصف'),
+          const _CardTitle(icon: Icons.description_outlined, title: 'الوصف'),
           const SizedBox(height: 10),
           Text(
             description,

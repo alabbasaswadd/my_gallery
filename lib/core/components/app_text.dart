@@ -20,7 +20,7 @@ class AppText extends StatelessWidget {
   final Locale? locale;
   final StrutStyle? strutStyle;
   final bool? softWrap;
-  final double? textScaleFactor;
+  final TextScaler? textScaler;
   final double? horizontalPadding;
 
   const AppText(
@@ -44,7 +44,7 @@ class AppText extends StatelessWidget {
     this.locale,
     this.strutStyle,
     this.softWrap,
-    this.textScaleFactor,
+    this.textScaler,
     this.horizontalPadding,
   });
 
@@ -76,7 +76,7 @@ class AppText extends StatelessWidget {
         locale: locale,
         strutStyle: strutStyle,
         softWrap: softWrap,
-        textScaleFactor: textScaleFactor,
+        textScaler: textScaler,
         style: (style ?? defaultStyle).copyWith(
           color: color ?? style?.color ?? defaultStyle.color,
           fontWeight:
